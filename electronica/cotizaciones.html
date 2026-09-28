@@ -790,6 +790,11 @@
 
     // TOAST NOTIFIER
     window.mostrarToast = function(mensaje, tipo = 'emerald') {
+      // Se escapa el texto: el mensaje se pinta con innerHTML y puede traer datos
+      // del cliente (p.ej. currentCliente), que vienen del registro y no son de fiar.
+      mensaje = String(mensaje).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       

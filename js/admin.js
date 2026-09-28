@@ -276,8 +276,12 @@
 
   /* ================= COTIZACIONES RECIBIDAS ================= */
   var tbody = document.querySelector('tbody');
-  if (tbody) tbody.style.display = 'none';
   var buscador = document.getElementById('buscador');
+  // El tbody solo se oculta si esta pagina es la de cotizaciones, que es la unica
+  // que lo vuelve a mostrar en load(). Sin esta condicion, en mantenimiento.html
+  // (que no tiene #buscador) el tbody quedaba oculto para siempre y las filas se
+  // pintaban sin verse nunca.
+  if (tbody && buscador) tbody.style.display = 'none';
   if (tbody && buscador && typeof abrirModalRespuesta === 'function') {
     (function () {
       var els = document.querySelectorAll('header div');
