@@ -724,26 +724,46 @@
   // - Aviso instantaneo entre pestanas de la misma maquina.
   // - Poll cada 15s como red de seguridad (otras maquinas).
   // Nunca interrumpe: respeta pestana oculta, modales abiertos y filtro activo.
-  var __catSig = null, __catWatch = false, __catBC = null;
-  function catSignature(list) {
-    return (list || []).map(function (p) {
-      return [p.id, p.title, p.description, p.category, p.categoryCode].join('|');
+  var __catSig = null, __catWatch = false, __catBC = null, __catPoll = null, __catNotifyBC = null;
+  // La firma tiene que cubrir productos, marcas Y categorias. Antes solo miraba
+  // campos del producto, asi que borrar una marca que no dejaba productos
+  // huerfanos no cambiaba la firma y la pagina se quedaba sin refrescar.
+  function catSignature(list, marcas, cats) {
+    var p = (list || []).map(function (x) {
+      return [x.id, x.title, x.description, x.category, x.categoryCode].join('|');
     }).join('~');
+    var m = (marcas || []).map(function (x) { return [x.code, x.label, x.image].join('|'); }).join('~');
+    var c = (cats || []).map(function (x) { return [x.code, x.label].join('|'); }).join('~');
+    return p + '##' + m + '##' + c;
   }
   async function checkCatalog() {
-    if (typeof PRODUCTS_DATA === 'undefined') return;
-    if (!document.getElementById('catalog-grid')) return;
+    if (typeof PRODUCTS_DATA === 'undefined' && !window.__unReloadCatalog) return;
     if (document.hidden) return;
     if (document.querySelector('.modal-visible')) return;
-    var list;
-    try { list = await api('/api/productos'); } catch (e) { return; }
-    if (!list) return;
-    var sig = catSignature(list);
-    if (sig !== __catSig) { __catSig = sig; await syncCatalog(list); }
+    var res;
+    try {
+      res = await Promise.all([
+        api('/api/productos').catch(function () { return null; }),
+        api('/api/marcas').catch(function () { return []; }),
+        api('/api/categorias').catch(function () { return []; }),
+      ]);
+    } catch (e) { return; }
+    if (!res[0]) return;
+    var sig = catSignature(res[0], res[1], res[2]);
+    if (sig === __catSig) return;
+    __catSig = sig;
+    // El grid legacy (catalogo.html) se repinta con syncCatalog; el catalogo
+    // moderno (index y los index por rol) se recarga con su propia funcion.
+    if (typeof window.__unReloadCatalog === 'function') {
+      try { await window.__unReloadCatalog(); } catch (e) {}
+      return;
+    }
+    if (typeof PRODUCTS_DATA !== 'undefined' && document.getElementById('catalog-grid')) {
+      await syncCatalog(res[0]);
+    }
   }
   function watchCatalog() {
-    if (typeof PRODUCTS_DATA === 'undefined') return;
-    if (!document.getElementById('catalog-grid')) return;
+    if (typeof PRODUCTS_DATA === 'undefined' && !window.__unReloadCatalog) return;
     if (__catWatch) return;
     __catWatch = true;
     try {
@@ -758,15 +778,20 @@
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) checkCatalog();
     });
-    setInterval(checkCatalog, 30000);
+    if (__catPoll) clearInterval(__catPoll);
+    __catPoll = setInterval(checkCatalog, 30000);
   }
   // Lo llama el admin tras crear/editar/eliminar para avisar a las demas pestanas.
+  // Reutiliza un unico canal: antes creaba uno nuevo en cada llamada y lo
+  // abandonaba sin cerrar, dejando canales huerfanos acumulados en la pestana.
   function notifyCatalog() {
     try { localStorage.setItem('unidos_catalog_ping', String(Date.now())); } catch (e) {}
     try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        (new BroadcastChannel('unidos-catalogo')).postMessage({ t: Date.now() });
+      if (typeof BroadcastChannel === 'undefined') return;
+      if (!__catNotifyBC) {
+        try { __catNotifyBC = new BroadcastChannel('unidos-catalogo'); } catch (e) { __catNotifyBC = null; }
       }
+      if (__catNotifyBC) __catNotifyBC.postMessage({ t: Date.now() });
     } catch (e) {}
   }
 
@@ -1839,7 +1864,7 @@
       if (location.pathname !== '/index.html') location.replace('/index.html');
     }
   });
-  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
+  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
   // NOTA: cada diseno conserva su comportamiento original; el conector solo
   // reescribe enlaces, refleja sesion y sincroniza tema/accesibilidad global.
   wrapTextApis();

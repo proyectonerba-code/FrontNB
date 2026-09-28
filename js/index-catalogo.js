@@ -812,11 +812,10 @@
       if (!activeBrand) return;
       sizeDrawer();
     });
-    try {
-      if (typeof BroadcastChannel !== 'undefined') {
-        new BroadcastChannel('unidos-catalogo').onmessage = function () { load(); };
-      }
-    } catch (e) {}
-    window.addEventListener('storage', function (e) { if (e && e.key === 'unidos_catalog_ping') load(); });
-    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+    // Antes este archivo montaba su propio BroadcastChannel y su propio listener
+    // de storage, y reload() en cada borrado. Eso dejaba el canal abierto para
+    // siempre y hacia reload() sin consultar nada, asi que recargaba siempre. Se
+    // delega en el watcher de unidos.js, que compara una firma de productos,
+    // marcas y categorias y solo repinta cuando algo cambio de verdad.
+    try { if (UN && UN.watchCatalog) UN.watchCatalog(); } catch (e) {}
   })();

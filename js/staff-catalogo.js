@@ -55,9 +55,13 @@
       document.head.appendChild(st);
     }
   } catch (e) {}
+  // Tras crear/editar/borrar: repinta el catalogo local, avisa a las demas
+  // pestanas y recalcula la firma del watcher. Sin esto, la firma quedaba con
+  // el valor viejo y la proxima actualizacion externa volvia a pintar dos veces.
   function reload() {
     try { if (typeof window.__unReloadCatalog === 'function') window.__unReloadCatalog(); } catch (e) {}
     try { if (UN.notifyCatalog) UN.notifyCatalog(); } catch (e) {}
+    try { if (UN.checkCatalog) UN.checkCatalog(); } catch (e) {}
   }
   try {
     var pills = document.getElementById('category-cards-nav');
