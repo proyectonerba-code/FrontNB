@@ -1,0 +1,10 @@
+# Grupo NERBA HIDALGO - Frontend en Netlify (sitio estático, sin build)
+[build]
+  publish = "."
+
+# Seguridad básica en headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
