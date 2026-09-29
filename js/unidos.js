@@ -1033,17 +1033,70 @@
         }
       }
     } catch (e) { /* sin sesion: nada */ }
-  // "Olvidaste tu contrasena": mensaje claro (sin correo SMTP en el proyecto).
-  // El aviso usa el correo real de la empresa: antes citaba
-  // contacto@unidosnerba.mx, que no existe, y el mensaje se perdia.
+  // "Olvidaste tu contrasena": pide el correo y el backend manda el enlace.
+  // Antes era un alert con el telefono de la empresa. Guarda de idempotencia
+  // porque rewriteLinks() se llama mas de una vez por pagina.
   document.querySelectorAll('a[href="#recuperar"]').forEach(function (a) {
     if (a._unRecuperar) return;
     a._unRecuperar = true;
     a.addEventListener('click', function (e) {
       e.preventDefault();
-      alert('Para restablecer tu contrasena, escribe a gruponerba@hotmail.com o llama al 775 130 0335 (Tulancingo) / 771 219 8250 (Pachuca) con tu correo y telefono registrados.');
+      openRecuperar();
     });
   });
+  }
+
+  var __recModal = null;
+  function openRecuperar() {
+    if (__recModal && document.body.contains(__recModal)) { __recModal.style.display = 'flex'; return; }
+    var w = document.createElement('div');
+    w.setAttribute('role', 'dialog');
+    w.setAttribute('aria-modal', 'true');
+    w.setAttribute('aria-label', 'Recuperar contrasena');
+    w.style.cssText = 'position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(11,28,48,.55)';
+    w.innerHTML =
+      '<div style="background:#ffffff;border-radius:16px;max-width:420px;width:100%;padding:26px;box-shadow:0 24px 60px rgba(11,28,48,.28);font-family:Inter,system-ui,sans-serif">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin:0 0 10px">' +
+      '<span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:#eff4ff;color:#b0000b;flex:none">' +
+      '<span class="material-symbols-outlined" style="font-size:22px">lock_reset</span></span>' +
+      '<h3 style="font-family:\'Plus Jakarta Sans\',Inter,sans-serif;font-weight:800;font-size:20px;margin:0;color:#0b1c30">Recuperar contraseña</h3></div>' +
+      '<p style="font-size:14px;line-height:1.6;color:#575e70;margin:0 0 16px">Escribe el correo con el que te registraste y te enviamos un enlace para cambiar tu contraseña.</p>' +
+      '<input id="__recMail" type="email" required placeholder="usuario@nerba.mx" autocomplete="email" ' +
+      'style="width:100%;height:46px;padding:0 14px;border:1px solid #d3e4fe;border-radius:8px;background:#f8f9ff;font-size:14px;color:#0b1c30;margin-bottom:12px;box-sizing:border-box">' +
+      '<p id="__recMsg" style="display:none;font-size:13px;line-height:1.5;border-radius:8px;padding:10px 12px;margin:0 0 12px"></p>' +
+      '<div style="display:flex;gap:10px">' +
+      '<button id="__recCancel" type="button" style="flex:1;height:46px;border-radius:8px;border:1px solid #d3e4fe;background:#eff4ff;color:#0b1c30;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>' +
+      '<button id="__recGo" type="button" style="flex:1.4;height:46px;border-radius:8px;border:0;background:#b0000b;color:#ffffff;font-weight:700;font-size:14px;cursor:pointer">Enviame el enlace</button>' +
+      '</div></div>';
+    document.body.appendChild(w);
+    __recModal = w;
+    var mail = w.querySelector('#__recMail');
+    var msg = w.querySelector('#__recMsg');
+    var go = w.querySelector('#__recGo');
+    var cerrar = function () { w.style.display = 'none'; };
+    w.addEventListener('click', function (e) { if (e.target === w) cerrar(); });
+    w.querySelector('#__recCancel').addEventListener('click', cerrar);
+    function avisar(txt, ok) {
+      msg.textContent = txt;
+      msg.style.cssText = 'display:block;font-size:13px;line-height:1.5;border-radius:8px;padding:10px 12px;margin:0 0 12px;background:' +
+        (ok ? '#eff4ff;color:#0b1c30' : '#ffdad6;color:#93000a');
+    }
+    go.addEventListener('click', function () {
+      var v = String(mail.value || '').trim();
+      if (!v || v.indexOf('@') < 1) { avisar('Escribe un correo válido.', false); return; }
+      go.disabled = true; go.textContent = 'Enviando...';
+      // api() lanza excepcion cuando la respuesta no es 2xx, asi que el 503
+      // "no disponible" o el 429 de rate limit llegan por el catch.
+      api('/api/recuperar', { method: 'POST', body: { email: v } }).then(function (r) {
+        avisar((r && r.mensaje) || 'Si ese correo está registrado, te enviamos un enlace.', true);
+        go.textContent = 'Listo';
+        setTimeout(cerrar, 3200);
+      }).catch(function (e) {
+        avisar((e && e.message) || 'No pudimos enviar el correo. Intenta de nuevo.', false);
+        go.disabled = false; go.textContent = 'Enviame el enlace';
+      });
+    });
+    try { mail.focus(); } catch (e) {}
   }
 
   // Mini-menu del perfil: "Mi perfil y configuracion" + "Cerrar sesion".

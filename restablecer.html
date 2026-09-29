@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html class="" lang="es" style="color-scheme: light;"><head>
+<script src="js/tema-oscuro.js?v=3.8"></script>
+<link rel="stylesheet" href="css/tema-oscuro-razor.css?v=3.0" data-razor-dark="1">
+<meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Restablecer contraseña | GRUPO NERBA HIDALGO</title>
+<link rel="icon" type="image/svg+xml" href="/assets/nerba-isotipo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:auto;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode": "class", "theme": {"extend": {"colors": {"on-tertiary": "#ffffff", "secondary-container": "#d9dff5", "on-secondary-container": "#5c6274", "on-tertiary-fixed": "#00174b", "surface-container": "#e5eeff", "tertiary-fixed": "#dbe1ff", "on-surface-variant": "#5d3f3b", "surface-tint": "#c0000d", "on-primary-fixed": "#410001", "surface-container-low": "#eff4ff", "surface": "#f8f9ff", "inverse-primary": "#ffb4aa", "surface-bright": "#f8f9ff", "on-surface": "#0b1c30", "outline-variant": "#e7bdb7", "secondary-fixed-dim": "#c0c6db", "surface-container-highest": "#d3e4fe", "secondary-fixed": "#dce2f7", "tertiary": "#004bc8", "primary-container": "#d91b1b", "on-secondary-fixed": "#141b2b", "background": "#f8f9ff", "surface-dim": "#cbdbf5", "error-container": "#ffdad6", "on-error-container": "#93000a", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-surface": "#213145", "outline": "#926f6a", "inverse-on-surface": "#eaf1ff", "primary": "#b0000b", "surface-variant": "#d3e4fe", "on-surface-variant-light": "#5d3f3b", "secondary": "#575e70", "on-background": "#0b1c30", "error": "#ba1a1a", "on-secondary": "#ffffff", "on-primary-container": "#ffeeec", "primary-fixed-dim": "#ffdad5", "on-primary-fixed-variant": "#ffdad6"}, "borderRadius": {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"}, "spacing": {"margin-tablet": "2rem", "container-max": "80rem", "margin-mobile": "1rem", "gutter-lg": "1.5rem", "gutter-xl": "2rem", "margin-desktop": "4rem", "gutter-sm": "0.5rem", "gutter-md": "1rem"}, "fontFamily": {"label-md": ["Inter"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "headline-xl": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "label-caps": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "label-lg": ["Inter"]}, "fontSize": {"label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}], "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}], "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "700"}], "headline-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "label-caps": ["11px", {"lineHeight": "14px", "letterSpacing": "0.06em", "fontWeight": "700"}], "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}], "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}], "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}], "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.025em", "fontWeight": "800"}], "display-lg-mobile": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "800"}], "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}]}}};</script><style class="">@keyframes fadeInSlideUp { 0% { opacity: 0; transform: translateY(16px); } 100% { opacity: 1; transform: translateY(0); } }</style></head>
+<body class="bg-background font-body-md text-on-surface antialiased min-h-screen flex flex-col">
+<main class="w-full max-w-xl m-auto bg-surface-container-lowest rounded-xl shadow-[0_10px_25px_-5px_rgba(11,28,48,0.08)] p-gutter-xl" style="animation: 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0s 1 normal forwards running fadeInSlideUp;">
+<div class="flex flex-col w-full">
+<div class="relative w-full flex flex-col items-center">
+<div class="absolute -top-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+
+<!-- 1. Verificando el enlace -->
+<div id="st-cargando" class="flex flex-col w-full">
+  <div class="flex flex-col items-center text-center mb-gutter-lg">
+    <div class="w-10 h-10 border-[3px] border-surface-container-highest border-t-primary rounded-full animate-spin"></div>
+  </div>
+  <div class="text-center w-full max-w-md">
+    <h1 class="font-headline-md text-headline-md text-on-surface">Verificando el enlace</h1>
+    <p class="font-body-sm text-body-sm text-secondary mt-1">Un momento, estamos comprobando tu código.</p>
+  </div>
+</div>
+
+<!-- 2. Enlace inválido -->
+<div id="st-error" class="hidden flex flex-col w-full">
+  <div class="flex flex-col items-center text-center mb-gutter-lg">
+    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-error-container text-error mb-3">
+      <span class="material-symbols-outlined text-[32px]">link_off</span>
+    </div>
+  </div>
+  <div class="text-center w-full max-w-md">
+    <h1 class="font-headline-md text-headline-md text-on-surface">Este enlace no sirve</h1>
+    <p id="txt-error" class="font-body-sm text-body-sm text-secondary mt-1">El enlace venció o ya se usó.</p>
+  </div>
+  <div class="pt-4">
+    <button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20" id="btnReintentar" type="button">
+      <span class="material-symbols-outlined text-[20px]">refresh</span>
+      <span>Pedir un enlace nuevo</span>
+    </button>
+  </div>
+</div>
+
+<!-- 3. Formulario -->
+<div id="st-form" class="hidden flex flex-col w-full">
+  <div class="flex flex-col items-center text-center mb-gutter-lg">
+    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-surface-container-low shadow-sm mb-3">
+      <svg aria-label="Nerba Logo" class="w-10 h-10 text-primary fill-current" viewBox="0 0 100 100">
+        <rect height="80" rx="2" width="5" x="47.5" y="10"></rect>
+        <polygon points="34,14 43,26 43,74 34,86"></polygon>
+        <polygon points="18,16 30,30 30,70 18,84"></polygon>
+        <polygon points="66,14 57,26 57,74 66,86"></polygon>
+        <polygon points="82,16 70,30 70,70 82,84"></polygon>
+      </svg>
+    </div>
+  </div>
+  <div class="text-center mb-gutter-lg w-full max-w-md">
+    <h1 class="font-headline-xl text-headline-xl text-on-surface">Cambia tu contraseña</h1>
+    <p class="font-body-sm text-body-sm text-secondary mt-1">Elige una contraseña nueva para tu cuenta.</p>
+  </div>
+  <form class="w-full space-y-4" id="formReset" onsubmit="return false;">
+    <div class="flex items-center gap-2 px-4 py-3 rounded-lg bg-surface-container-low border border-surface-container">
+      <span class="material-symbols-outlined text-[20px] text-secondary">alternate_email</span>
+      <div class="min-w-0">
+        <p class="font-label-caps text-label-caps uppercase tracking-widest text-secondary">Cuenta</p>
+        <p class="font-label-md text-label-md text-on-surface truncate" id="txt-email">—</p>
+      </div>
+    </div>
+    <div class="flex flex-col space-y-1.5 text-left">
+      <label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np1">
+        <span>Contraseña nueva</span>
+      </label>
+      <div class="relative flex items-center">
+        <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">lock</span>
+        <input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np1" minlength="6" placeholder="Mínimo 6 caracteres" required="" type="password">
+        <button aria-label="Mostrar o esconder contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle1" type="button"><span class="material-symbols-outlined text-[20px]" id="eye1">visibility</span></button>
+      </div>
+    </div>
+    <div class="flex flex-col space-y-1.5 text-left">
+      <label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np2">
+        <span>Repite la contraseña</span>
+      </label>
+      <div class="relative flex items-center">
+        <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">lock</span>
+        <input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np2" minlength="6" placeholder="Vuelve a escribirla" required="" type="password">
+        <button aria-label="Mostrar o esconder contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle2" type="button"><span class="material-symbols-outlined text-[20px]" id="eye2">visibility</span></button>
+      </div>
+    </div>
+    <p id="txt-err" class="hidden font-body-sm text-body-sm text-error bg-error-container rounded-lg px-3 py-2"></p>
+    <div class="pt-2">
+      <button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0" id="btnGuardar" type="submit">
+        <span>Guardar contraseña</span>
+        <span class="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
+      </button>
+    </div>
+  </form>
+  <div class="pt-4 text-center">
+    <p class="font-body-sm text-body-sm text-secondary">
+      ¿Lo olvidaste otra vez?
+      <a class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold ml-1 underline decoration-primary/30 underline-offset-4 hover:decoration-primary transition-all" href="login.html#recuperar">Pedir otro enlace</a>
+    </p>
+  </div>
+</div>
+
+<!-- 4. Listo -->
+<div id="st-ok" class="hidden flex flex-col w-full">
+  <div class="flex flex-col items-center text-center mb-gutter-lg">
+    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-primary-container/15 text-primary mb-3">
+      <span class="material-symbols-outlined text-[32px]">check_circle</span>
+    </div>
+  </div>
+  <div class="text-center w-full max-w-md">
+    <h1 class="font-headline-md text-headline-md text-on-surface">Contraseña actualizada</h1>
+    <p class="font-body-sm text-body-sm text-secondary mt-1">Por seguridad cerramos las demás sesiones abiertas. Ya puedes entrar con la nueva contraseña.</p>
+  </div>
+  <div class="pt-4">
+    <a class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200" href="login.html">
+      <span class="material-symbols-outlined text-[20px]">login</span>
+      <span>Ir a iniciar sesión</span>
+    </a>
+  </div>
+</div>
+
+<div class="pt-6 text-center">
+  <a class="inline-flex items-center gap-1.5 font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="login.html">
+    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+    <span>Volver al inicio de sesión</span>
+  </a>
+</div>
+</div>
+</div>
+</main>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=5.8"></script>
+<script>
+(function () {
+  var token = new URLSearchParams(location.search).get('token') || '';
+  var API = window.__NERBA_API || localStorage.getItem('unidos_api') || '';
+  var btn = document.getElementById('btnGuardar');
+
+  function mostrar(id) {
+    ['st-cargando', 'st-error', 'st-form', 'st-ok'].forEach(function (x) {
+      document.getElementById(x).classList.toggle('hidden', x !== id);
+    });
+  }
+  function api(p, b) {
+    return fetch(API + p, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(b || {}),
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    });
+  }
+  function fallo(msg) {
+    var e = document.getElementById('txt-error');
+    e.textContent = msg;
+    mostrar('st-error');
+  }
+
+  // Ojo de mostrar contraseña, igual que en el login.
+  [[ 'toggle1', 'eye1', 'np1' ], [ 'toggle2', 'eye2', 'np2' ]].forEach(function (t) {
+    document.getElementById(t[0]).addEventListener('click', function () {
+      var inp = document.getElementById(t[2]);
+      var icon = document.getElementById(t[1]);
+      var ver = inp.type === 'password';
+      inp.type = ver ? 'text' : 'password';
+      icon.textContent = ver ? 'visibility_off' : 'visibility';
+    });
+  });
+
+  document.getElementById('btnReintentar').addEventListener('click', function () {
+    location.href = 'login.html#recuperar';
+  });
+
+  if (!token) { fallo('Falta el código del enlace. Pide uno nuevo.'); return; }
+  api('/api/restablecer/verificar', { token: token }).then(function (r) {
+    if (!r.ok) { fallo((r.j && r.j.error) || 'El enlace venció o ya se usó.'); return; }
+    document.getElementById('txt-email').textContent = r.j.email;
+    mostrar('st-form');
+  }).catch(function () { fallo('No pudimos verificar el enlace. Revisa tu conexión.'); });
+
+  document.getElementById('formReset').addEventListener('submit', function () {
+    var p1 = document.getElementById('np1').value;
+    var p2 = document.getElementById('np2').value;
+    var err = document.getElementById('txt-err');
+    err.classList.add('hidden');
+    if (p1.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres.'; err.classList.remove('hidden'); return; }
+    if (p1 !== p2) { err.textContent = 'Las contraseñas no coinciden.'; err.classList.remove('hidden'); return; }
+    btn.disabled = true; btn.querySelector('span').textContent = 'Guardando…';
+    api('/api/restablecer', { token: token, password: p1 }).then(function (r) {
+      if (!r.ok) {
+        err.textContent = (r.j && r.j.error) || 'No se pudo cambiar la contraseña.';
+        err.classList.remove('hidden');
+        btn.disabled = false; btn.querySelector('span').textContent = 'Guardar contraseña';
+        return;
+      }
+      mostrar('st-ok');
+    }).catch(function () {
+      err.textContent = 'No pudimos guardar la contraseña. Intenta de nuevo.';
+      err.classList.remove('hidden');
+      btn.disabled = false; btn.querySelector('span').textContent = 'Guardar contraseña';
+    });
+  });
+})();
+</script>
+<script src="/js/transicion.js?v=1.0"></script>
+</body></html>
