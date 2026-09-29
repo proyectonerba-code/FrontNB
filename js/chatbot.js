@@ -142,7 +142,7 @@
   function answer(q) {
     var t = (q || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     function has() { for (var i = 0; i < arguments.length; i++) if (t.indexOf(arguments[i]) >= 0) return true; return false; }
-    if (!t.trim()) return 'Cuéntame qué necesitas: cerco eléctrico, CCTV, alarma, portón o una <strong>cotización</strong>.';
+    if (!t.trim()) return 'Cuéntame qué necesitas: cerco eléctrico, videovigilancia, alarma, portón o una <strong>cotización</strong>.';
     if (has('poste', 'altura', 'muro', '2.6', '2,6', 'cerco electrico', 'cercas'))
       return 'Para un muro de <strong>2.60 m</strong>, conforme a la norma <span class="nb-red">IEC 60335-2-76</span>, el primer hilo debe iniciar a no menos de 2.00 m del suelo. Se recomiendan <strong>postes de 1.00–1.20 m</strong> con 6 líneas de alambre acerado galvanizado.';
     if (has('calibre', 'cable', '420', 'metros', 'metraje', 'alambre'))
@@ -150,7 +150,7 @@
     if (has('energizador', 'iec', 'electrificador', 'volts', 'voltaje', 'pulso'))
       return 'Los energizadores homologados <span class="nb-red">IEC 60335-2-76</span> entregan pulsos regulados de <strong>10,000–14,000 V</strong> no letales, con alerta inmediata ante corte o sabotaje. Dime tus metros lineales y te sugiero la potencia (joules) adecuada.';
     if (has('cctv', 'camara', 'camaras', 'dvr', 'nvr', 'ptz', 'videovigilancia'))
-      return 'En <strong>CCTV</strong> manejamos kits 4K con IA (detección de personas/vehículos) y PTZ 360° para fincas e industrias. Explora el <a href="/index.html#seccion-catalogo">catálogo</a> y dime cuántas cámaras y qué distancia necesitas cubrir.';
+      return 'En <strong>Videovigilancia</strong> manejamos kits 4K con IA (detección de personas/vehículos) y PTZ 360° para fincas e industrias. Explora el <a href="/index.html#seccion-catalogo">catálogo</a> y dime cuántas cámaras y qué distancia necesitas cubrir.';
     if (has('alarma', 'sensor', 'sirena', 'movimiento', 'intrusion'))
       return 'Las <strong>alarmas WiFi/4G</strong> avisan directo a tu smartphone, con sensores inmunes a mascotas y respaldo 4G ante cortes. ¿Es para casa, local o bodega? Así te dimensiono el kit.';
     if (has('porton', 'portones', 'motor', 'automatizacion', 'cochera', 'corredizo'))
@@ -165,7 +165,7 @@
       return '¡Hasta luego! El chat queda aquí abajo cuando lo necesites. <strong>Grupo NERBA HIDALGO</strong> · Ingeniería 24/7.';
     if (has('hola', 'buenas', 'buenos dias', 'buenas tardes', 'que tal', 'saludos'))
       return '¡Hola <strong>' + esc(userName) + '</strong>! Soy <span class="nb-red">NerBot</span>, tu asesor de ingeniería y cotización de <strong>Grupo NERBA HIDALGO</strong>. ¿Te ayudo con dimensionamiento perimetral o equipos homologados?';
-    return 'Entendido. Para darte la recomendación exacta dime: <strong>1)</strong> tipo de inmueble, <strong>2)</strong> metros a proteger y <strong>3)</strong> si buscas cerco, CCTV, alarma o portón. También puedes ir directo al <a href="/cotizador.html">cotizador</a>.';
+    return 'Entendido. Para darte la recomendación exacta dime: <strong>1)</strong> tipo de inmueble, <strong>2)</strong> metros a proteger y <strong>3)</strong> si buscas cerco, videovigilancia, alarma o portón. También puedes ir directo al <a href="/cotizador.html">cotizador</a>.';
   }
 
   function botReply(q) {

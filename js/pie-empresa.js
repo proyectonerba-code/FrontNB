@@ -15,7 +15,7 @@
 
   var DATOS = {
     razon: 'GRUPO EMPRESARIAL NERBA, S.A. DE C.V.',
-    giro: 'Automatización • Seguridad electrónica • CCTV • Control de acceso • Puertas automáticas • Cercos eléctricos',
+    giro: 'Automatización • Seguridad electrónica • Videovigilancia • Control de acceso • Puertas automáticas • Cercos eléctricos',
     direccion: 'Los Pinos No. 112-B, Col. El Cerezo, C.P. 43669, Tulancingo de Bravo, Hidalgo, México',
     tulancingo: '775 130 0335',
     pachuca: '771 219 8250',

@@ -252,7 +252,7 @@ Sistemas completos de seguridad: videovigilancia, alarmas, control de accesos y 
 <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
 <div>
 <h2 class="font-headline-xl text-headline-xl text-neutral-900 font-extrabold uppercase tracking-tight">
-SERVICIOS DE SEGURIDAD
+SERVICIOS GENERALES
 </h2>
 </div>
 <a class="inline-flex items-center gap-1.5 text-neutral-700 hover:text-primary-container font-label-md uppercase tracking-wider text-sm font-semibold transition-colors" href="#">
@@ -260,8 +260,11 @@ SERVICIOS DE SEGURIDAD
 <span class="text-primary-container font-bold">&gt;</span>
 </a>
 </div>
+<!-- Carrusel de servicios. Los tiles de abajo son el respaldo si el JS no corre
+     o la API no responde: si /api/servicios falla, se quedan tal cual. -->
+<div id="servicios-carousel" class="relative" data-servicios-carousel>
 <!-- 3 Columnas en Modo Claro -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6" id="servicios-track">
 <!-- Tile 1 -->
 <div class="group bg-neutral-50 hover:bg-white border border-neutral-200 hover:border-primary-container rounded-xl flex flex-col justify-between transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md">
 <div class="p-8 text-left">
@@ -324,6 +327,8 @@ Alarma conectada a nuestra central: si ocurre algo, alguien atiende y avisa de i
 <div class="w-full h-72 overflow-hidden bg-neutral-100 border-t border-neutral-200">
 <img alt="Placa de vigilancia de Grupo Nerba" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/aida/AEtjO1Uut9wvbUg9emljm4z98wTb2L8z0n-yEvwbGQ-mtL3FiACOmBZC6id3vGQfF6CFBG32ACtk-HEVg4fUzMUljZcy-xczGGZ3Ajm54wJAA_muBjBAc-r2H-lV05l5C-Oir_OVnIXd9kmoHDH9TwSoPXZB89oyng2VQCkxb3usc4Utg3TsEEdGXNAsxkd3pcEjyT_3JKXYxOqpyou5NXXFQWGdx1p_GZb78NqB1kwY2xgIxSG4HGqsQ6gqf7GJ'" src="/assets/servicios/servicios-alarma.jpeg">
 </div>
+</div>
+<!-- Controles del carrusel: los inyecta js/servicios-carrusel.js -->
 </div>
 </div>
 </div>
@@ -601,6 +606,8 @@ function closeCatalogDrawer() {
 <script src="/js/carrito-cotizacion.js?v=1.0"></script>
 <script src="/js/index-catalogo.js?v=2.9"></script>
 <script src="/js/staff-catalogo.js?v=2.7"></script>
+<script src="/js/servicios-carrusel.js?v=1.0"></script>
+<script src="/js/staff-servicios.js?v=1.0"></script>
 <script src="/js/chatbot.js?v=2.3"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script><script>
