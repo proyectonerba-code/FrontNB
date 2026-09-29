@@ -750,6 +750,10 @@
     } catch (e) { return; }
     if (!res[0]) return;
     var sig = catSignature(res[0], res[1], res[2]);
+    // La primera pasada solo deja anotada la linea base. La pagina acaba de
+    // cargar y ya pinto con estos datos, asi que recargarla aqui seria un
+    // segundo fetch inutil en cada visita.
+    if (__catSig === null) { __catSig = sig; return; }
     if (sig === __catSig) return;
     __catSig = sig;
     // El grid legacy (catalogo.html) se repinta con syncCatalog; el catalogo
