@@ -15,7 +15,10 @@
   function waLink(tel, text) {
     var n = String(tel || '').replace(/\D/g, '');
     if (n && n[0] !== '5') n = '52' + n;
-    if (!n) n = '51987654321';
+    // Antes caia en 51987654321, un numero de ejemplo de Peru: cuando la
+    // cotizacion no trae telefono, el boton mandaba el mensaje a un numero
+    // inventado. Ahora cae al telefono de la empresa en Tulancingo.
+    if (!n) n = '527751300335';
     return 'https://wa.me/' + n + '?text=' + encodeURIComponent(text || ('Hola, le escribe el administrador de ' + (UN.brand && UN.brand.name || 'Grupo NERBA HIDALGO') + '.'));
   }
   // Pinta el usuario real donde el diseno trae demo. Solo nodos de texto.

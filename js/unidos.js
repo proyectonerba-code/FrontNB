@@ -1033,13 +1033,17 @@
         }
       }
     } catch (e) { /* sin sesion: nada */ }
-    // "Olvidaste tu contrasena": mensaje claro (demo local sin correo SMTP)
-    document.querySelectorAll('a[href="#recuperar"]').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        alert('Para restablecer tu contraseña escríbenos a contacto@unidosnerba.mx o pide apoyo al administrador en esta demo local.');
-      });
+  // "Olvidaste tu contrasena": mensaje claro (sin correo SMTP en el proyecto).
+  // El aviso usa el correo real de la empresa: antes citaba
+  // contacto@unidosnerba.mx, que no existe, y el mensaje se perdia.
+  document.querySelectorAll('a[href="#recuperar"]').forEach(function (a) {
+    if (a._unRecuperar) return;
+    a._unRecuperar = true;
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      alert('Para restablecer tu contrasena, escribe a gruponerba@hotmail.com o llama al 775 130 0335 (Tulancingo) / 771 219 8250 (Pachuca) con tu correo y telefono registrados.');
     });
+  });
   }
 
   // Mini-menu del perfil: "Mi perfil y configuracion" + "Cerrar sesion".

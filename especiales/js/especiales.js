@@ -25,7 +25,9 @@
   function waLink(tel, text) {
     var n = String(tel || '').replace(/\D/g, '');
     if (n && n[0] !== '5') n = '52' + n;
-    if (!n) n = '51987654321';
+    // Antes caia en 51987654321, un numero de ejemplo de Peru. Sin telefono
+    // registrado el mensaje debe llegar a la empresa, no a un numero inventado.
+    if (!n) n = '527751300335';
     return 'https://wa.me/' + n + '?text=' + encodeURIComponent(text || 'Hola, coordinamos su proyecto especial.');
   }
   // slug de tipologia para el filtro de solicitudes (perimetral/cctv/accesos/automatizacion/general)
