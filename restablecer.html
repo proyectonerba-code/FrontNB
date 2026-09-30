@@ -9,125 +9,153 @@
 <body class="bg-background font-body-md text-on-surface antialiased min-h-screen flex flex-col">
 <main class="w-full max-w-xl m-auto bg-surface-container-lowest rounded-xl shadow-[0_10px_25px_-5px_rgba(11,28,48,0.08)] p-gutter-xl" style="animation: 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0s 1 normal forwards running fadeInSlideUp;">
 <div class="flex flex-col w-full">
+<!-- Identidad de marca, igual que en login.html: visible en todos los estados -->
 <div class="relative w-full flex flex-col items-center">
 <div class="absolute -top-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-surface-container-low shadow-sm mb-3">
+<svg aria-label="Nerba Logo" class="w-10 h-10 text-primary fill-current" viewBox="0 0 100 100">
+<rect height="80" rx="2" width="5" x="47.5" y="10"></rect>
+<polygon points="34,14 43,26 43,74 34,86"></polygon>
+<polygon points="18,16 30,30 30,70 18,84"></polygon>
+<polygon points="66,14 57,26 57,74 66,86"></polygon>
+<polygon points="82,16 70,30 70,70 82,84"></polygon>
+</svg>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md tracking-wider uppercase text-on-surface font-extrabold">Grupo NERBA HIDALGO</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full bg-surface-container text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-caps text-label-caps tracking-widest uppercase">Grupo empresarial Nerba s.a de c.v</span>
+</div>
+</div>
 
-<!-- 1. Verificando el enlace -->
+<!-- ===== 1. Verificando ===== -->
 <div id="st-cargando" class="flex flex-col w-full">
-  <div class="flex flex-col items-center text-center mb-gutter-lg">
-    <div class="w-10 h-10 border-[3px] border-surface-container-highest border-t-primary rounded-full animate-spin"></div>
-  </div>
-  <div class="text-center w-full max-w-md">
-    <h1 class="font-headline-md text-headline-md text-on-surface">Verificando el enlace</h1>
-    <p class="font-body-sm text-body-sm text-secondary mt-1">Un momento, estamos comprobando tu código.</p>
-  </div>
+<div class="flex flex-col items-center text-center mt-gutter-lg mb-gutter-lg">
+<div class="w-12 h-12 border-[3px] border-surface-container border-t-primary rounded-full animate-spin"></div>
+</div>
+<div class="text-center w-full max-w-md">
+<h1 class="font-headline-md text-headline-md text-on-surface">Verificando el enlace</h1>
+<p class="font-body-sm text-body-sm text-secondary mt-1">Un momento, estamos comprobando tu código.</p>
+</div>
 </div>
 
-<!-- 2. Enlace inválido -->
+<!-- ===== 2. El enlace no sirve ===== -->
 <div id="st-error" class="hidden flex flex-col w-full">
-  <div class="flex flex-col items-center text-center mb-gutter-lg">
-    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-error-container text-error mb-3">
-      <span class="material-symbols-outlined text-[32px]">link_off</span>
-    </div>
-  </div>
-  <div class="text-center w-full max-w-md">
-    <h1 class="font-headline-md text-headline-md text-on-surface">Este enlace no sirve</h1>
-    <p id="txt-error" class="font-body-sm text-body-sm text-secondary mt-1">El enlace venció o ya se usó.</p>
-  </div>
-  <div class="pt-4">
-    <button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20" id="btnReintentar" type="button">
-      <span class="material-symbols-outlined text-[20px]">refresh</span>
-      <span>Pedir un enlace nuevo</span>
-    </button>
-  </div>
+<div class="flex flex-col items-center text-center mt-gutter-lg mb-gutter-lg">
+<div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-error-container text-error">
+<span class="material-symbols-outlined text-[34px]">link_off</span>
+</div>
+</div>
+<div class="text-center w-full max-w-md">
+<h1 class="font-headline-md text-headline-md text-on-surface">Este enlace no sirve</h1>
+<p id="txt-error" class="font-body-sm text-body-sm text-secondary mt-1">El enlace venció o ya se usó.</p>
+</div>
+<div class="pt-6">
+<button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20" id="btnReintentar" type="button">
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:rotate-180">refresh</span>
+<span>Pedir un enlace nuevo</span>
+</button>
+</div>
+<div class="relative flex items-center justify-center my-6">
+<div class="w-full h-px bg-surface-container-highest"></div>
+<span class="absolute px-3 bg-surface-container-lowest font-label-caps text-label-caps uppercase tracking-wider text-secondary">o</span>
+</div>
+<a class="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all duration-200 shadow-sm hover:shadow hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-secondary/20" href="https://wa.me/527751300335" target="_blank" rel="noopener">
+<span class="material-symbols-outlined text-[20px] text-primary">support_agent</span>
+<span>Hablar con un asesor</span>
+</a>
+<p class="pt-3 text-center font-label-md text-label-md text-secondary">WhatsApp 527 751 300 335 &middot; 775 130 0335</p>
 </div>
 
-<!-- 3. Formulario -->
+<!-- ===== 3. Formulario ===== -->
 <div id="st-form" class="hidden flex flex-col w-full">
-  <div class="flex flex-col items-center text-center mb-gutter-lg">
-    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-surface-container-low shadow-sm mb-3">
-      <svg aria-label="Nerba Logo" class="w-10 h-10 text-primary fill-current" viewBox="0 0 100 100">
-        <rect height="80" rx="2" width="5" x="47.5" y="10"></rect>
-        <polygon points="34,14 43,26 43,74 34,86"></polygon>
-        <polygon points="18,16 30,30 30,70 18,84"></polygon>
-        <polygon points="66,14 57,26 57,74 66,86"></polygon>
-        <polygon points="82,16 70,30 70,70 82,84"></polygon>
-      </svg>
-    </div>
-  </div>
-  <div class="text-center mb-gutter-lg w-full max-w-md">
-    <h1 class="font-headline-xl text-headline-xl text-on-surface">Cambia tu contraseña</h1>
-    <p class="font-body-sm text-body-sm text-secondary mt-1">Elige una contraseña nueva para tu cuenta.</p>
-  </div>
-  <form class="w-full space-y-4" id="formReset" onsubmit="return false;">
-    <div class="flex items-center gap-2 px-4 py-3 rounded-lg bg-surface-container-low border border-surface-container">
-      <span class="material-symbols-outlined text-[20px] text-secondary">alternate_email</span>
-      <div class="min-w-0">
-        <p class="font-label-caps text-label-caps uppercase tracking-widest text-secondary">Cuenta</p>
-        <p class="font-label-md text-label-md text-on-surface truncate" id="txt-email">—</p>
-      </div>
-    </div>
-    <div class="flex flex-col space-y-1.5 text-left">
-      <label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np1">
-        <span>Contraseña nueva</span>
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">lock</span>
-        <input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np1" minlength="6" placeholder="Mínimo 6 caracteres" required="" type="password">
-        <button aria-label="Mostrar o esconder contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle1" type="button"><span class="material-symbols-outlined text-[20px]" id="eye1">visibility</span></button>
-      </div>
-    </div>
-    <div class="flex flex-col space-y-1.5 text-left">
-      <label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np2">
-        <span>Repite la contraseña</span>
-      </label>
-      <div class="relative flex items-center">
-        <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">lock</span>
-        <input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np2" minlength="6" placeholder="Vuelve a escribirla" required="" type="password">
-        <button aria-label="Mostrar o esconder contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle2" type="button"><span class="material-symbols-outlined text-[20px]" id="eye2">visibility</span></button>
-      </div>
-    </div>
-    <p id="txt-err" class="hidden font-body-sm text-body-sm text-error bg-error-container rounded-lg px-3 py-2"></p>
-    <div class="pt-2">
-      <button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0" id="btnGuardar" type="submit">
-        <span>Guardar contraseña</span>
-        <span class="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
-      </button>
-    </div>
-  </form>
-  <div class="pt-4 text-center">
-    <p class="font-body-sm text-body-sm text-secondary">
-      ¿Lo olvidaste otra vez?
-      <a class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold ml-1 underline decoration-primary/30 underline-offset-4 hover:decoration-primary transition-all" href="login.html#recuperar">Pedir otro enlace</a>
-    </p>
-  </div>
+<div class="text-center mb-gutter-lg w-full max-w-md">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Cambia tu contraseña</h1>
+<p class="font-body-sm text-body-sm text-secondary mt-1">Elige una contraseña nueva para tu cuenta.</p>
+</div>
+<form class="w-full space-y-4" id="formReset" onsubmit="return false;">
+<div class="flex items-center gap-3 px-4 py-3 rounded-lg bg-surface-container-low border border-surface-container/70">
+<span class="material-symbols-outlined text-[22px] text-secondary shrink-0">alternate_email</span>
+<div class="min-w-0 flex-1">
+<p class="font-label-caps text-label-caps uppercase tracking-widest text-secondary">Cuenta</p>
+<p class="font-label-md text-label-md text-on-surface truncate" id="txt-email">—</p>
+</div>
+</div>
+<p id="txt-caduca" class="hidden flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-surface-container/60 text-label-md text-label-md text-secondary"><span class="material-symbols-outlined text-[18px]">timer</span><span id="txt-caduca-txt"></span></p>
+<div class="flex flex-col space-y-1.5 text-left">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np1">
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+<span>Contraseña nueva</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">password</span>
+<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np1" minlength="6" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" type="password">
+<button aria-label="Mostrar contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle1" type="button"><span class="material-symbols-outlined text-[20px]" id="eye1">visibility</span></button>
+</div>
+</div>
+<div class="flex flex-col space-y-1.5 text-left">
+<label class="font-label-md text-label-md text-on-surface flex items-center gap-1" for="np2">
+<span class="material-symbols-outlined text-[16px] text-secondary">lock</span>
+<span>Repite la contraseña</span>
+</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">password</span>
+<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np2" minlength="6" placeholder="Vuelve a escribirla" required autocomplete="new-password" type="password">
+<button aria-label="Mostrar contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle2" type="button"><span class="material-symbols-outlined text-[20px]" id="eye2">visibility</span></button>
+</div>
+</div>
+<div id="barra" class="hidden">
+<div class="flex items-center justify-between font-label-md text-label-md text-secondary mb-1.5">
+<span>Fuerza de la contraseña</span><span id="txt-fuerza">—</span>
+</div>
+<div class="h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+<div id="barra-fill" class="h-full w-0 rounded-full transition-all duration-300 bg-primary"></div>
+</div>
+</div>
+<p id="txt-err" class="hidden font-body-sm text-body-sm text-error bg-error-container rounded-lg px-3 py-2"></p>
+<div class="pt-2">
+<button class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0" id="btnGuardar" type="submit">
+<span>Guardar contraseña</span>
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</form>
+<div class="relative flex items-center justify-center my-6">
+<div class="w-full h-px bg-surface-container-highest"></div>
+<span class="absolute px-3 bg-surface-container-lowest font-label-caps text-label-caps uppercase tracking-wider text-secondary">o</span>
+</div>
+<p class="text-center font-body-sm text-body-sm text-secondary">
+¿Lo olvidaste otra vez?
+<a class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold ml-1 underline decoration-primary/30 underline-offset-4 hover:decoration-primary transition-all" href="login.html#recuperar">Pedir otro enlace</a>
+</p>
 </div>
 
-<!-- 4. Listo -->
+<!-- ===== 4. Listo ===== -->
 <div id="st-ok" class="hidden flex flex-col w-full">
-  <div class="flex flex-col items-center text-center mb-gutter-lg">
-    <div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-primary-container/15 text-primary mb-3">
-      <span class="material-symbols-outlined text-[32px]">check_circle</span>
-    </div>
-  </div>
-  <div class="text-center w-full max-w-md">
-    <h1 class="font-headline-md text-headline-md text-on-surface">Contraseña actualizada</h1>
-    <p class="font-body-sm text-body-sm text-secondary mt-1">Por seguridad cerramos las demás sesiones abiertas. Ya puedes entrar con la nueva contraseña.</p>
-  </div>
-  <div class="pt-4">
-    <a class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200" href="login.html">
-      <span class="material-symbols-outlined text-[20px]">login</span>
-      <span>Ir a iniciar sesión</span>
-    </a>
-  </div>
+<div class="flex flex-col items-center text-center mt-gutter-lg mb-gutter-lg">
+<div class="relative flex items-center justify-center w-16 h-16 rounded-xl bg-primary-container/15 text-primary">
+<span class="material-symbols-outlined text-[34px]">verified_user</span>
+</div>
+</div>
+<div class="text-center w-full max-w-md">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Contraseña actualizada</h1>
+<p class="font-body-sm text-body-sm text-secondary mt-1 leading-relaxed">Por seguridad cerramos las demás sesiones abiertas. Ya puedes entrar con tu nueva contraseña.</p>
+</div>
+<div class="pt-6">
+<a class="relative w-full overflow-hidden flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 hover:bg-primary-container active:scale-[0.99] transition-all duration-200 group" href="login.html">
+<span>Ir a iniciar sesión</span>
+<span class="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:translate-x-1">arrow_forward</span>
+</a>
+</div>
 </div>
 
-<div class="pt-6 text-center">
-  <a class="inline-flex items-center gap-1.5 font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="login.html">
-    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-    <span>Volver al inicio de sesión</span>
-  </a>
-</div>
+<div class="pt-8 text-center">
+<a class="inline-flex items-center gap-1.5 font-label-md text-label-md text-secondary hover:text-on-surface transition-colors" href="login.html">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+<span>Volver al inicio de sesión</span>
+</a>
 </div>
 </div>
 </main>
@@ -177,8 +205,71 @@
   api('/api/restablecer/verificar', { token: token }).then(function (r) {
     if (!r.ok) { fallo((r.j && r.j.error) || 'El enlace venció o ya se usó.'); return; }
     document.getElementById('txt-email').textContent = r.j.email;
+    // Cuenta regresiva con la caducidad real que devuelve el servidor. Antes la
+    // pagina no avisaba de que el enlace tiene fecha de fin, y el usuario se
+    // enteraba de que vencio cuando ya no podia hacer nada.
+    if (r.j && r.j.expira) arrancarCuenta(r.j.expira);
+    else mostrarCaduca(r.j && r.j.minutos);
     mostrar('st-form');
   }).catch(function () { fallo('No pudimos verificar el enlace. Revisa tu conexión.'); });
+
+  var relojCaduca = null;
+  function mostrarCaduca(texto) {
+    var p = document.getElementById('txt-caduca');
+    if (!p) return;
+    p.classList.remove('hidden');
+    p.classList.add('flex');
+    if (texto) document.getElementById('txt-caduca-txt').textContent = 'Este enlace vence en ' + texto + ' minutos.';
+  }
+  function arrancarCuenta(expira) {
+    if (relojCaduca) clearInterval(relojCaduca);
+    // Quita el hidden: el texto se iba actualizando pero el bloque quedaba
+    // invisible, asi que el usuario nunca veía la cuenta regresiva.
+    mostrarCaduca(null);
+    function tick() {
+      var ms = expira - Date.now();
+      if (ms <= 0) {
+        clearInterval(relojCaduca);
+        document.getElementById('txt-caduca-txt').textContent = 'Este enlace acaba de vencer. Pide uno nuevo.';
+        var b = document.getElementById('btnGuardar');
+        if (b) b.disabled = true;
+        return;
+      }
+      var min = Math.floor(ms / 60000);
+      var seg = Math.floor((ms % 60000) / 1000);
+      document.getElementById('txt-caduca-txt').textContent = 'Este enlace vence en ' + min + ':' + (seg < 10 ? '0' + seg : seg);
+    }
+    relojCaduca = setInterval(tick, 1000);
+    tick();
+  }
+
+  // Fuerza de la contraseña: barra simple, sin librerias. No pone color rojo
+  // para no asustar, solorojiza el texto del nivel bajo.
+  function fuerzaDe(v) {
+    var n = 0;
+    if (v.length >= 6) n++;
+    if (v.length >= 10) n++;
+    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) n++;
+    if (/\d/.test(v)) n++;
+    if (/[^A-Za-z0-9]/.test(v)) n++;
+    return n;
+  }
+  function pintarFuerza() {
+    var v = document.getElementById('np1').value;
+    var caja = document.getElementById('barra');
+    var txt = document.getElementById('txt-fuerza');
+    var fill = document.getElementById('barra-fill');
+    if (!caja || !txt || !fill) return;
+    if (!v) { caja.classList.add('hidden'); return; }
+    caja.classList.remove('hidden');
+    var n = fuerzaDe(v);
+    var etiquetas = ['Muy débil', 'Débil', 'Media', 'Buena', 'Fuerte', 'Muy fuerte'];
+    var colores = ['#b3261e', '#c2620a', '#a3720a', '#2f7d32', '#2f7d32', '#15803d'];
+    txt.textContent = etiquetas[n];
+    fill.style.width = (n / 5 * 100) + '%';
+    fill.style.background = colores[n];
+  }
+  document.getElementById('np1').addEventListener('input', pintarFuerza);
 
   document.getElementById('formReset').addEventListener('submit', function () {
     var p1 = document.getElementById('np1').value;

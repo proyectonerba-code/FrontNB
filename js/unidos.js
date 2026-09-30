@@ -1046,58 +1046,190 @@
   });
   }
 
+  /* Recuperacion de contrasena: el modal.
+     Decisiones que_importan:
+     - Tras enviar NO se cierra solo. El backend responde 200 siempre, exista o
+       no la cuenta, para no filtrar que correos estan registrados. Por eso el
+       modal no puede afirmar "te enviamos el correo": dice "si esta registrado".
+     - Se ofrece Reenviar, aviso de spam y salida por WhatsApp, porque si el
+       correo no llega el usuario no debe quedarse sin salida.
+     - Respeta el limite del servidor (5 por minuto) con una cuenta regresiva.
+     - Escape cierra y el foco queda atrapado dentro del dialogo. */
   var __recModal = null;
-  function openRecuperar() {
-    if (__recModal && document.body.contains(__recModal)) { __recModal.style.display = 'flex'; return; }
-    var w = document.createElement('div');
+  var REC_ESPERA_REENVIO = 45000;
+  function openRecuperar(correoSugerido) {
+    var w = __recModal;
+    if (w && document.body.contains(w)) {
+      w.style.display = 'flex';
+      var mb = w.querySelector('#__recMail');
+      if (mb && correoSugerido) mb.value = correoSugerido;
+      try { (w.querySelector('#__recMail') || w).focus(); } catch (e) {}
+      return;
+    }
+    var anterior = document.activeElement;
+    w = document.createElement('div');
     w.setAttribute('role', 'dialog');
     w.setAttribute('aria-modal', 'true');
-    w.setAttribute('aria-label', 'Recuperar contrasena');
+    w.setAttribute('aria-labelledby', '__recTitulo');
+    w.setAttribute('aria-describedby', '__recDesc');
     w.style.cssText = 'position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(11,28,48,.55)';
     w.innerHTML =
-      '<div style="background:#ffffff;border-radius:16px;max-width:420px;width:100%;padding:26px;box-shadow:0 24px 60px rgba(11,28,48,.28);font-family:Inter,system-ui,sans-serif">' +
+      '<div style="background:#ffffff;border-radius:16px;max-width:440px;width:100%;padding:26px;box-shadow:0 24px 60px rgba(11,28,48,.28);font-family:Inter,system-ui,sans-serif">' +
       '<div style="display:flex;align-items:center;gap:10px;margin:0 0 10px">' +
       '<span style="display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:#eff4ff;color:#b0000b;flex:none">' +
       '<span class="material-symbols-outlined" style="font-size:22px">lock_reset</span></span>' +
-      '<h3 style="font-family:\'Plus Jakarta Sans\',Inter,sans-serif;font-weight:800;font-size:20px;margin:0;color:#0b1c30">Recuperar contraseña</h3></div>' +
-      '<p style="font-size:14px;line-height:1.6;color:#575e70;margin:0 0 16px">Escribe el correo con el que te registraste y te enviamos un enlace para cambiar tu contraseña.</p>' +
-      '<input id="__recMail" type="email" required placeholder="usuario@nerba.mx" autocomplete="email" ' +
+      '<h3 id="__recTitulo" style="font-family:\'Plus Jakarta Sans\',Inter,sans-serif;font-weight:800;font-size:20px;margin:0;color:#0b1c30">Recuperar contraseña</h3></div>' +
+
+      // ---- paso 1: pedir el correo ----
+      '<div id="__recPaso1">' +
+      '<p id="__recDesc" style="font-size:14px;line-height:1.6;color:#575e70;margin:0 0 16px">Escribe el correo con el que te registraste y te enviamos un enlace para cambiar tu contraseña.</p>' +
+      '<input id="__recMail" type="email" required placeholder="usuario@ejemplo.com" autocomplete="email" spellcheck="false" ' +
       'style="width:100%;height:46px;padding:0 14px;border:1px solid #d3e4fe;border-radius:8px;background:#f8f9ff;font-size:14px;color:#0b1c30;margin-bottom:12px;box-sizing:border-box">' +
-      '<p id="__recMsg" style="display:none;font-size:13px;line-height:1.5;border-radius:8px;padding:10px 12px;margin:0 0 12px"></p>' +
+      '<p id="__recMsg" role="status" aria-live="polite" style="display:none;font-size:13px;line-height:1.5;border-radius:8px;padding:10px 12px;margin:0 0 12px"></p>' +
       '<div style="display:flex;gap:10px">' +
       '<button id="__recCancel" type="button" style="flex:1;height:46px;border-radius:8px;border:1px solid #d3e4fe;background:#eff4ff;color:#0b1c30;font-weight:600;font-size:14px;cursor:pointer">Cancelar</button>' +
       '<button id="__recGo" type="button" style="flex:1.4;height:46px;border-radius:8px;border:0;background:#b0000b;color:#ffffff;font-weight:700;font-size:14px;cursor:pointer">Enviame el enlace</button>' +
+      '</div></div>' +
+
+      // ---- paso 2: enviado. No se cierra solo ----
+      '<div id="__recPaso2" style="display:none">' +
+      '<div style="display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:#dcfce7;color:#15803d;margin:0 auto 12px">' +
+      '<span class="material-symbols-outlined" style="font-size:28px">mark_email_read</span></div>' +
+      '<p style="font-size:15px;font-weight:700;color:#0b1c30;text-align:center;margin:0 0 6px">Revisa tu correo</p>' +
+      '<p style="font-size:14px;line-height:1.6;color:#575e70;text-align:center;margin:0 0 16px">' +
+      'Si <strong id="__recMailEcho"></strong> está registrado, ya te enviamos un enlace para cambiar tu contraseña.</p>' +
+      '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin:0 0 14px">' +
+      '<p style="font-size:13px;line-height:1.6;color:#78350f;margin:0 0 6px"><strong>No te llega?</strong></p>' +
+      '<ul style="font-size:13px;line-height:1.7;color:#78350f;margin:0;padding-left:18px">' +
+      '<li>Revisa la carpeta de <strong>spam</strong> o correo no deseado.</li>' +
+      '<li>Asegúrate de usar el mismo correo con el que te registraste.</li>' +
+      '<li>El enlace vence a los 30 minutos y solo sirve una vez.</li>' +
+      '</ul></div>' +
+      '<div style="display:flex;gap:10px;margin:0 0 12px">' +
+      '<button id="__recOtro" type="button" style="flex:1;height:44px;border-radius:8px;border:1px solid #d3e4fe;background:#eff4ff;color:#0b1c30;font-weight:600;font-size:14px;cursor:pointer">Usar otro correo</button>' +
+      '<button id="__recReenviar" type="button" style="flex:1.3;height:44px;border-radius:8px;border:0;background:#b0000b;color:#ffffff;font-weight:700;font-size:14px;cursor:pointer">Reenviar enlace</button>' +
+      '</div>' +
+      '<p id="__recWa" style="font-size:13px;line-height:1.6;color:#575e70;text-align:center;margin:0;padding-top:12px;border-top:1px solid #eef2f7">' +
+      '¿Necesitas ayuda? <a href="https://wa.me/527751300335" target="_blank" rel="noopener" style="color:#b0000b;font-weight:700">Escríbenos por WhatsApp</a> · 775 130 0335</p>' +
       '</div></div>';
     document.body.appendChild(w);
     __recModal = w;
+
     var mail = w.querySelector('#__recMail');
     var msg = w.querySelector('#__recMsg');
     var go = w.querySelector('#__recGo');
-    var cerrar = function () { w.style.display = 'none'; };
-    w.addEventListener('click', function (e) { if (e.target === w) cerrar(); });
-    w.querySelector('#__recCancel').addEventListener('click', cerrar);
-    function avisar(txt, ok) {
+    var paso1 = w.querySelector('#__recPaso1');
+    var paso2 = w.querySelector('#__recPaso2');
+    var reenviar = w.querySelector('#__recReenviar');
+    var otro = w.querySelector('#__recOtro');
+    var ultimoFoco = null;
+    var reloj = null;
+    var hasta = 0;
+    if (correoSugerido) mail.value = correoSugerido;
+
+    function cerrar() {
+      if (reloj) { clearInterval(reloj); reloj = null; }
+      w.style.display = 'none';
+      paso1.style.display = 'block';
+      paso2.style.display = 'none';
+      msg.style.display = 'none';
+      go.disabled = false; go.textContent = 'Enviame el enlace';
+      try { if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus(); } catch (e) {}
+    }
+    function avisar(txt, tono) {
       msg.textContent = txt;
       msg.style.cssText = 'display:block;font-size:13px;line-height:1.5;border-radius:8px;padding:10px 12px;margin:0 0 12px;background:' +
-        (ok ? '#eff4ff;color:#0b1c30' : '#ffdad6;color:#93000a');
+        (tono === 'ok' ? '#eff4ff;color:#0b1c30' : tono === 'espera' ? '#fef3c7;color:#78350f' : '#ffdad6;color:#93000a');
     }
-    go.addEventListener('click', function () {
+
+    function ticking() {
+      var falta = Math.ceil((hasta - Date.now()) / 1000);
+      if (falta <= 0) {
+        reenviar.disabled = false;
+        reenviar.textContent = 'Reenviar enlace';
+        if (reloj) { clearInterval(reloj); reloj = null; }
+        return;
+      }
+      reenviar.disabled = true;
+      reenviar.textContent = 'Reenviar en ' + falta + 's';
+    }
+
+    function enviado(destino) {
+      w.querySelector('#__recMailEcho').textContent = destino;
+      paso1.style.display = 'none';
+      paso2.style.display = 'block';
+      hasta = Date.now() + REC_ESPERA_REENVIO;
+      if (reloj) clearInterval(reloj);
+      reloj = setInterval(ticking, 500);
+      ticking();
+      try { reenviar.focus(); } catch (e) {}
+    }
+
+    function pedir(boton) {
       var v = String(mail.value || '').trim();
-      if (!v || v.indexOf('@') < 1) { avisar('Escribe un correo válido.', false); return; }
-      go.disabled = true; go.textContent = 'Enviando...';
-      // api() lanza excepcion cuando la respuesta no es 2xx, asi que el 503
-      // "no disponible" o el 429 de rate limit llegan por el catch.
+      if (!v || v.indexOf('@') < 1 || v.charAt(v.length - 1) === '@') {
+        avisar('Escribe un correo válido, por ejemplo nombre@dominio.com', 'mal');
+        mail.focus();
+        return;
+      }
+      var previo = boton.textContent;
+      boton.disabled = true; boton.textContent = 'Enviando...';
+      avisar('Enviando...', 'espera');
+      // api() lanza excepcion si la respuesta no es 2xx: el 503 "no
+      // disponible" y el 429 de limite llegan por el catch.
       api('/api/recuperar', { method: 'POST', body: { email: v } }).then(function (r) {
-        avisar((r && r.mensaje) || 'Si ese correo está registrado, te enviamos un enlace.', true);
-        go.textContent = 'Listo';
-        setTimeout(cerrar, 3200);
+        msg.style.display = 'none';
+        boton.disabled = false; boton.textContent = previo;
+        enviado(v);
       }).catch(function (e) {
-        avisar((e && e.message) || 'No pudimos enviar el correo. Intenta de nuevo.', false);
-        go.disabled = false; go.textContent = 'Enviame el enlace';
+        var texto = (e && e.message) || 'No pudimos enviar el correo.';
+        // 429: el servidor corta a los 5 intentos por minuto.
+        if (e && e.status === 429) {
+          avisar('Demasiados intentos seguidos. Espera un momento y vuelve a intentar.', 'espera');
+          boton.disabled = true;
+          setTimeout(function () { boton.disabled = false; boton.textContent = previo; }, 20000);
+          return;
+        }
+        avisar(texto, 'mal');
+        boton.disabled = false; boton.textContent = previo;
       });
+    }
+
+    go.addEventListener('click', function () { pedir(go); });
+    reenviar.addEventListener('click', function () { pedir(reenviar); });
+    otro.addEventListener('click', function () {
+      paso2.style.display = 'none';
+      paso1.style.display = 'block';
+      try { mail.focus(); } catch (e) {}
     });
+    w.querySelector('#__recCancel').addEventListener('click', cerrar);
+    mail.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); pedir(go); } });
+    w.addEventListener('click', function (e) { if (e.target === w) cerrar(); });
+
+    // Escape cierra y Tab no se sale del dialogo.
+    w.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); cerrar(); return; }
+      if (e.key !== 'Tab') return;
+      var f = w.querySelectorAll('button:not([disabled]), input, a[href]');
+      if (!f.length) return;
+      var primero = f[0], ultimo = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+    });
+
+    ultimoFoco = anterior;
     try { mail.focus(); } catch (e) {}
   }
+
+  // El enlace de restablecer.html lleva a login.html#recuperar. Antes solo se
+  // abria el modal con un clic, asi que ese enlace aterrizaba en el login sin
+  // abrir nada. Con esto se abre solo al llegar con ese hash.
+  if (location.hash === '#recuperar') {
+    setTimeout(function () { openRecuperar(); }, 300);
+  }
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#recuperar') openRecuperar();
+  });
 
   // Mini-menu del perfil: "Mi perfil y configuracion" + "Cerrar sesion".
   // Mismo componente en todas las interfaces (sin iconos externos para que jale en todas).
