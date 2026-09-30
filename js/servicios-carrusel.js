@@ -114,12 +114,14 @@
     if (root.querySelector('[data-serv-nav]')) { estado(); return; }
     var nav = document.createElement('div');
     nav.setAttribute('data-serv-nav', '1');
-    nav.className = 'flex items-center justify-between gap-4 mt-8';
+    nav.className = 'un-snav';
     nav.innerHTML =
-      '<div class="flex items-center gap-2" data-serv-dots></div>' +
-      '<div class="flex items-center gap-2">' +
-      '<button type="button" data-serv-prev aria-label="Servicios anteriores" class="w-11 h-11 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:border-primary-container hover:text-primary-container transition-colors flex items-center justify-center shadow-sm">&#8249;</button>' +
-      '<button type="button" data-serv-next aria-label="Siguientes servicios" class="w-11 h-11 rounded-full border border-neutral-200 bg-white text-neutral-700 hover:border-primary-container hover:text-primary-container transition-colors flex items-center justify-center shadow-sm">&rsaquo;</button>' +
+      '<div class="un-sdots" role="tablist" aria-label="Paginas de servicios" data-serv-dots></div>' +
+      '<div class="un-sflechas">' +
+      '<button type="button" class="un-sflecha" data-serv-prev aria-label="Servicios anteriores">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg></button>' +
+      '<button type="button" class="un-sflecha" data-serv-next aria-label="Siguientes servicios">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>' +
       '</div>';
     root.appendChild(nav);
     nav.querySelector('[data-serv-prev]').addEventListener('click', function () { pararAuto(); irA(indice - 1, true); });
@@ -134,13 +136,16 @@
     if (total < 2) { dots.innerHTML = ''; return; }
     var html = '';
     for (var i = 0; i < total; i++) {
-      html += '<button type="button" data-dot="' + i + '" aria-label="Ir al grupo ' + (i + 1) + '" class="h-2 rounded-full transition-all ' +
-        (i === indice ? 'w-7 bg-primary-container' : 'w-2 bg-neutral-300 hover:bg-neutral-400') + '"></button>';
+      html += '<button type="button" data-dot="' + i + '" role="tab" aria-label="Ir al grupo ' + (i + 1) +
+        '" aria-current="' + (i === indice ? 'true' : 'false') + '"></button>';
     }
     dots.innerHTML = html;
     dots.querySelectorAll('[data-dot]').forEach(function (b) {
       b.addEventListener('click', function () { pararAuto(); irA(parseInt(b.getAttribute('data-dot'), 10), true); });
     });
+    // El velo de los bordes solo aparece del lado que hay hacia donde ir.
+    root.setAttribute('data-velo-izq', indice > 0 ? '1' : '0');
+    root.setAttribute('data-velo-der', indice < total - 1 ? '1' : '0');
   }
 
   function arrancarAuto() {
@@ -157,6 +162,13 @@
   });
   ['mouseleave', 'touchend', 'focusout'].forEach(function (ev) {
     root.addEventListener(ev, function () { pinzado = false; arrancarAuto(); });
+  });
+
+  // Con el cursor sobre la seccion, las flechas del teclado tambien recorren.
+  root.setAttribute('tabindex', '-1');
+  root.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight') { e.preventDefault(); pararAuto(); irA(indice + 1, true); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); pararAuto(); irA(indice - 1, true); }
   });
 
   window.addEventListener('resize', function () { if (items.length) irA(indice, false); });
