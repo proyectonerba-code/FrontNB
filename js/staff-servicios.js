@@ -108,9 +108,11 @@
   function listar() {
     UN.api('/api/servicios').then(function (lista) {
       servicios = Array.isArray(lista) ? lista : [];
-      var cuerpo = '<div class="un-scbody"><div class="un-slist">' +
-        (servicios.length ? servicios.map(fila).join('') : '<p style="font-size:13px;color:#64748b;margin:0">Todavia no hay servicios. Usa "Agregar servicio".</p>') +
-        '</div></div>';
+      var cuerpo = '<div class="un-scbody">' +
+        '<p style="font-size:12px;line-height:1.6;color:#64748b;margin:0">Este es el orden en que se ven en el carrusel del inicio. Usa las flechas para mover cada una.</p>' +
+        '<div class="un-slist">';
+        (servicios.length ? servicios.map(function (x, i) { return fila(x, i, servicios.length); }).join('') :  '<p style="font-size:13px;color:#64748b;margin:0">Todavia no hay servicios. Usa "Agregar servicio".</p>') +
+        '</div></div></div>';
       var w = modal('Servicios generales', cuerpo,
         '<button type="button" class="un-sghost" data-cerrar> Cerrar</button>' +
         '<button type="button" class="un-sbtn" data-agregar>+ Agregar</button>');
@@ -126,10 +128,19 @@
     }).catch(function (e) { aviso('No se pudieron cargar los servicios: ' + ((e && e.message) || '')); });
   }
 
-  function fila(s) {
+  function fila(s, i, total) {
     var img = s.image ? '<img alt="" src="' + esc(s.image) + '">' : '<img alt="" src="/assets/servicios/servicios-alarma.jpeg">';
+    var flecha = function(attr, titulo, off, simbolo) {
+      return '<button type="button" data-' + attr + '="' + esc(s.id) + '" title="' + titulo + '"' +
+        (off ? ' disabled style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;opacity:.35;cursor:not-allowed"'
+             : ' style="width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;cursor:pointer"') +
+        '>' + simbolo + '</button>';
+    };
+    var arriba = flecha('up', 'Subir', i === 0, '&#9650;');
+    var abajo = flecha('down', 'Bajar', i === total - 1, '&#9660;');
     return '<div class="un-sitem">' + img +
-      '<div class="un-st"><b>' + esc(s.title) + '</b><span>' + esc(s.eyebrow || 'Sin etiqueta') + '</span></div>' +
+      '<div class="un-st"><b>' + (i + 1) + '. ' + esc(s.title) + '</b><span>' + esc(s.eyebrow || 'Sin etiqueta') + '</span></div>' +
+      '<div style="display:flex;gap:4px">' + arriba + abajo + '</div>' +
       '<button type="button" class="un-sghost" data-edit="' + esc(s.id) + '">Editar</button>' +
       '<button type="button" class="un-sghost" data-del="' + esc(s.id) + '" style="color:#b0000b;border-color:#fecaca">Borrar</button>' +
       '<span style="display:none" data-confirm="' + esc(s.id) + '">' +
@@ -140,7 +151,36 @@
 
   // Confirmacion en dos pasos sobre la misma fila. Se sustituye el confirm()
   // del navegador porque congela la pagina y en pruebas cuelga el proceso.
+  /* Mueve un servicio una posicion y guarda el orden completo.
+     Se manda la lista entera de ids en el orden nuevo en vez de un PUT por
+     servicio: una sola llamada y el backend renumera 1..n, que es justo lo
+     que hace el carrusel al pintar. Si algo falla, se deshace el intercambio
+     para no dejar la lista mintiendo. */
+  function mover(id, delta) {
+    var i = -1;
+    for (var k = 0; k < servicios.length; k++) { if (servicios[k].id === id) { i = k; break; } }
+    var j = i + delta;
+    if (i < 0 || j < 0 || j >= servicios.length) return;
+    var tmp = servicios[i];
+    servicios[i] = servicios[j];
+    servicios[j] = tmp;
+    var ids = servicios.map(function (x) { return x.id; });
+    UN.api('/api/servicios/ordenar', { method: 'POST', body: { orden: ids } }).then(function () {
+      listar();
+    }).catch(function (e) {
+      servicios[i] = servicios[j];
+      servicios[j] = tmp;
+      aviso('No se pudo cambiar el orden: ' + ((e && e.message) || ''), true);
+    });
+  }
+
   function armar(w) {
+    w.querySelectorAll('[data-up]').forEach(function (b) {
+      b.addEventListener('click', function () { mover(b.getAttribute('data-up'), -1); });
+    });
+    w.querySelectorAll('[data-down]').forEach(function (b) {
+      b.addEventListener('click', function () { mover(b.getAttribute('data-down'), 1); });
+    });
     w.querySelectorAll('[data-yes]').forEach(function (b) {
       b.addEventListener('click', function () { borrar(b.getAttribute('data-yes')); });
     });
