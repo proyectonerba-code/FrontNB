@@ -139,7 +139,10 @@
     var arriba = flecha('up', 'Subir', i === 0, '&#9650;');
     var abajo = flecha('down', 'Bajar', i === total - 1, '&#9660;');
     return '<div class="un-sitem">' + img +
-      '<div class="un-st"><b>' + (i + 1) + '. ' + esc(s.title) + '</b><span>' + esc(s.eyebrow || 'Sin etiqueta') + '</span></div>' +
+      '<div class="un-st"><b>' + (i + 1) + '. ' + esc(s.title) + '</b>' +
+      '<span>' + esc(s.eyebrow || 'Sin etiqueta') + '</span>' +
+      (s.activo === false ? '<span style="display:inline-block;margin-top:3px;padding:1px 7px;border-radius:999px;background:#fef3c7;color:#78350f;font-size:10px;font-weight:800;letter-spacing:.04em">OCULTO</span>' : '') +
+      '</div>' +
       '<div style="display:flex;gap:4px">' + arriba + abajo + '</div>' +
       '<button type="button" class="un-sghost" data-edit="' + esc(s.id) + '">Editar</button>' +
       '<button type="button" class="un-sghost" data-del="' + esc(s.id) + '" style="color:#b0000b;border-color:#fecaca">Borrar</button>' +

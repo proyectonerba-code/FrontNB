@@ -11,6 +11,26 @@
   if (!root) return;
   var track = document.getElementById('servicios-track');
   if (!track) return;
+  /* La pista pasa a ser un scroll horizontal. El grid del HTML hacia que
+     las tarjetas bajaran de a tres en filas, no de lado: sin overflow las
+     flechas no tenian a donde moverse. Cada tarjeta toma 1/3 del ancho en
+     escritorio y el ancho completo en movil, con scroll-snap para que se
+     wasnt a medias al arrastrar con el dedo. */
+  (function ensureCarruselCSS() {
+    if (document.getElementById('un-serv-carrusel')) return;
+    var st = document.createElement('style');
+    st.id = 'un-serv-carrusel';
+    st.textContent =
+      '#servicios-track{display:flex;gap:1.5rem;overflow-x:auto;scroll-snap-type:x mandatory;' +
+        'scroll-behavior:smooth;' +
+        '-webkit-overflow-scrolling:touch;scrollbar-width:none;}' +
+      '#servicios-track::-webkit-scrollbar{display:none;}' +
+      '#servicios-track > *{flex:0 0 100%;scroll-snap-align:start;min-width:0;}' +
+      '@media (min-width:1024px){#servicios-track > *{flex:0 0 calc((100% - 3rem)/3);}}' +
+      '@media (prefers-reduced-motion:reduce){#servicios-track{scroll-behavior:auto;scroll-snap-type:none;}}';
+    document.head.appendChild(st);
+  })();
+
   var UN = window.UN;
   if (!UN || !UN.api) return;
 
@@ -61,12 +81,28 @@
   }
 
   // Desplaza el contenedor hasta la tarjeta que toca. En movil cabe 1 a la vez.
+  // Distancia horizontal hasta la tarjeta que abre la pagina pedida.
+  // Distancia horizontal hasta la tarjeta que abre la pagina pedida.
+  // Se mide con offsetLeft de las tarjetas, que es justo donde el navegador
+  // pone los anclajes del scroll-snap.
+  function offsetDePagina(pagina, porPagina) {
+    var kids = track.children;
+    var primero = kids[0];
+    if (!primero) return 0;
+    var i = pagina * porPagina;
+    // La ultima pagina puede venir incompleta: se pega al final del recorrido.
+    if (!kids[i]) return Math.max(0, track.scrollWidth - track.clientWidth);
+    return Math.max(0, kids[i].offsetLeft - primero.offsetLeft);
+  }
   function irA(i, suave) {
     var porPagina = ancho();
     var total = paginas();
     indice = ((i % total) + total) % total;
-    var paso = track.scrollWidth / total;
-    var destino = Math.round(indice * paso);
+    // El destino se saca de la tarjeta que abre la pagina, no de dividir el
+    // ancho total: con scroll-snap los anclajes estan en cada tarjeta, y un
+    // paso calculado aparte no cae en ninguno, asi que el navegador lo devuelve
+    // al inicio y las flechas parecian no hacer nada.
+    var destino = offsetDePagina(indice, porPagina);
     if (suave === false || reduceMotion()) track.scrollLeft = destino;
     else track.scrollTo({ left: destino, behavior: 'smooth' });
     if (typeof window.__unServiciosirA === 'function') {
