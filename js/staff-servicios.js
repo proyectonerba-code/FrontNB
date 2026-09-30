@@ -110,9 +110,9 @@
       servicios = Array.isArray(lista) ? lista : [];
       var cuerpo = '<div class="un-scbody">' +
         '<p style="font-size:12px;line-height:1.6;color:#64748b;margin:0">Este es el orden en que se ven en el carrusel del inicio. Usa las flechas para mover cada una.</p>' +
-        '<div class="un-slist">';
+        '<div class="un-slist">' +
         (servicios.length ? servicios.map(function (x, i) { return fila(x, i, servicios.length); }).join('') :  '<p style="font-size:13px;color:#64748b;margin:0">Todavia no hay servicios. Usa "Agregar servicio".</p>') +
-        '</div></div></div>';
+        '</div></div>';
       var w = modal('Servicios generales', cuerpo,
         '<button type="button" class="un-sghost" data-cerrar> Cerrar</button>' +
         '<button type="button" class="un-sbtn" data-agregar>+ Agregar</button>');
