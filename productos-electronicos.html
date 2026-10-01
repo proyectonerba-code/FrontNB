@@ -552,8 +552,10 @@
       var tec = document.getElementById('un-waBtnTec');
       if (!ref && !tec) return;
       var lista = items();
-      var nombre = (UN.getUser() || {}).nombre || '';
-      var saludo = '¡Hola! ' + (nombre ? nombre + ', ' : '');
+      // Mensaje generico para la empresa: empieza con "Hola Grupo Nerba" y NO
+      // lleva el nombre del usuario (antes decia "¡Hola! Cliente Demo,..." y
+      // se veia como si el cliente hablara de si mismo en tercera persona).
+      var saludo = 'Hola Grupo Nerba, ';
       var detalle = '';
       if (lista.length) {
         detalle = '\n\nYa coticé estos productos:\n' + lista.map(function (x) {
