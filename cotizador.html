@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="es" style=""><head>
+<!DOCTYPE html><html lang="es" style=""><head>
 <script src="js/tema-oscuro.js?v=3.8"></script>
 <link rel="stylesheet" href="css/tema-oscuro-razor.css?v=3.0" data-razor-dark="1">
 <meta charset="utf-8">
@@ -938,7 +938,7 @@
     // Ahora se achica antes de guardarla: recorta el lado mayor a 1200 px y la
     // guarda en JPEG de calidad 0.75. Así entra en el PDF a un tamaño razonable
     // y el envío no se pasa del límite del servidor. El backend acepta 3 fotos.
-    var MAX_FOTOS_SOLICITUD = 3;
+    var MAX_FOTOS_SOLICITUD = 5;
     var LADO_MAXIMO_FOTO = 1200;
     var CALIDAD_FOTO = 0.75;
 
@@ -1023,9 +1023,12 @@
         return;
       }
       
-      // Encontrar el último slot de subida para insertar antes de él
+      // La foto se coloca en el primer hueco libre, que es el de la izquierda.
+      // Antes se insertaba antes del ULTIMO espacio, y por eso cada foto se
+      // iba hasta el final de la fila en vez de ir llenandola de izquierda a
+      // derecha, como se ve en la pantalla.
       const slots = photoGrid.querySelectorAll('.slot-upload');
-      const insertBefore = slots[slots.length - 1] || null;
+      const insertBefore = slots[0] || null;
       
       const div = document.createElement('div');
       div.className = 'relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square shadow-sm';
