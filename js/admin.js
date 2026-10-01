@@ -119,10 +119,39 @@
       var tds3 = tds[3];
       if (tds3) {
         tds3.querySelectorAll('div.w-12').forEach(function (d) { d.parentNode.removeChild(d); });
-        var note = document.createElement('p');
-        note.className = 'text-[10px] text-slate-400 italic';
-        note.textContent = 'Sin fotos adjuntas.';
-        tds3.appendChild(note);
+        var tds3nota = tds3.querySelector('p.un-sinfoto');
+        if (tds3nota) tds3nota.parentNode.removeChild(tds3nota);
+        // Antes se escribia "Sin fotos adjuntas." siempre, sin mirar la
+        // cotizacion: salia ese texto aunque la solicitud si trajera fotos, y
+        // de paso se borraban las miniaturas. Ahora se muestran las que hay.
+        var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (f) {
+          return typeof f === 'string' && f.indexOf('data:image/') === 0;
+        }) : [];
+        if (fotos.length) {
+          var tira = document.createElement('div');
+          tira.className = 'flex flex-wrap gap-1.5';
+          fotos.slice(0, 5).forEach(function (src) {
+            var celda = document.createElement('div');
+            celda.className = 'w-12';
+            var im = document.createElement('img');
+            im.src = src;
+            im.alt = 'Fotografía adjunta';
+            im.className = 'w-12 h-12 rounded-md object-cover border border-slate-200 cursor-zoom-in';
+            im.style.objectFit = 'cover';
+            celda.appendChild(im);
+            tira.appendChild(celda);
+          });
+          tds3.appendChild(tira);
+          var mas = document.createElement('p');
+          mas.className = 'text-[10px] text-slate-500 mt-1';
+          mas.textContent = fotos.length + (fotos.length === 1 ? ' foto adjunta' : ' fotos adjuntas');
+          tds3.appendChild(mas);
+        } else {
+          var note = document.createElement('p');
+          note.className = 'text-[10px] text-slate-400 italic un-sinfoto';
+          note.textContent = 'Sin fotos adjuntas.';
+          tds3.appendChild(note);
+        }
       }
       var reqBox = tds[4].querySelector('div.bg-slate-50');
       if (reqBox) {

@@ -531,19 +531,72 @@
       '<span>' + esc(c.folio) + ' · ' + esc(f) + '</span></div>' +
       '</div><script>window.onload=function(){setTimeout(function(){window.print()},120)}<\/script></body></html>';
   }
-  // Ficha imprimible de solicitud de mantenimiento
+  // Ficha imprimible de solicitud de mantenimiento.
+  // Antes se armaba aparte, con un estilo propio de cuatro lineas: salia un
+  // documento pelado, sin logo y sin las fotos. Ahora usa la misma presentacion
+  // que la cotizacion, para que las dos se vean como del mismo sistema.
   function downloadMant(m, viewOnly) {
+    var fotos = Array.isArray(m.fotos) ? m.fotos.filter(function (s) {
+      return typeof s === 'string' && s.indexOf('data:image/') === 0;
+    }) : [];
+    var bloqueFotos = fotos.length
+      ? '<div class="sec"><h3>4. Fotografías del inmueble</h3>' +
+        '<div class="fotos">' + fotos.slice(0, 3).map(function (s) {
+          return '<img src="' + esc(s) + '" alt="Fotografía del inmueble">';
+        }).join('') + '</div></div>'
+      : '';
     var html = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>' + esc(m.id) + ' - ' + esc(BRAND_NAME) + '</title>' +
-      '<style>body{font-family:Arial,sans-serif;max-width:720px;margin:32px auto;color:#0b1c30;padding:0 16px}' +
-      'h1{color:#b0000b}.box{background:#f4f6fb;border-radius:10px;padding:16px;margin:16px 0}</style></head><body>' +
-      '<h1>' + esc(BRAND_NAME) + ' · Ficha de mantenimiento</h1>' +
-      '<div class="box"><b>Folio:</b> ' + esc(m.id) + ' &nbsp;·&nbsp; <b>Fecha:</b> ' + esc(m.fecha) +
-      ' &nbsp;·&nbsp; <b>Estado:</b> ' + esc(m.estado) + (m.folio ? ' &nbsp;·&nbsp; <b>Ref:</b> ' + esc(m.folio) : '') + '</div>' +
-      '<div class="box"><b>Solicitante:</b> ' + esc(m.nombre) + ' (' + esc(m.email) + ') · ' + esc(m.telefono || '—') +
-      (m.direccion ? '<br><b>Dirección:</b> ' + esc(m.direccion) : '') +
-      '<br><b>Detalle:</b> ' + esc(m.descripcion || '—') + '</div>' +
-      '<p><small>Documento generado por el backend ' + esc(BRAND_NAME) + '. Para PDF: imprimir y elegir "Guardar como PDF".</small></p>' +
-      '<script>window.onload=function(){window.print()}<\/script></body></html>';
+      '<style>' +
+      '@page{size:A4;margin:13mm 12mm}' +
+      'body{font-family:Arial,Helvetica,sans-serif;color:#0b1c30;font-size:10.5px}' +
+      '.head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}' +
+      '.brand{display:flex;align-items:center;gap:9px}' +
+      '.brand img{height:34px;width:auto;object-fit:contain}' +
+      '.brand b{display:block;font-size:14px;color:#0b1c30;letter-spacing:.3px;line-height:1.15}' +
+      '.brand small{display:block;font-size:8px;color:#b0000b;letter-spacing:1.6px;font-weight:700;text-transform:uppercase}' +
+      '.req{text-align:right;flex-shrink:0}' +
+      '.pill{display:inline-block;border:1px solid #f0c4bf;background:#fef4f3;color:#b0000b;border-radius:5px;padding:3px 10px;font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase}' +
+      '.folio{font-size:15px;font-weight:800;color:#0b1c30;margin-top:5px;letter-spacing:.3px}' +
+      '.fem{font-size:9.5px;color:#64748b;margin-top:2px}' +
+      '.rule{border:none;border-top:2px solid #b0000b;margin:9px 0 12px}' +
+      '.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;break-inside:avoid}' +
+      '.card{border:1px solid #e2e8f0;border-radius:7px;padding:9px 11px;background:#fbfcfe}' +
+      '.card h4{margin:0 0 7px;font-size:9px;letter-spacing:1.1px;color:#b0000b;font-weight:800;text-transform:uppercase}' +
+      '.kv{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;padding:2.5px 0;border-bottom:1px dotted #e2e8f0}' +
+      '.kv:last-child{border-bottom:0}' +
+      '.kv i{font-style:normal;color:#64748b;flex-shrink:0}' +
+      '.kv b{color:#0b1c30;font-weight:700;text-align:right;word-break:break-word}' +
+      '.sec{margin:0 0 12px;break-inside:avoid}' +
+      '.sec h3{font-size:9.5px;margin:0 0 7px;padding:5px 9px;background:#f1f5f9;border-left:3px solid #b0000b;border-radius:0 5px 5px 0;letter-spacing:.9px;text-transform:uppercase;color:#0b1c30}' +
+      '.box{border:1px solid #e2e8f0;border-radius:7px;padding:9px 11px;font-size:10.5px;line-height:1.6;white-space:pre-line;background:#f8fafc}' +
+      '.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}' +
+      '.fotos img{width:100%;height:30mm;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px;display:block}' +
+      '.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:#94a3b8;break-inside:avoid}' +
+      '</style></head><body>' +
+      '<div class="head"><div class="brand"><img src="' + UN_LOGO + '" alt="' + esc(BRAND_ALT) + '">' +
+      '<div><b>' + esc(BRAND_NAME) + '</b><small>' + esc(BRAND_SUBTITLE) + '</small></div></div>' +
+      '<div class="req"><span class="pill">Ficha de mantenimiento</span>' +
+      '<div class="folio">' + esc(m.id) + '</div>' +
+      '<div class="fem">Fecha de emisión: <b>' + esc(m.fecha || '—') + '</b>' +
+      (m.folio ? ' · Cotización de origen: <b>' + esc(m.folio) + '</b>' : '') + '</div></div></div>' +
+      '<hr class="rule">' +
+      '<div class="cards">' +
+      '<div class="card"><h4>Datos del solicitante</h4>' +
+      '<div class="kv"><i>Titular</i><b>' + esc(m.nombre || '—') + '</b></div>' +
+      '<div class="kv"><i>Correo</i><b>' + esc(m.email || '—') + '</b></div>' +
+      '<div class="kv"><i>Teléfono</i><b>' + esc(m.telefono || '—') + '</b></div>' +
+      '</div>' +
+      '<div class="card"><h4>Datos de la instalación</h4>' +
+      '<div class="kv"><i>Estado</i><b>' + esc(m.estado || '—') + '</b></div>' +
+      '<div class="kv"><i>Fecha</i><b>' + esc(m.fecha || '—') + '</b></div>' +
+      '<div class="kv"><i>Ubicación</i><b>' + esc(m.direccion || '—') + '</b></div>' +
+      '</div></div>' +
+      '<div class="sec"><h3>3. Motivo de la solicitud</h3>' +
+      '<div class="box">' + esc(m.descripcion || '—') + '</div></div>' +
+      bloqueFotos +
+      '<div class="foot"><span>Documento generado por ' + esc(BRAND_NAME) + '. No válido para situación fiscal.</span>' +
+      '<span>' + esc(m.id) + ' · ' + esc(m.fecha || '') + '</span></div>' +
+      '<script>window.onload=function(){setTimeout(function(){window.print()},150)}<\/script></body></html>';
     var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     var url = URL.createObjectURL(blob);
     // Siempre vista de impresion: el PDF real se obtiene con "Guardar como PDF".
