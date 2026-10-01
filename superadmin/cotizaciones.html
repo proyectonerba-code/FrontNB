@@ -502,7 +502,7 @@
 </div>
 </div>
 <div class="flex items-center gap-2">
-<button class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition" onclick="window.print()">
+<button class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition" onclick="imprimirPdfOficial()">
 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
             Imprimir
           </button>
@@ -515,17 +515,18 @@
 </button>
 </div>
 </div>
-<!-- Digital Sheet A4 Body -->
-<div class="p-6 sm:p-10 bg-slate-100 max-h-[75vh] overflow-y-auto custom-scrollbar flex justify-center">
+<!-- Digital Sheet A4 Body: aqui se incrusta el PDF REAL del servidor (iframe).
+     Lo que se ve es exactamente lo que se descarga. -->
+<div class="p-6 sm:p-10 bg-slate-100 max-h-[75vh] overflow-y-auto custom-scrollbar flex justify-center" id="modal-pdf-cuerpo">
 <div class="w-full max-w-2xl bg-white shadow-lg border border-slate-300 p-8 text-slate-800 text-xs font-sans relative">
 <!-- Encabezado membretado oficial -->
 <div class="flex justify-between items-start border-b-2 border-brand-600 pb-4 mb-6">
 <div class="flex items-center gap-3">
-<img alt="Grupo NERBA HIDALGO" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD3adPlz_Qgw_CRzcbNcGYmfBwXHWSeU2HbaddloQTJB-71qlrTwBUqoFZscWYiL-5PdGWYkJCKiLryLkEqSKegtbgWDCU_NMiweBpYQMjWPeA2iKb9aUlivuGygET4wNW4hBNldgtmW0tmEVRP9HL0dGTnwlMHBlMzYCssCjcZgaEWmqy4IdY0YCm2hGLrl8ya7p0EAXKeaJJkWgGKHZGBeSEwCZ-o_goJRio6PrZmtb2F3JN0IzQQQHlAcH7C_JTK7Y">
+<img alt="Grupo NERBA HIDALGO" class="h-12 w-auto object-contain" src="/assets/logo.png">
 <div>
 <h2 class="text-base font-extrabold text-slate-900 leading-tight">Grupo NERBA HIDALGO</h2>
 <span class="text-[9px] font-bold text-brand-600 tracking-wider uppercase">Seguridad Integral &amp; Videovigilancia</span>
-<p class="text-[9px] text-slate-500 mt-0.5">RUC: 20608945123 • Central: +51 (1) 800-9988</p>
+<p class="text-[9px] text-slate-500 mt-0.5">Central: 775 130 0335 · 771 219 8250</p>
 </div>
 </div>
 <div class="text-right">
@@ -718,24 +719,59 @@
       abrirModalPdfOficial(currentFolio, currentCliente, currentInmueble, 'Dirección registrada en expediente', currentTel, 'contacto@cliente.com');
     };
 
-    // MODAL PDF OFICIAL
+    // MODAL PDF OFICIAL: la vista previa ES el PDF real del servidor (iframe).
+    // Nota: mas abajo esta segunda definicion redirige al visor unificado,
+    // que ya muestra el PDF real. Esta se conserva por compatibilidad.
     window.abrirModalPdfOficial = function(folio, cliente, inmueble, direccion, telefono, correo) {
       currentFolio = folio;
       currentCliente = cliente;
       document.getElementById('modal-pdf-codigo-folio').innerText = folio;
-      document.getElementById('modal-pdf-titulo-archivo').innerText = `${folio}.pdf`;
-      document.getElementById('modal-pdf-nombre').innerText = cliente;
-      document.getElementById('modal-pdf-tipo').innerText = inmueble;
-      document.getElementById('modal-pdf-direccion').innerText = direccion;
-      document.getElementById('modal-pdf-tel').innerText = telefono;
-      document.getElementById('modal-pdf-correo').innerText = correo;
-
-      const modal = document.getElementById('modal-pdf-oficial');
+      document.getElementById('modal-pdf-titulo-archivo').innerText = folio + '.pdf';
+      var cuerpo = document.getElementById('modal-pdf-cuerpo');
+      if (cuerpo) {
+        cuerpo.innerHTML =
+          '<div class="w-full max-w-2xl bg-white shadow-lg border border-slate-300 rounded-lg overflow-hidden">' +
+          '<p data-cargando class="text-sm text-slate-500 text-center py-16">Cargando documento…</p>' +
+          '<iframe data-marco title="Vista previa del PDF" style="display:none;width:100%;height:70vh;border:0;background:#fff"></iframe>' +
+          '</div>';
+      }
+      var modal = document.getElementById('modal-pdf-oficial');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+      if (!cuerpo) return;
+      var marco = cuerpo.querySelector('[data-marco]');
+      var aviso = cuerpo.querySelector('[data-cargando]');
+      if (window.UN && UN.pdfParaVer) {
+        UN.pdfParaVer(folio, function () {
+          if (aviso) aviso.textContent = 'No se pudo cargar la vista previa. Usa Descargar PDF.';
+        }).then(function (url) {
+          if (typeof url !== 'string') return;
+          window.__pdfUrlOficial = url;
+          if (aviso) aviso.style.display = 'none';
+          marco.style.display = 'block';
+          marco.src = url;
+        });
+      }
+    };
+
+    window.imprimirPdfOficial = function() {
+      var marco = document.querySelector('#modal-pdf-cuerpo [data-marco]');
+      try {
+        if (marco && window.__pdfUrlOficial && marco.contentWindow) { marco.contentWindow.focus(); marco.contentWindow.print(); return; }
+      } catch (e) {}
+      descargarPDF(currentFolio);
+    };
+
+    window.imprimirPdfOficial = function() {
+      var marco = document.querySelector('#modal-pdf-cuerpo [data-marco]');
+      try {
+        if (marco && window.__pdfUrlOficial && marco.contentWindow) { marco.contentWindow.focus(); marco.contentWindow.print(); return; }
+      } catch (e) {}
+      descargarPDF(currentFolio);
     };
 
     window.cerrarModalPdfOficial = function() {
+      if (window.__pdfUrlOficial) { try { URL.revokeObjectURL(window.__pdfUrlOficial); } catch (e) {} window.__pdfUrlOficial = null; }
       const modal = document.getElementById('modal-pdf-oficial');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
