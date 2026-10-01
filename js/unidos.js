@@ -531,11 +531,31 @@
       '<span>' + esc(c.folio) + ' · ' + esc(f) + '</span></div>' +
       '</div><script>window.onload=function(){setTimeout(function(){window.print()},120)}<\/script></body></html>';
   }
-  // Ficha imprimible de solicitud de mantenimiento.
-  // Antes se armaba aparte, con un estilo propio de cuatro lineas: salia un
-  // documento pelado, sin logo y sin las fotos. Ahora usa la misma presentacion
-  // que la cotizacion, para que las dos se vean como del mismo sistema.
+  // Ficha de mantenimiento: PDF REAL del servidor (misma plantilla y logo).
+  // Si el servidor no trae el generador, cae a la vista de impresion de abajo.
   function downloadMant(m, viewOnly) {
+    var id = m && (m.id || m.folio);
+    if (!id) { alert('Sin folio no se puede descargar el documento.'); return; }
+    var token = '';
+    try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+    fetch(API + '/api/mantenimiento/' + encodeURIComponent(id) + '/pdf', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = String(id).replace(/[^A-Za-z0-9._-]+/g, '_') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+    }).catch(function () {
+      printMant(m);
+    });
+  }
+  function printMant(m) {
     var fotos = Array.isArray(m.fotos) ? m.fotos.filter(function (s) {
       return typeof s === 'string' && s.indexOf('data:image/') === 0;
     }) : [];
