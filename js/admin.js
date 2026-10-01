@@ -118,17 +118,18 @@
       if (tds2[2]) tds2[2].textContent = c.direccion;
       var tds3 = tds[3];
       if (tds3) {
-        tds3.querySelectorAll('div.w-12').forEach(function (d) { d.parentNode.removeChild(d); });
-        var tds3nota = tds3.querySelector('p.un-sinfoto');
-        if (tds3nota) tds3nota.parentNode.removeChild(tds3nota);
-        // Antes se escribia "Sin fotos adjuntas." siempre, sin mirar la
-        // cotizacion: salia ese texto aunque la solicitud si trajera fotos, y
-        // de paso se borraban las miniaturas. Ahora se muestran las que hay.
+        // Todo lo que se pinta aqui se marca con data-un-fotos y se borra antes
+        // de volver a pintar. Antes solo se borraban las miniaturas y el texto
+        // "Sin fotos adjuntas.", pero no el pie con el numero de fotos: por eso
+        // cada vez que se sincronizaba se agregaba una linea mas y la celda
+        // acababa con diez "1 foto adjunta" apilados.
+        tds3.querySelectorAll('[data-un-fotos]').forEach(function (d) { d.parentNode.removeChild(d); });
         var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (f) {
           return typeof f === 'string' && f.indexOf('data:image/') === 0;
         }) : [];
         if (fotos.length) {
           var tira = document.createElement('div');
+          tira.setAttribute('data-un-fotos', '1');
           tira.className = 'flex flex-wrap gap-1.5';
           fotos.slice(0, 5).forEach(function (src) {
             var celda = document.createElement('div');
@@ -143,12 +144,14 @@
           });
           tds3.appendChild(tira);
           var mas = document.createElement('p');
+          mas.setAttribute('data-un-fotos', '1');
           mas.className = 'text-[10px] text-slate-500 mt-1';
           mas.textContent = fotos.length + (fotos.length === 1 ? ' foto adjunta' : ' fotos adjuntas');
           tds3.appendChild(mas);
         } else {
           var note = document.createElement('p');
-          note.className = 'text-[10px] text-slate-400 italic un-sinfoto';
+          note.setAttribute('data-un-fotos', '1');
+          note.className = 'text-[10px] text-slate-400 italic';
           note.textContent = 'Sin fotos adjuntas.';
           tds3.appendChild(note);
         }
