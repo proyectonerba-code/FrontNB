@@ -196,14 +196,16 @@
       var items = Array.isArray(result.items) ? result.items : [];
       body.innerHTML = '';
       if (!items.length) {
-        addMsg('bot', '¡Hola <strong>' + esc(userName) + '</strong>! Soy NerBot, el asistente IA de <strong>Grupo NERBA HIDALGO</strong>. Puedo ayudarte a entender soluciones, encontrar productos del catálogo y canalizarte con el área correspondiente.');
+        // OJO: aqui se usa **negrita** (markdown), no <strong>. linkify()
+        // escapa el HTML crudo, asi que las etiquetas se verian como texto.
+        addMsg('bot', '¡Hola **' + userName + '**! Soy NerBot, el asistente IA de **Grupo NERBA HIDALGO**. Puedo ayudarte a entender soluciones, encontrar productos del catálogo y canalizarte con el área correspondiente.');
         return;
       }
       items.forEach(function (m) {
         addMsg(m.role === 'user' ? 'user' : 'bot', m.content, m.role === 'model' ? { messageId: m.id } : null);
       });
     } catch (e) {
-      if (!body.children.length) addMsg('bot', '¡Hola <strong>' + esc(userName) + '</strong>! Soy NerBot. ¿Qué necesitas consultar?');
+      if (!body.children.length) addMsg('bot', '¡Hola **' + userName + '**! Soy NerBot. ¿Qué necesitas consultar?');
     }
   }
 
