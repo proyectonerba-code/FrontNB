@@ -224,11 +224,17 @@ Sistemas completos de seguridad: videovigilancia, alarmas, control de accesos y 
 <div class="relative w-full h-[650px] lg:h-[720px] overflow-hidden bg-neutral-100">
 <!-- Video de fondo (reemplaza el carrusel de fotos). El filtro blanco de abajo
      es el mismo que usaba el carrusel: mantiene el texto legible. -->
-<!-- Fondo del bloque. El video lo pone YouTube (js/video-fondo.js) porque el mp4
-     local pesaba 12.7 MB y hacia esperar a la pagina. Este contenedor lleva el
-     poster de fondo, asi que la imagen se ve desde el primer instante. -->
+<!-- Fondo del bloque. El mp4 local pesa 12.7 MB, asi que js/video-fondo.js no
+     le pone src hasta que la pagina ya esta pintada. Este contenedor lleva el
+     poster de fondo, para que la imagen se vea desde el primer instante. -->
 <div aria-hidden="true" class="absolute inset-0 bg-neutral-100 bg-cover bg-center"
-     data-un-video-fondo="1" style="background-image:url('/assets/video/poster-seguridad.jpg')"></div>
+     data-un-video-fondo="1">
+  <video class="absolute inset-0 w-full h-full object-cover" id="gabinete-video"
+         autoplay muted loop playsinline preload="none"
+         poster="/assets/video/poster-seguridad.jpg">
+    <source data-un-video-fuente data-src="/assets/video/seguridad-24-7.mp4" type="video/mp4"/>
+  </video>
+</div>
 <!-- Overlays limpios y elegantes en blanco translúcido -->
 <div class="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-white/80 pointer-events-none"></div>
 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(217,27,27,0.08)_0%,transparent_75%)] pointer-events-none"></div>
