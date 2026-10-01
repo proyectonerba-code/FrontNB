@@ -602,8 +602,30 @@
     // Siempre vista de impresion: el PDF real se obtiene con "Guardar como PDF".
     window.open(url, '_blank');
   }
+  // Descarga el PDF REAL del servidor (una sola plantilla para todas las areas).
+  // Antes abria la vista de impresion y el usuario tenia que adivinar el
+  // "Guardar como PDF". Si el servidor no trae el generador, cae a printQuote.
   function downloadQuote(c, viewOnly) {
-    printQuote(c);
+    var folio = c && (c.folio || c.id);
+    if (!folio) { alert('Sin folio no se puede descargar el documento.'); return; }
+    var token = '';
+    try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+    fetch(API + '/api/cotizaciones/' + encodeURIComponent(folio) + '/pdf', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = String(folio).replace(/[^A-Za-z0-9._-]+/g, '_') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+    }).catch(function () {
+      printQuote(c);
+    });
   }
   function printQuote(c) {
     var blob = new Blob([quoteDoc(c)], { type: 'text/html;charset=utf-8' });

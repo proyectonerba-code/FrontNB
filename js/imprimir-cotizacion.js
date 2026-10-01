@@ -96,16 +96,44 @@
     if (window.UN && UN.toast) UN.toast('Preparando el documento...', 'info');
     else if (window.mostrarToast) mostrarToast('Preparando el documento...', 'blue');
 
-    var fin = function (q) { imprimir(documento(q || {})); };
-    var fallo = function () { alert('No se pudo cargar la cotización ' + folio + '.'); };
-
-    if (window.UN && UN.api) {
-      UN.api('/api/cotizaciones/' + encodeURIComponent(folio)).then(fin).catch(fallo);
-    } else {
-      fetch('api/cotizaciones/' + encodeURIComponent(folio)).then(function (r) {
+    // PDF real del servidor (misma plantilla para todas las areas).
+    // Si falla, se usa la vista de impresion unificada de UN.
+    function bajaDirecta() {
+      var base = (window.UN && UN.API) || '';
+      var token = '';
+      try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+      return fetch(base + '/api/cotizaciones/' + encodeURIComponent(folio) + '/pdf', {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+      }).then(function (r) {
         if (!r.ok) throw new Error('http ' + r.status);
-        return r.json();
-      }).then(fin).catch(fallo);
+        return r.blob();
+      }).then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = String(folio).replace(/[^A-Za-z0-9._-]+/g, '_') + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+        return true;
+      });
     }
+    function vistaUnificada() {
+      var fin = function (q) {
+        if (window.UN && UN.printQuote) UN.printQuote(q || { folio: folio });
+        else imprimir(documento(q || {}));
+      };
+      var fallo = function () { alert('No se pudo cargar la cotización ' + folio + '.'); };
+      if (window.UN && UN.api) {
+        UN.api('/api/cotizaciones/' + encodeURIComponent(folio)).then(fin).catch(fallo);
+      } else {
+        fetch('api/cotizaciones/' + encodeURIComponent(folio)).then(function (r) {
+          if (!r.ok) throw new Error('http ' + r.status);
+          return r.json();
+        }).then(fin).catch(fallo);
+      }
+    }
+
+    bajaDirecta().catch(vistaUnificada);
   };
 })();
