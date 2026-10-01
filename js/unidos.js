@@ -622,6 +622,68 @@
     // Siempre vista de impresion: el PDF real se obtiene con "Guardar como PDF".
     window.open(url, '_blank');
   }
+  // Modal de confirmacion antes de crear una cotizacion. Se usa en el
+  // cotizador general y en el pedido de electronica/refacciones: el cliente
+  // ve el resumen y confirma, para no crear folios por accidente.
+  // Devuelve Promise<boolean>. Sin UN no hay promesas: usa confirm().
+  function confirmarEnvio(o) {
+    o = o || {};
+    var lineas = Array.isArray(o.lineas) ? o.lineas : [];
+    return new Promise(function (resolver) {
+      closeQuoteViewer();
+      var m = document.createElement('div');
+      m.className = 'fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4';
+      m.setAttribute('role', 'dialog');
+      m.setAttribute('aria-modal', 'true');
+      m.innerHTML =
+        '<div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">' +
+        '<div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">' +
+        '<span class="w-10 h-10 rounded-xl bg-red-50 text-red-700 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[22px]">fact_check</span></span>' +
+        '<div><p class="font-extrabold text-slate-900 text-sm">' + esc(o.titulo || 'Confirmar solicitud') + '</p>' +
+        '<p class="text-xs text-slate-500">Revisa antes de enviar. Se genera un folio oficial.</p></div></div>' +
+        '<div class="px-5 py-4 max-h-[40vh] overflow-y-auto">' +
+        (lineas.length
+          ? '<ul class="space-y-1.5 text-[13px] text-slate-700">' + lineas.map(function (l) {
+              return '<li class="flex gap-2"><span class="text-red-600 font-bold">•</span><span>' + esc(l) + '</span></li>';
+            }).join('') + '</ul>'
+          : '<p class="text-[13px] text-slate-600">' + esc(o.texto || '¿Enviar la solicitud de cotización?') + '</p>') +
+        '</div>' +
+        '<div class="px-5 py-4 bg-slate-50 border-t border-slate-100 flex gap-2.5">' +
+        '<button type="button" data-no class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-white transition">Revisar</button>' +
+        '<button type="button" data-si class="flex-[1.4] px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition shadow">' + esc(o.boton || 'Confirmar y enviar') + '</button>' +
+        '</div></div>';
+      document.body.appendChild(m);
+      document.body.style.overflow = 'hidden';
+      function cerrar(v) {
+        document.body.style.overflow = '';
+        if (m.parentNode) m.parentNode.removeChild(m);
+        resolver(!!v);
+      }
+      m.addEventListener('click', function (e) { if (e.target === m) cerrar(false); });
+      m.querySelector('[data-no]').addEventListener('click', function () { cerrar(false); });
+      m.querySelector('[data-si]').addEventListener('click', function () { cerrar(true); });
+      function tecla(e) { if (e.key === 'Escape') { cerrar(false); document.removeEventListener('keydown', tecla); } }
+      document.addEventListener('keydown', tecla);
+    });
+  }
+  // Trae el PDF REAL del servidor como blob URL para mostrarlo en un iframe.
+  // Asi la vista previa es identica al archivo que se descarga. Si falla,
+  // llama a `alternativa()` (vista HTML) o avisa.
+  function pdfParaVer(folio, alternativa) {
+    var token = '';
+    try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+    return fetch(API + '/api/cotizaciones/' + encodeURIComponent(folio) + '/pdf', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
+    }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.blob();
+    }).then(function (blob) {
+      return URL.createObjectURL(blob);
+    }).catch(function (e) {
+      if (typeof alternativa === 'function') return alternativa();
+      throw e;
+    });
+  }
   // Descarga el PDF REAL del servidor (una sola plantilla para todas las areas).
   // Antes abria la vista de impresion y el usuario tenia que adivinar el
   // "Guardar como PDF". Si el servidor no trae el generador, cae a printQuote.
@@ -668,7 +730,6 @@
     if (!c) return;
     closeQuoteViewer();
     document.body.style.overflow = 'hidden';
-    var f = fechaDoc(c.fecha);
     var m = document.createElement('div');
     m.id = 'un-quote-viewer';
     m.className = 'fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6';
@@ -677,39 +738,16 @@
       '<div class="bg-slate-900 px-4 sm:px-5 py-3 flex items-center justify-between gap-3 flex-shrink-0">' +
       '<div class="flex items-center gap-2.5 min-w-0"><span class="bg-red-600 text-white text-[10px] font-extrabold px-1.5 py-1 rounded-md shrink-0">PDF</span>' +
       '<div class="min-w-0"><p class="text-white text-sm font-bold truncate">' + esc(c.folio) + '.pdf <span class="ml-1 align-middle text-[10px] font-semibold bg-white/10 text-slate-300 px-2 py-0.5 rounded">Documento Oficial</span></p>' +
-      '<p class="text-[11px] text-slate-400 truncate">Vista previa digital lista para descarga e impresión</p></div></div>' +
+      '<p class="text-[11px] text-slate-400 truncate">Vista previa del archivo que se descarga</p></div></div>' +
       '<div class="flex items-center gap-2 shrink-0">' +
       '<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition" data-dl>Descargar PDF</button>' +
       '<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition" data-print>Imprimir</button>' +
       '<button class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition" data-x>✕</button>' +
       '</div></div>' +
-      '<div class="overflow-y-auto p-4 sm:p-6 bg-slate-200/70"><div class="bg-white rounded-xl shadow p-5 sm:p-8 max-w-[700px] mx-auto">' +
-      '<div class="flex items-start justify-between gap-4"><div class="flex items-center gap-2.5">' +
-      '<img src="/assets/logo.png" alt="' + esc(BRAND_ALT) + '" style="height:36px;width:auto;object-fit:contain">' +
-      '<div><p class="font-extrabold text-slate-900 tracking-tight leading-none">' + esc(BRAND_NAME) + '</p>' +
-      '<p class="text-[9px] font-bold tracking-[0.2em] text-red-700">' + esc(BRAND_SUBTITLE) + '</p></div></div>' +
-      '<div class="text-right shrink-0"><span class="inline-block border border-red-200 text-red-700 rounded-md px-3 py-1 text-[11px] font-bold tracking-wide">SOLICITUD DE COTIZACIÓN</span>' +
-      '<p class="text-[11px] text-slate-500 mt-1">Fecha de Emisión: <b class="text-slate-800">' + esc(f) + '</b></p></div></div>' +
-      '<hr style="border:none;border-top:2px solid #b0000b;margin:14px 0 16px">' +
-      '<h3 style="font-size:12px;margin:0 0 8px;padding:6px 10px;background:#f1f5f9;border-left:4px solid #b0000b;border-radius:0 6px 6px 0">1. INFORMACIÓN DEL SOLICITANTE</h3>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12.5px;margin-bottom:14px">' +
-      '<div><span style="color:#64748b">Titular / Razón Social: </span><b>' + esc(c.nombre) + '</b></div>' +
-      '<div><span style="color:#64748b">Teléfono de Contacto: </span><b>' + esc(c.telefono) + '</b></div>' +
-      '<div style="grid-column:1/-1"><span style="color:#64748b">Correo Notificaciones: </span>' + esc(c.email) + '</div>' +
-      '<div><span style="color:#64748b">Teléfono Secundario: </span>' + esc(c.telefonoSec || '—') + '</div>' +
+      '<div class="bg-slate-200/70 p-4 sm:p-6 flex justify-center" style="min-height:320px">' +
+      '<p data-cargando class="text-sm text-slate-500 self-center">Cargando documento…</p>' +
+      '<iframe data-marco title="Vista previa del PDF" style="display:none;width:100%;max-width:700px;height:62vh;border:0;border-radius:12px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.15)"></iframe>' +
       '</div>' +
-      '<h3 style="font-size:12px;margin:0 0 8px;padding:6px 10px;background:#f1f5f9;border-left:4px solid #b0000b;border-radius:0 6px 6px 0">2. UBICACIÓN E INMUEBLE A PROTEGER</h3>' +
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12.5px;margin-bottom:14px">' +
-      '<div><span style="color:#64748b">Tipo de Inmueble: </span>' + esc(c.tipoInmueble) + '</div>' +
-      '<div><span style="color:#64748b">Distrito / Ciudad: </span>' + esc(c.distrito || '—') + '</div>' +
-      '<div style="grid-column:1/-1"><span style="color:#64748b">Dirección Exacta: </span>' + esc(c.direccion) + '</div>' +
-      '<div style="grid-column:1/-1"><span style="color:#64748b">Referencia de Acceso: </span>' + esc(c.referencia || '—') + '</div>' +
-      '</div>' +
-      '<h3 style="font-size:12px;margin:0 0 8px;padding:6px 10px;background:#f1f5f9;border-left:4px solid #b0000b;border-radius:0 6px 6px 0">3. ESPECIFICACIÓN TÉCNICA SOLICITADA POR EL CLIENTE</h3>' +
-      '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;font-size:12.5px;line-height:1.65;white-space:pre-line;background:#f8fafc;margin-bottom:14px">' + esc(c.descripcion || '—') + '</div>' +
-      '<h3 style="font-size:12px;margin:0 0 8px;padding:6px 10px;background:#f1f5f9;border-left:4px solid #b0000b;border-radius:0 6px 6px 0">4. REGISTRO DE FOTOS DE REFERENCIA</h3>' +
-      '<p style="font-size:12px;color:#94a3b8">Sin fotografías adjuntas en el expediente digital.</p>' +
-      '</div></div>' +
       '<div class="px-4 sm:px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between gap-3 flex-shrink-0">' +
       '<p class="text-[11px] text-slate-400 flex items-center gap-1.5">Documento no válido para situación fiscal.</p>' +
       '<div class="flex items-center gap-2 shrink-0">' +
@@ -718,10 +756,35 @@
       '</div></div></div>';
     document.body.appendChild(m);
     window.__lastViewQuote = c;
-    function shut() { closeQuoteViewer(); }
+    var marco = m.querySelector('[data-marco]');
+    var aviso = m.querySelector('[data-cargando]');
+    var urlPdf = null;
+    // La vista previa ES el PDF real del servidor: lo que ves es lo que bajas.
+    pdfParaVer(c.folio, function () {
+      if (aviso) aviso.textContent = 'No se pudo cargar la vista previa. Usa Descargar PDF.';
+    }).then(function (url) {
+      if (typeof url !== 'string') return;
+      urlPdf = url;
+      if (aviso) aviso.style.display = 'none';
+      marco.style.display = 'block';
+      marco.src = url;
+    });
+    function shut() {
+      if (urlPdf) { try { URL.revokeObjectURL(urlPdf); } catch (e) {} urlPdf = null; }
+      closeQuoteViewer();
+    }
     m.addEventListener('click', function (e) { if (e.target === m) shut(); });
     m.querySelectorAll('[data-x]').forEach(function (b) { b.addEventListener('click', shut); });
-    m.querySelectorAll('[data-dl], [data-print]').forEach(function (b) { b.addEventListener('click', function () { printQuote(window.__lastViewQuote); }); });
+    m.querySelectorAll('[data-dl]').forEach(function (b) { b.addEventListener('click', function () { downloadQuote(window.__lastViewQuote); }); });
+    m.querySelectorAll('[data-print]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        try {
+          var w = marco.contentWindow;
+          if (urlPdf && w) { w.focus(); w.print(); return; }
+        } catch (e) {}
+        printQuote(window.__lastViewQuote);
+      });
+    });
     document.addEventListener('keydown', function esc2(e) {
       if (e.key === 'Escape') { shut(); document.removeEventListener('keydown', esc2); }
     });
@@ -2169,7 +2232,7 @@
       if (location.pathname !== '/index.html') location.replace('/index.html');
     }
   });
-  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
+  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
   // NOTA: cada diseno conserva su comportamiento original; el conector solo
   // reescribe enlaces, refleja sesion y sincroniza tema/accesibilidad global.
   wrapTextApis();

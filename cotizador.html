@@ -1161,6 +1161,19 @@
       var med = document.getElementById('inputMedidasDescriptivas');
       if (esPE && espInfra && !espInfra.value) { espInfra.focus(); alert('Selecciona el alcance o tipo de infraestructura del proyecto especial.'); return; }
       if (esPE && med && !med.value.trim()) { med.focus(); alert('Describe las medidas y cotas del espacio para el proyecto especial.'); return; }
+      // Confirmacion antes de crear el folio: el cliente revisa y acepta.
+      if (window.UN && UN.confirmarEnvio) {
+        var okEnvio = await UN.confirmarEnvio({
+          titulo: 'Confirmar solicitud de cotización',
+          boton: 'Confirmar y generar folio',
+          lineas: [
+            'Tipo de inmueble: ' + tipo,
+            'Dirección: ' + ((g('inputDireccion') + ', ' + g('inputDistrito')).replace(/^, |, $/g, '') || '—'),
+            'Requerimiento: ' + g('inputRequerimiento').slice(0, 140),
+          ],
+        });
+        if (!okEnvio) return;
+      }
       try {
         var c = await UN.api('/api/cotizaciones', {
           method: 'POST',

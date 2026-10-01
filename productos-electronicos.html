@@ -770,6 +770,17 @@
       var totalU = list.reduce(function (s, x) { return s + x.qty; }, 0);
       var desc = list.map(function (x) { return '• ' + x.title + ' — ' + x.qty + ' un.'; }).join('\n');
       var notas = g('extraNotes');
+      // Confirmacion antes de crear el folio: el cliente revisa la lista.
+      if (window.UN && UN.confirmarEnvio) {
+        var lineas = list.slice(0, 8).map(function (x) { return x.title + ' — ' + x.qty + ' un.'; });
+        if (list.length > 8) lineas.push('…y ' + (list.length - 8) + ' más (' + totalU + ' uds en total).');
+        var okEnvio = await UN.confirmarEnvio({
+          titulo: 'Confirmar pedido de electrónica',
+          boton: 'Confirmar y generar folio',
+          lineas: lineas,
+        });
+        if (!okEnvio) return;
+      }
       var btn = btnEnviar();
       if (btn) { btn.disabled = true; btn.style.opacity = '.7'; btn.dataset.unOld = btn.innerHTML; btn.innerHTML = '<span class="material-symbols-outlined text-[22px]">hourglass_top</span> ENVIANDO…'; }
       try {
