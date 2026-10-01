@@ -451,6 +451,17 @@
       var nt = String(c.notas || '').trim();
       if (nt) soloTexto = '<div class="sec"><h3>4. Notas y observaciones</h3><div class="box">' + esc(nt) + '</div></div>';
     }
+    // Fotografías que adjuntó el cliente. Van en tira y con alto fijo: se ven
+    // ordenadas en el documento y no se comen una hoja entera cada una.
+    var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (s) {
+      return typeof s === 'string' && s.indexOf('data:image/') === 0;
+    }) : [];
+    var bloqueFotos = fotos.length
+      ? '<div class="sec"><h3>' + (items.length ? '5' : '4') + '. Fotografías del inmueble</h3>' +
+        '<div class="fotos">' + fotos.slice(0, 3).map(function (s) {
+          return '<img src="' + esc(s) + '" alt="Fotografía del inmueble">';
+        }).join('') + '</div></div>'
+      : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>' + esc(c.folio) + ' - ' + esc(BRAND_NAME) + '</title>' +
       '<style>' +
       '@page{size:A4;margin:13mm 12mm}' +
@@ -486,6 +497,8 @@
       '.tb td.c-n,.tb td.c-q{text-align:center;color:#64748b}' +
       '.c-d{display:block;font-size:9px;color:#64748b;margin-top:1px}' +
       '.tfoot{text-align:right;font-size:9.5px;color:#64748b;margin-top:5px;padding-right:2px}' +
+      '.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}' +
+      '.fotos img{width:100%;height:30mm;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px;display:block}' +
       '.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:#94a3b8;break-inside:avoid}' +
       '@media print{body{font-size:10.5px}.sheet{max-width:none}}' +
       '</style></head><body><div class="sheet">' +
@@ -510,6 +523,7 @@
       '</div></div>' +
       '<div class="sec"><h3>' + (items.length ? '3. Artículos y componentes cotizados' : '3. Especificación técnica solicitada') + '</h3>' + tabla + '</div>' +
       soloTexto +
+      bloqueFotos +
       '<div class="foot"><span>Documento generado por ' + esc(BRAND_NAME) + '. No válido para situación fiscal.</span>' +
       '<span>' + esc(c.folio) + ' · ' + esc(f) + '</span></div>' +
       '</div><script>window.onload=function(){setTimeout(function(){window.print()},120)}<\/script></body></html>';

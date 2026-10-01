@@ -619,41 +619,38 @@
 <div class="grid grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl mb-6 text-xs">
 <div>
 <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Datos del Solicitante</span>
-<p class="font-bold text-slate-900 text-sm" id="pdfNombre">Ing. Carlos Mendoza Rivas</p>
-<p class="text-slate-600 font-medium" id="pdfEmpresaPreview">Mendoza Ingenieros &amp; Consultores S.A.C.</p>
-<p class="text-slate-600 mt-0.5"><i class="fa-solid fa-phone text-[10px] mr-1 text-slate-400"></i> <span id="pdfTelefono" class="">+51 987 654 321</span></p>
-<p class="text-slate-600"><i class="fa-solid fa-envelope text-[10px] mr-1 text-slate-400"></i> <span id="pdfEmail" class="">carlos.mendoza@empresa.com</span></p>
+<p class="font-bold text-slate-900 text-sm" id="pdfNombre"></p>
+<p class="text-slate-600 font-medium" id="pdfEmpresaPreview"></p>
+<p class="text-slate-600 mt-0.5"><i class="fa-solid fa-phone text-[10px] mr-1 text-slate-400"></i> <span id="pdfTelefono" class=""></span></p>
+<p class="text-slate-600"><i class="fa-solid fa-envelope text-[10px] mr-1 text-slate-400"></i> <span id="pdfEmail" class=""></span></p>
 </div>
 <div>
 <span class="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-1">Datos de Instalación</span>
-<p class="font-bold text-slate-900" id="pdfTipoInmueble">Proyecto Especial</p>
-<p class="text-slate-600 mt-0.5"><i class="fa-solid fa-location-dot text-[10px] mr-1 text-slate-400"></i> <span id="pdfDireccion" class="">Av. Manuel Olguín 345, Surco</span></p>
-<p class="text-slate-600 text-[11px]"><i class="fa-regular fa-compass text-[10px] mr-1 text-slate-400"></i> Ref: <span id="pdfReferencia" class="">A dos cuadras del Centro Comercial El Polo</span></p>
+<p class="font-bold text-slate-900" id="pdfTipoInmueble"></p>
+<p class="text-slate-600 mt-0.5"><i class="fa-solid fa-location-dot text-[10px] mr-1 text-slate-400"></i> <span id="pdfDireccion" class=""></span></p>
+<p class="text-slate-600 text-[11px]"><i class="fa-regular fa-compass text-[10px] mr-1 text-slate-400"></i> Ref: <span id="pdfReferencia" class=""></span></p>
 </div>
+</div>
+<!-- FOTOS QUE ADJUNTÓ EL CLIENTE -->
+<div class="mb-6 hidden" id="pdfFotosBloque">
+<h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2 flex items-center gap-1.5 pb-1 border-b border-slate-200">
+<i class="fa-solid fa-camera text-red-600"></i> Fotografías del inmueble
+            </h4>
+<div class="grid grid-cols-3 gap-2" id="pdfFotos"></div>
 </div>
 <!-- MEDIDAS Y COTAS DECLARADAS -->
 <div class="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-200">
 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2 flex items-center gap-1.5 pb-1 border-b border-slate-200">
 <i class="fa-solid fa-ruler-combined text-red-600"></i> Medidas y Cotas de Superficie Declaradas
             </h4>
-<div class="text-xs text-slate-700 whitespace-pre-line leading-relaxed font-mono bg-white p-3 rounded-lg border border-slate-200" id="pdfMedidasDescriptivas">
-              Longitud aproximada del cerco: 28 metros lineales sobre muro perimetral posterior.
-              Altura del muro base existente: 2.60 metros.
-              Portón de acceso: Ancho 3.50 m con profundidad libre de 5.00 m.
-              Punto de corriente 220V disponible a 3 metros.
-            </div>
+<div class="text-xs text-slate-700 whitespace-pre-line leading-relaxed font-mono bg-white p-3 rounded-lg border border-slate-200" id="pdfMedidasDescriptivas"></div>
 </div>
 <!-- REQUERIMIENTO -->
 <div class="mb-6">
 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2 flex items-center gap-1.5 pb-1 border-b border-slate-200">
 <i class="fa-solid fa-list-check text-red-600"></i> Requerimiento y Especificación del Cliente
             </h4>
-<div class="p-3.5 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line font-mono bg-slate-50/50" id="pdfRequerimiento">
-              Requiero un sistema integrado de seguridad para mi domicilio particular:
-              1. Instalación de 4 cámaras 4K con IA en los accesos frontales y patio.
-              2. Cerco eléctrico perimétrico de 6 líneas en el muro posterior (28 metros lineales).
-              3. Automatización de portón levadizo con 3 controles remotos sincronizados.
-            </div>
+<div class="p-3.5 rounded-lg border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line font-mono bg-slate-50/50" id="pdfRequerimiento"></div>
 </div>
 <!-- CLÁUSULA OFICIAL DE VALIDACIÓN EN SITIO -->
 <div class="border-2 border-red-600 bg-red-50/70 rounded-xl p-4 mb-6">
@@ -943,37 +940,87 @@
     }
 
 // Carga real de fotos desde PC
+    // Antes esto solo pintaba la foto en la pantalla y se perdía al enviar.
+    // Ahora se achica antes de guardarla: recorta el lado mayor a 1200 px y la
+    // guarda en JPEG de calidad 0.75. Así entra en el PDF a un tamaño razonable
+    // y el envío no se pasa del límite del servidor. El backend acepta 3 fotos.
+    var MAX_FOTOS_SOLICITUD = 3;
+    var LADO_MAXIMO_FOTO = 1200;
+    var CALIDAD_FOTO = 0.75;
+
+    function achicaImagen(file, alTerminar) {
+      var reader = new FileReader();
+      reader.onerror = function () {
+        alert('No se pudo leer la imagen. Intenta con otra foto.');
+      };
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onerror = function () {
+          alert('El archivo no es una imagen válida.');
+        };
+        img.onload = function () {
+          var lado = Math.max(img.width, img.height);
+          var escala = lado > LADO_MAXIMO_FOTO ? LADO_MAXIMO_FOTO / lado : 1;
+          var w = Math.max(1, Math.round(img.width * escala));
+          var h = Math.max(1, Math.round(img.height * escala));
+          var lienzo = document.createElement('canvas');
+          lienzo.width = w;
+          lienzo.height = h;
+          lienzo.getContext('2d').drawImage(img, 0, 0, w, h);
+          try {
+            alTerminar(lienzo.toDataURL('image/jpeg', CALIDAD_FOTO), w + 'x' + h);
+          } catch (err) {
+            // Si el navegador no puede exportar (imagen con bloqueo raro), se
+            // manda la original; el backend la descarta si no es data URL.
+            alTerminar(e.target.result, w + 'x' + h);
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function fotosDeLaSolicitud() {
+      var salida = [];
+      var imgs = document.querySelectorAll('#photoGrid [data-foto="true"] img');
+      for (var i = 0; i < imgs.length && salida.length < MAX_FOTOS_SOLICITUD; i++) {
+        var src = (imgs[i].getAttribute('src') || '').trim();
+        if (src.indexOf('data:image/') === 0) salida.push(src);
+      }
+      return salida;
+    }
+
+    // Carga real de fotos desde PC
     function simularSubidaFoto(input) {
       const isProyectoEspecial = document.querySelector('input[name="tipoInmueble"]:checked')?.value === 'Proyecto Especial';
-      const maximo = isProyectoEspecial ? 20 : 5;
-      
+      const maximo = MAX_FOTOS_SOLICITUD;
+
       if (!input || !input.files || input.files.length === 0) return;
-      
+
       const file = input.files[0];
       if (!file.type.startsWith('image/')) {
         alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
         return;
       }
-      
+
       if (file.size > 10 * 1024 * 1024) {
         alert('El archivo es muy grande. Máximo 10MB por imagen.');
         return;
       }
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        agregarFotoAGrilla(e.target.result, file.name);
-        actualizarContadorFotos();
-      };
-      reader.readAsDataURL(file);
-      
-      // Limpiar el input para permitir subir la misma imagen otra vez si se quiere
+
+      // Se limpia el input primero para que la misma foto se pueda volver a
+      // elegir aunque se cancele la lectura.
       input.value = '';
+
+      achicaImagen(file, function (dataUrl, medida) {
+        agregarFotoAGrilla(dataUrl, file.name + ' · ' + medida);
+        actualizarContadorFotos();
+      });
     }
 
     function agregarFotoAGrilla(dataUrl, fileName) {
       const photoGrid = document.getElementById('photoGrid');
-      const maximo = document.querySelector('input[name="tipoInmueble"]:checked')?.value === 'Proyecto Especial' ? 20 : 5;
+      const maximo = MAX_FOTOS_SOLICITUD;
       
       // Contar fotos actuales (excluyendo slots de subida)
       const fotosActuales = photoGrid.querySelectorAll('[data-foto="true"]').length;
@@ -1130,6 +1177,8 @@
             referencia: g('inputReferencia'),
             producto: 'Sistema de seguridad integral',
             descripcion: g('inputRequerimiento'),
+            // Las fotos ya vienen achicadas; ahora sí se guardan con la solicitud.
+            fotos: fotosDeLaSolicitud(),
           },
         });
         window.__lastQuote = c;
@@ -1140,11 +1189,48 @@
         return;
       }
       originalGenerar();
-      // Parchea folio real dentro del modal original
+      // Los datos del cliente salen de la sesión y de la cotización recién
+      // creada, no de campos vacíos del formulario: antes el PDF se quedaba
+      // con los textos de ejemplo fijos que tenía escritos en el HTML.
       try {
+        var q = window.__lastQuote || {};
+        var sesion = (window.UN && UN.getUser && UN.getUser()) || {};
         var modal = document.getElementById('pdfModal');
-        var html = modal.innerHTML.replace(/COT-\d+-\d+/g, window.__lastQuote.folio);
-        modal.innerHTML = html;
+        var txt = function (id, valor) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = valor || '';
+        };
+        txt('pdfNombre', sesion.nombre || q.nombre || g('inputNombre'));
+        txt('pdfEmpresaPreview', g('inputEmpresa') || sesion.empresa || '');
+        txt('pdfTelefono', q.telefono || g('inputTelefono') || sesion.telefono || '');
+        txt('pdfEmail', sesion.email || q.email || g('inputEmail'));
+        txt('pdfTipoInmueble', q.tipoInmueble || tipo);
+        txt('pdfDireccion', q.direccion || '');
+        txt('pdfReferencia', q.referencia || '');
+        if (modal) {
+          var html = modal.innerHTML.replace(/COT-\d+-\d+/g, q.folio || 'COT');
+          modal.innerHTML = html;
+        }
+        // Fotos del cliente, en tira y de tamaño fijo para que quepan ordenadas.
+        var fotos = Array.isArray(q.fotos) ? q.fotos : [];
+        var marco = document.getElementById('pdfFotosBloque');
+        var tira = document.getElementById('pdfFotos');
+        if (marco && tira) {
+          tira.innerHTML = '';
+          if (fotos.length) {
+            fotos.slice(0, 3).forEach(function (src) {
+              var img = document.createElement('img');
+              img.src = src;
+              img.alt = 'Fotografía del inmueble';
+              img.style.cssText = 'width:100%;height:112px;object-fit:cover;' +
+                'border:1px solid #e2e8f0;border-radius:6px;display:block';
+              tira.appendChild(img);
+            });
+            marco.classList.remove('hidden');
+          } else {
+            marco.classList.add('hidden');
+          }
+        }
       } catch (e) { /* visual intacto si algo cambia */ }
     };
     window.descargarPDFSimulado = function () {

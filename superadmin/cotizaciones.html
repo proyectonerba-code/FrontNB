@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html class="h-full" lang="es" style=""><head>
+<!DOCTYPE html><html class="h-full" lang="es" style=""><head>
 <script src="/js/tema-oscuro.js?v=3.8"></script>
 <link rel="stylesheet" href="/css/tema-oscuro-razor.css?v=3.0" data-razor-dark="1">
 <meta charset="utf-8">
@@ -757,19 +757,7 @@
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     };
-
-    // DESCARGAR ARCHIVO PDF EMULADO
-    window.descargarPDF = function(folio, cliente) {
-      mostrarToast(`Generando y descargando PDF de ${folio}...`, 'blue');
-      const pdfContent = `Grupo NERBA HIDALGO - SEGURIDAD INTEGRAL\nFOLIO OFICIAL: ${folio}\nCLIENTE: ${cliente}\nESTADO: REGISTRADA Y EVALUADA\nExpediente técnico con certificación oficial IEC.`;
-      const blob = new Blob([pdfContent], { type: 'application/pdf' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `GrupoNerbaHidalgo_${folio}_Expediente.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+    
 
     // TOAST NOTIFIER
     window.mostrarToast = function(mensaje, tipo = 'emerald') {
