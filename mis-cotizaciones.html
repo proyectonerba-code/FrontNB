@@ -1401,7 +1401,9 @@
     var pills = Array.prototype.slice.call(document.querySelectorAll('[data-tipo-pill]'));
     if (!pills.length) return;
     function tipoOf(a) {
-      var folio = ((a.textContent || '').match(/COT-\d+-\d+/) || [''])[0];
+      // Acepta el folio viejo (COT-1234-2026) y las series nuevas
+    // (COT-INS-0001-2026): si no, el filtro de tipo no encontraba ninguna.
+    var folio = ((a.textContent || '').match(/COT-(?:INS|ELC|MAT|ESP)-\d+-\d+|COT-\d+-\d+/) || [''])[0];
       var q = folio && window.__quotes ? window.__quotes[folio] : null;
       if (q) return String(q.tipoInmueble || '') === 'Productos Electrónicos' ? 'productos' : 'instalaciones';
       return /productos electr/i.test(a.textContent || '') ? 'productos' : 'instalaciones';
@@ -1414,19 +1416,34 @@
           : 'font-semibold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800');
       });
     }
-    function pass() {
-      var arts = Array.prototype.slice.call(document.querySelectorAll('#lista-cotizaciones > article'));
-      arts.forEach(function (a) {
-        if (a.style.display === 'none') return;
-        if (tipo !== 'todos' && tipoOf(a) !== tipo) a.style.display = 'none';
-      });
-      var np = arts.filter(function (a) { return tipoOf(a) === 'productos'; }).length;
-      pills.forEach(function (b) {
-        var k = b.getAttribute('data-tipo-pill');
-        var base = k === 'todos' ? 'Todas' : (k === 'productos' ? 'Electrónica y refacciones' : 'Instalaciones');
-        b.textContent = base + ' (' + (k === 'todos' ? arts.length : (k === 'productos' ? np : arts.length - np)) + ')';
-      });
-    }
+  function pass() {
+    var arts = Array.prototype.slice.call(document.querySelectorAll('#lista-cotizaciones > article'));
+    arts.forEach(function (a) {
+      var coincide = (tipo === 'todos') || (tipoOf(a) === tipo);
+      var tapadaPorTipo = a.getAttribute('data-oculto-tipo') === '1';
+      if (coincide) {
+        // Solo se destapa lo que tapo ESTE filtro. Lo que tapo el filtro de
+        // estado se deja quieto, para que los dos no se peleen entre ellos.
+        if (tapadaPorTipo) {
+          a.style.display = '';
+          a.removeAttribute('data-oculto-tipo');
+        }
+      } else if (!tapadaPorTipo && a.style.display !== 'none') {
+        a.setAttribute('data-oculto-tipo', '1');
+        a.style.display = 'none';
+      }
+    });
+    // El contador va con lo que se ve de verdad. Antes contaba tambien las
+    // ocultas, y por eso marcaba "Todas (3)" sobre una lista vacia.
+    var visibles = arts.filter(function (a) { return a.style.display !== 'none'; });
+    var np = visibles.filter(function (a) { return tipoOf(a) === 'productos'; }).length;
+    pills.forEach(function (b) {
+      var k = b.getAttribute('data-tipo-pill');
+      var base = k === 'todos' ? 'Todas' : (k === 'productos' ? 'Electrónica y refacciones' : 'Instalaciones');
+      var n = k === 'todos' ? visibles.length : (k === 'productos' ? np : visibles.length - np);
+      b.textContent = base + ' (' + n + ')';
+    });
+  }
     var deb = null;
     function passSoon() { clearTimeout(deb); deb = setTimeout(pass, 60); }
     pills.forEach(function (b) {
