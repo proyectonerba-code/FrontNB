@@ -56,7 +56,7 @@
       v.id = 'un-page-veil';
       v.setAttribute('aria-hidden', 'true');
       v.innerHTML = '<div class="un-veil-box">' +
-        '<img src="/assets/nerba-isotipo.svg" alt="" onerror="this.style.display=\'none\'">' +
+        '<img src="/assets/logo.png" alt="" onerror="this.style.display=\'none\'">' +
         '<span class="un-veil-line"><i></i></span></div>';
       (document.body || document.documentElement).appendChild(v);
     }

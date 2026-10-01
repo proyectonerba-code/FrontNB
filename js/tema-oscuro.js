@@ -34,7 +34,7 @@
     boot.id = 'un-boot-screen';
     boot.setAttribute('aria-hidden', 'true');
     boot.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:var(--un-boot-bg,#fff);transition:opacity .12s ease;';
-    boot.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:20px"><img src="/assets/nerba-isotipo.svg" width="80" height="80" alt="" aria-hidden="true" style="display:block;width:80px;height:80px;object-fit:contain"><span class="un-boot-line"><i></i></span></div>';
+    boot.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:20px"><img src="/assets/logo.png" width="80" height="80" alt="" aria-hidden="true" style="display:block;width:80px;height:80px;object-fit:contain"><span class="un-boot-line"><i></i></span></div>';
     (document.documentElement).appendChild(boot);
     var style = document.createElement('style');
     style.id = 'un-boot-style';
