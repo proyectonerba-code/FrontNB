@@ -1152,7 +1152,7 @@
     }
     function estadoOf(a) {
       if (a.dataset.estado) return a.dataset.estado;
-      var folio = (a.textContent.match(/COT-\d+-\d+/) || [''])[0];
+      var folio = (a.textContent.match(/COT-(?:INS|ELC|MAT|ESP)-\d+-\d+|COT-\d+-\d+/) || [''])[0];
       var q = folio && window.__quotes ? window.__quotes[folio] : null;
       var est = q ? q.estado : (/APROBADA/.test(a.textContent) ? 'APROBADA' : 'PENDIENTE');
       a.dataset.estado = est;
@@ -1162,7 +1162,7 @@
     var query = '';
     function revOf(a) {
       if (a.dataset.enrev !== undefined) return a.dataset.enrev === '1';
-      var folio = (a.textContent.match(/COT-\d+-\d+/) || [''])[0];
+      var folio = (a.textContent.match(/COT-(?:INS|ELC|MAT|ESP)-\d+-\d+|COT-\d+-\d+/) || [''])[0];
       var q = folio && window.__quotes ? window.__quotes[folio] : null;
       var r = !!(q && q.estado === 'PENDIENTE' && q.enRevision);
       a.dataset.enrev = r ? '1' : '0';
