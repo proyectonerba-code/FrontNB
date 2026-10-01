@@ -224,7 +224,11 @@ Sistemas completos de seguridad: videovigilancia, alarmas, control de accesos y 
 <div class="relative w-full h-[650px] lg:h-[720px] overflow-hidden bg-neutral-100">
 <!-- Video de fondo (reemplaza el carrusel de fotos). El filtro blanco de abajo
      es el mismo que usaba el carrusel: mantiene el texto legible. -->
-<video aria-hidden="true" autoplay="" class="absolute inset-0 w-full h-full object-cover" id="gabinete-video" loop="" muted="" playsinline="" poster="/assets/video/poster-seguridad.jpg"><source data-un-video-fuente data-src="/assets/video/seguridad-24-7.mp4" type="video/mp4"/></video>
+<!-- Fondo del bloque. El video lo pone YouTube (js/video-fondo.js) porque el mp4
+     local pesaba 12.7 MB y hacia esperar a la pagina. Este contenedor lleva el
+     poster de fondo, asi que la imagen se ve desde el primer instante. -->
+<div aria-hidden="true" class="absolute inset-0 bg-neutral-100 bg-cover bg-center"
+     data-un-video-fondo="1" style="background-image:url('/assets/video/poster-seguridad.jpg')"></div>
 <!-- Overlays limpios y elegantes en blanco translúcido -->
 <div class="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-white/80 pointer-events-none"></div>
 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(217,27,27,0.08)_0%,transparent_75%)] pointer-events-none"></div>
@@ -610,19 +614,5 @@ function closeCatalogDrawer() {
 <script defer src="/js/staff-servicios.js?v=1.1"></script>
 <script defer src="/js/chatbot.js?v=2.3"></script>
 <script defer src="/js/transicion.js?v=1.0"></script>
-<script defer src="/js/pie-empresa.js?v=1.0"></script><script>
-// El video de fondo se autoplay solo; algunos navegadores lo pausan si la
-// pestana pierde el foco. Esto lo reanuda sin ensuciar la pagina.
-(function () {
-  var v = document.getElementById('gabinete-video');
-  if (!v) return;
-  v.muted = true;
-  var reintentar = function () {
-    var p = v.play();
-    if (p && p.catch) p.catch(function () { setTimeout(reintentar, 1200); });
-  };
-  if (v.readyState >= 1) reintentar(); else v.addEventListener('loadeddata', reintentar, { once: true });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) reintentar(); });
-})();
-</script>
-<script>(function(){var v=document.getElementById('gabinete-video');if(!v)return;function conectar(){var s=v.querySelector('source[data-un-video-fuente]');if(!s||s.src)return;s.src=s.getAttribute('data-src');s.removeAttribute('data-un-video-fuente');v.load();if(v.paused)v.play().catch(function(){});}if(document.readyState==='complete'){conectar();}else{window.addEventListener('load',function(){'requestIdleCallback' in window?requestIdleCallback(conectar,{timeout:2500}):setTimeout(conectar,400);});}})();</script></body></html>
+<script defer src="/js/pie-empresa.js?v=1.0"></script><script defer src="/js/video-fondo.js?v=1.0"></script>
+</body></html>
