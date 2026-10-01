@@ -579,25 +579,28 @@ function closeCatalogDrawer() {
 <script defer src="js/menu-unico.js?v=3.1"></script>
 <script>
   // Index nuevo: CTAs cableados + morph identico a variante sesion-activa. Diseno intacto.
+  // OJO: unidos.js carga con defer, asi que este bloque corre ANTES que UN exista.
+  // Se espera a DOMContentLoaded (los diferidos ya corrieron ahi) en vez de
+  // salir con `if (!window.UN) return`, que dejaba el header publico aun con
+  // sesion y el usuario sentia que "regresaba al index original".
   (function () {
-    if (!window.UN) return;
-    // Si el unidos.js en caché es viejo (sin UN.ensureMenu), se avisa en vez
-    // de mostrar la página a medias como si no hubiera sesión.
-    if (!UN.ensureMenu) {
-      var __b = document.createElement('div');
-      __b.setAttribute('style', 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#b0000b;color:#fff;padding:12px 16px;border-radius:12px;font:600 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;justify-content:space-between;');
-      __b.innerHTML = '<span>Interfaz desactualizada en caché: recarga con Ctrl + Shift + R para ver la versión nueva.</span><button type="button" style="background:#fff;color:#b0000b;border:0;border-radius:8px;padding:8px 14px;font-weight:800;cursor:pointer">OK</button>';
-      __b.querySelector('button').addEventListener('click', function () { __b.remove(); });
-      document.body.appendChild(__b);
-      return;
-    }
+    function arrancar() {
+      if (!window.UN || !UN.ensureMenu) {
+        // Aqui UN si deberia existir: si falta es caché vieja o fallo de red.
+        var __b = document.createElement('div');
+        __b.setAttribute('style', 'position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#b0000b;color:#fff;padding:12px 16px;border-radius:12px;font:600 13px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;justify-content:space-between;');
+        __b.innerHTML = '<span>Interfaz desactualizada en caché: recarga con Ctrl + Shift + R para ver la versión nueva.</span><button type="button" style="background:#fff;color:#b0000b;border:0;border-radius:8px;padding:8px 14px;font-weight:800;cursor:pointer">OK</button>';
+        __b.querySelector('button').addEventListener('click', function () { __b.remove(); });
+        document.body.appendChild(__b);
+        return;
+      }
     // CTAs del diseño sin data-path: se etiquetan y los resuelve UN.rewriteLinks.
     // Solo se tocan botones muertos (href="#"); el diseño intacto manda.
     document.querySelectorAll('a').forEach(function (a) {
       if (a._unCta || a.getAttribute('data-path')) return;
       var t = ((a.textContent || '').replace(/\s+/g, ' ').trim());
       if ((a.getAttribute('href') || '') !== '#') return;
-      if (t.indexOf('COTIZAR SERVICIO') === 0) { a._unCta = true; a.setAttribute('data-path', 'productos-electronicos'); }
+      if (t.indexOf('COTIZAR SERVICIO') === 0) { a._unCta = true; a.setAttribute('data-path', 'cotizador'); }
       else if (t === 'CREAR CUENTA GRATIS' || t === 'CREAR CUENTA') { a._unCta = true; a.setAttribute('data-path', 'registro-cuenta'); }
       else if (t.indexOf('COTIZADOR ONLINE') >= 0) { a._unCta = true; a.setAttribute('data-path', 'cotizador'); }
       else if (t.indexOf('MÁS INFORMACIÓN') === 0 || t.indexOf('CONOCE LOS SERVICIOS') === 0 || t.indexOf('VER TODOS LOS SERVICIOS') === 0 || t.indexOf('COTIZAR INSTALACIÓN') === 0) { a._unCta = true; a.setAttribute('href', '#seccion-catalogo'); }
@@ -611,6 +614,10 @@ function closeCatalogDrawer() {
       var __u = UN.getUser() || {};
       if (localStorage.getItem('unidos_token') && __u.nombre && UN.ensureMenu) UN.ensureMenu('cliente');
     } catch (e) {}
+    }
+    if (window.UN && UN.ensureMenu) arrancar();
+    else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arrancar);
+    else arrancar();
   })();
 </script>
 <script defer src="/js/carrito-cotizacion.js?v=1.0"></script>
