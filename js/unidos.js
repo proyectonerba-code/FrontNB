@@ -392,7 +392,10 @@
   }
 
   // Descarga real del presupuesto como documento imprimible (se puede guardar como PDF desde el navegador)
-  var UN_LOGO = '/assets/logo.png';
+  // El documento de cotizacion se abre como blob:, y dentro de un blob una ruta
+  // como /assets/logo.png no existe: sale la imagen rota. Por eso se resuelve a
+  // una direccion completa contra el sitio actual.
+  var UN_LOGO = new URL('/assets/logo.png', location.href).href;
   function fechaDoc(iso) {
     var p = String(iso || '').split('-');
     return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : String(iso || '—');
