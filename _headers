@@ -1,0 +1,8 @@
+# Grupo NERBA HIDALGO - cabeceras de seguridad (formato Cloudflare Pages).
+# Equivalente al netlify.toml, para el hosting nuevo.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
