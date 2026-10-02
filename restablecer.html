@@ -91,7 +91,7 @@
 </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">password</span>
-<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np1" minlength="6" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" type="password">
+<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np1" minlength="8" placeholder="Mínimo 8 caracteres" required autocomplete="new-password" type="password">
 <button aria-label="Mostrar contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle1" type="button"><span class="material-symbols-outlined text-[20px]" id="eye1">visibility</span></button>
 </div>
 </div>
@@ -102,7 +102,7 @@
 </label>
 <div class="relative flex items-center">
 <span class="material-symbols-outlined absolute left-3.5 text-secondary pointer-events-none select-none text-[20px]">password</span>
-<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np2" minlength="6" placeholder="Vuelve a escribirla" required autocomplete="new-password" type="password">
+<input class="w-full pl-11 pr-11 py-3 bg-surface-container-lowest rounded-lg font-body-sm text-body-sm text-on-surface placeholder:text-secondary/60 shadow-sm transition-all duration-200 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-surface-container-lowest focus:shadow-md hover:bg-surface-container-low" id="np2" minlength="8" placeholder="Vuelve a escribirla" required autocomplete="new-password" type="password">
 <button aria-label="Mostrar contraseña" class="absolute right-3 text-secondary hover:text-primary transition-colors p-1 flex items-center justify-center rounded focus:outline-none" id="toggle2" type="button"><span class="material-symbols-outlined text-[20px]" id="eye2">visibility</span></button>
 </div>
 </div>
@@ -247,7 +247,7 @@
   // para no asustar, solorojiza el texto del nivel bajo.
   function fuerzaDe(v) {
     var n = 0;
-    if (v.length >= 6) n++;
+    if (v.length >= 8) n++;
     if (v.length >= 10) n++;
     if (/[A-Z]/.test(v) && /[a-z]/.test(v)) n++;
     if (/\d/.test(v)) n++;
@@ -276,7 +276,7 @@
     var p2 = document.getElementById('np2').value;
     var err = document.getElementById('txt-err');
     err.classList.add('hidden');
-    if (p1.length < 6) { err.textContent = 'La contraseña debe tener al menos 6 caracteres.'; err.classList.remove('hidden'); return; }
+    if (p1.length < 8) { err.textContent = 'La contraseña debe tener al menos 8 caracteres.'; err.classList.remove('hidden'); return; }
     if (p1 !== p2) { err.textContent = 'Las contraseñas no coinciden.'; err.classList.remove('hidden'); return; }
     btn.disabled = true; btn.querySelector('span').textContent = 'Guardando…';
     api('/api/restablecer', { token: token, password: p1 }).then(function (r) {

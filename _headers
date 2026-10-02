@@ -6,3 +6,18 @@
   Referrer-Policy: no-referrer
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+  # Content-Security-Policy: antes no habia ninguna, y sin ella cualquier error
+  # de JavaScript (un XSS) podia robar el token de sesion del localStorage y
+  # hacerse el pasa de la cuenta.
+  #
+  # Se listan a mano solo los origenes que el sitio usa de verdad:
+  #   - Tailwind y FontAwesome por CDN, y Google Sign-In.
+  #   - El backend en Railway (connect-src) para los fetch de la API.
+  #   - blob: porque el visor de PDF abre el documento en un iframe blob.
+  #   - data: para los logos y las fotos de la cotizacion en base64.
+  # 'unsafe-inline' y 'unsafe-eval' siguen siendo necesarios: hay scripts
+  # embebidos en el HTML y Tailwind por CDN ejecuta la configuracion con
+  # new Function. Para quitarlos hay que autoalojar Tailwind y pasar los
+  # scripts a nonces; mientras tanto, esto al menos cierra el origen de los
+  # scripts que el navegador puede cargar.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://lh3.googleusercontent.com https://ui-avatars.com https://images.unsplash.com; connect-src 'self' https://backendnb-production.up.railway.app https://accounts.google.com https://apis.google.com https://cdn.tailwindcss.com; frame-src 'self' blob: data: https://accounts.google.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests
