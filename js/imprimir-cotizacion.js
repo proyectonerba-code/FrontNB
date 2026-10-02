@@ -18,12 +18,17 @@
   function fotosDe(q) {
     var fotos = Array.isArray(q.fotos) ? q.fotos : [];
     if (!fotos.length) return '';
-    var tira = fotos.slice(0, 3).map(function (src) {
-      // Tamaño fijo: ni la dejan gigante ni arman una hoja aparte.
-      return '<img src="' + esc(src) + '" alt="Fotografía del inmueble" ' +
-        'style="width:100%;height:112px;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px">';
+    // Todas las que subió el cliente, en rejilla de 3 y con salto de página
+    // entre filas. Antes solo salían las primeras 3 aunque el cliente hubiera
+    // adjuntado 20 (Proyecto Especial).
+    var tira = fotos.map(function (src, i) {
+      return '<figure style="margin:0;break-inside:avoid">' +
+        '<img src="' + esc(src) + '" alt="Fotografía ' + (i + 1) + ' del inmueble" ' +
+        'style="width:100%;height:112px;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px">' +
+        '<figcaption style="font-size:8px;color:#94a3b8;text-align:center;padding-top:2px">Foto ' +
+        (i + 1) + ' de ' + fotos.length + '</figcaption></figure>';
     }).join('');
-    return '<h2>Fotografías del inmueble</h2>' +
+    return '<h2>Fotografías del inmueble (' + fotos.length + ')</h2>' +
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' + tira + '</div>';
   }
 
