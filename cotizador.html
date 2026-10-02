@@ -322,7 +322,7 @@
 <div class="mt-4 p-3.5 rounded-xl bg-red-50/70 border border-red-200 text-xs text-red-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" id="avisoFotosProyectoEspecial">
 <div class="flex items-center gap-2">
 <i class="fa-solid fa-images text-[#d91b1b] text-base"></i>
-<span class=""><strong>Capacidad ampliada para Proyecto Especial:</strong> Puedes adjuntar hasta 20 imágenes técnicas de planos, acometidas y perímetros extendidos.</span>
+<span class=""><strong>Capacidad ampliada para Proyecto Especial:</strong> Puedes adjuntar hasta 10 imágenes técnicas de planos, acometidas y perímetros extendidos.</span>
 </div>
 
 </div>
@@ -823,6 +823,9 @@
 
     // SELECCIÓN DE TIPO DE INMUEBLE
     function seleccionarTipoInmueble(tipo, elemento) {
+      // Se guarda aqui para que el limite de fotos no dependa de en que
+      // momento se consulta el radio (ver nota de TIPO_INMUEBLE_ACTUAL).
+      TIPO_INMUEBLE_ACTUAL = tipo;
       const container = document.getElementById('tipoInmuebleContainer');
       const cards = container.querySelectorAll('.tipo-inmueble-card');
       
@@ -895,9 +898,12 @@
           : 'bg-slate-100 text-slate-700 border-slate-200') + ' font-bold text-xs px-3 py-1 rounded-full border';
       }
       if (subtext) {
+        // Las dos ramas decia exactamente lo mismo: el texto no distinguia un
+        // proyecto especial de una casa, y por eso el contador prometia mas de
+        // lo que permitia al empezar.
         subtext.innerText = especial
-          ? `Máximo ${tope} imágenes para dimensionar cableados, alturas y ángulos de cobertura.`
-          : `Máximo ${tope} imágenes para dimensionar cableados, alturas y ángulos de cobertura.`;
+          ? `Proyecto Especial: hasta ${tope} imágenes técnicas (planos, acometidas y perímetros).`
+          : `Hasta ${tope} imágenes para dimensionar cableados, alturas y ángulos de cobertura.`;
       }
     }
 
@@ -916,17 +922,30 @@
     // guarda en JPEG de calidad 0.75. Así entra en el PDF a un tamaño razonable
     // y el envío no se pasa del límite del servidor. El backend acepta 3 fotos.
     // El limite de fotos depende del tipo de inmueble: Proyecto Especial abre
-    // la grilla a 20 imagenes tecnicas, cualquier otro tipo se queda en 5.
-    // Antes el tope era una constante de 5 y por eso el contador prometia 20
-    // pero el navegador rechazaba la foto 6 con "Maximo 5 fotos permitidas".
-    var MAX_FOTOS_PROYECTO_ESPECIAL = 20;
+    // la grilla a 10 imagenes tecnicas, cualquier otro tipo se queda en 5.
+    // El backend aguanta hasta 20 y 10 MB, aqui el tope es 10 a pedido del
+    // cliente: con 10 a 1200 px el envio se va a ~3 MB y la base de datos no
+    // carga con filas enormes, sin perder nitidez para medir.
+    var MAX_FOTOS_PROYECTO_ESPECIAL = 10;
     var MAX_FOTOS_ESTANDAR = 5;
     var LADO_MAXIMO_FOTO = 1200;
     var CALIDAD_FOTO = 0.72;
 
-    function esProyectoEspecial() {
+    // El tipo de inmueble se guarda en una variable y no se vuelve a leer del
+    // radio cada vez. Antes esProyectoEspecial() consultaba
+    // 'input[name="tipoInmueble"]:checked' en cada llamada, y hay momentos en
+    // que no hay ningun radio marcado: por ejemplo, seleccionarTipoInmueble
+    // desmarca todos antes de marcar el elegido. En ese instante la funcion
+    // devolvia false, el limite caia de 10 a 5, actualizarContadorFotos
+    // BORRABA las fotos que ya no "cabian" y la siguiente salia con
+    // "Máximo 5 fotos permitidas" en un proyecto especial.
+    var TIPO_INMUEBLE_ACTUAL = (function () {
       var sel = document.querySelector('input[name="tipoInmueble"]:checked');
-      return !!sel && sel.value === 'Proyecto Especial';
+      return sel ? sel.value : 'Casa / Residencia';
+    })();
+
+    function esProyectoEspecial() {
+      return TIPO_INMUEBLE_ACTUAL === 'Proyecto Especial';
     }
     function maxFotosPermitidas() {
       return esProyectoEspecial() ? MAX_FOTOS_PROYECTO_ESPECIAL : MAX_FOTOS_ESTANDAR;
