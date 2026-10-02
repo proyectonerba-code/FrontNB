@@ -197,11 +197,46 @@
     if (b) { b.disabled = true; b.textContent = 'Vaciar bitácora'; }
   }
 
-  function avisar(texto, tipo) {
-    if (window.SA && SA.toast) { SA.toast(texto, tipo); return; }
-    if (window.UN && UN.toast) { UN.toast(texto, tipo === 'emerald' ? 'exito' : 'error'); return; }
-    window.alert(texto);
-  }
+  // Aviso flotante propio, con el estilo de los que ya usa la zona.
+//
+// Antes se delegaba en SA.toast, pero ese metodo busca una caja de avisos que
+// esta pagina no tiene (#toast-feedback / #toast-container) y cuando no la
+// encuentra se cae a un alert() del navegador. Se hace aqui para no depender
+// de que esa caja exista.
+function avisar(texto, tipo) {
+  var malo = tipo === 'error';
+  var id = 'auditAviso';
+  var viejo = document.getElementById(id);
+  if (viejo) viejo.parentNode.removeChild(viejo);
+
+  var t = document.createElement('div');
+  t.id = id;
+  t.setAttribute('role', 'status');
+  t.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:260;display:flex;align-items:center;gap:10px;' +
+    'max-width:380px;padding:13px 16px;border-radius:12px;font-size:13px;font-weight:600;' +
+    'background:#ffffff;border:1px solid ' + (malo ? '#f3c9c4' : '#c9e7d4') + ';' +
+    'box-shadow:0 12px 28px -10px rgba(15,23,42,.32);color:#0b1c30;' +
+    'transform:translateY(12px);opacity:0;transition:transform .28s ease,opacity .28s ease';
+  t.innerHTML =
+    '<span class="material-symbols-outlined text-lg shrink-0" style="color:' + (malo ? '#b3261e' : '#1a7f4b') + '">' +
+      (malo ? 'error' : 'check_circle') + '</span>' +
+    '<span class="leading-snug">' + String(texto) + '</span>' +
+    '<button type="button" aria-label="Cerrar" style="margin-left:4px;color:#64748b;font-size:16px;line-height:1;cursor:pointer">&#215;</button>';
+  document.body.appendChild(t);
+
+  var quitar = function () {
+    t.style.transform = 'translateY(12px)';
+    t.style.opacity = '0';
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 300);
+  };
+  t.querySelector('button').addEventListener('click', quitar);
+
+  requestAnimationFrame(function () {
+    t.style.transform = 'translateY(0)';
+    t.style.opacity = '1';
+  });
+  t._timer = setTimeout(quitar, malo ? 6000 : 4000);
+}
 
   window.__bitacoraLimpiar = function () {
     var total = estado.dias.reduce(function (n, d) { return n + d.eventos.length; }, 0);
