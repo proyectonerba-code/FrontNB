@@ -715,6 +715,10 @@ document.addEventListener('click', function(e) {
         decideHTML(c, s) +
         '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors" onclick="PEopenDetail(\'' + ESP.q(c.folio) + '\')" title="Ver Ficha Técnica">' +
         '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="">Ver ficha</span></button>' +
+        '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors" onclick="PEwhatsapp(\'' + ESP.q(c.folio) + '\')" title="Escribir por WhatsApp al cliente">' +
+        '<svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"></path></svg><span class="">WhatsApp</span></button>' +
+        '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[11px] font-semibold bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors" onclick="PEeliminar(\'' + ESP.q(c.folio) + '\')" title="Eliminar solicitud">' +
+        '<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><span class="">Eliminar</span></button>' +
         '</div></td></tr>';
     }
     function paintCounts(list) {
@@ -755,6 +759,42 @@ document.addEventListener('click', function(e) {
         UN.viewQuote(completo || c);
       } catch (err) {
         UN.viewQuote(c);
+      }
+    };
+    // Escribir por WhatsApp al cliente: mismo modal de respuesta que usan admin,
+// electronica y superadmin (plantillas, texto editable, ver PDF y envio).
+window.PEwhatsapp = function (folio) {
+      var c = QUOTES[folio];
+      if (!c) return;
+      if (typeof window.abrirModalRespuesta === 'function') {
+        window.abrirModalRespuesta(c.nombre || '', c.folio, c.telefono || '',
+          c.descripcion || c.espTipoInfraestructura || c.producto || '', c.tipoInmueble || 'Proyecto Especial');
+        return;
+      }
+      // Si el modal no esta disponible, al menos se abre el chat directo.
+      var tel = String(c.telefono || '').replace(/\D/g, '');
+      if (!tel) { showToast('Este cliente no tiene telefono registrado.'); return; }
+      if (tel[0] !== '5') tel = '52' + tel;
+      var msg = 'Hola ' + (c.nombre || '') + ', le saludamos de Grupo NERBA HIDALGO sobre su solicitud ' + c.folio + '.';
+      window.open('https://wa.me/' + tel + '?text=' + encodeURIComponent(msg), '_blank');
+      showToast('Abriendo WhatsApp con el cliente...');
+    };
+    window.PEeliminar = async function (folio) {
+      var c = QUOTES[folio];
+      if (!c) return;
+      var ok = await UN.confirmarEnvio({
+        titulo: 'Eliminar solicitud ' + folio,
+        lineas: ['Cliente: ' + (c.nombre || '-'), 'Folio: ' + folio, 'Esta accion no se puede deshacer.'],
+        boton: 'Si, eliminar'
+      });
+      if (!ok) return;
+      try {
+        await UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE' });
+        delete QUOTES[folio];
+        showToast('Solicitud ' + folio + ' eliminada.');
+        await load();
+      } catch (err) {
+        showToast('No se pudo eliminar: ' + err.message);
       }
     };
     window.PEopenApprove = function (folio) {
