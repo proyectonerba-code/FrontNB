@@ -185,13 +185,87 @@
 </ul>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">target</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Misión</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Proteger vidas y activos con tecnología confiable y servicio impecable.</p></div>
-<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">visibility</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Visión</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Ser la empresa de seguridad privada más confiable del país.</p></div>
-<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">handshake</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Compromiso</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Cumplimos lo cotizado: alcance, tiempos y precio cerrado.</p></div>
-<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">engineering</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Operación/h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Planes de seguridad a la medida y personal siempre listo para reaccionar.</p></div>
+<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">target</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Misión</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Ser la empresa de mayor confianza que brinda seguridad electrónica, por medio de nuestros sistemas de alarmas de intrusión, circuito cerrado de televisión (CCTV), cercos eléctricos, controles de acceso peatonal y vehicular, proyectos especiales (detección de incendios, GPS), energías renovables y mantenimiento de los mismos; atendiendo las necesidades públicas y privadas.</p></div>
+<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"><span class="material-symbols-outlined text-3xl text-primary-container">visibility</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Visión</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Ser una empresa líder de seguridad integral a nivel estatal y nacional al año 2026, por su servicio innovador, de confianza y alta calidad; comprometido a construir entornos más prácticos y seguros.</p></div>
+<div class="p-6 rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md transition-shadow sm:col-span-2"><span class="material-symbols-outlined text-3xl text-primary-container">handshake</span><h3 class="font-headline-md text-headline-md font-bold text-neutral-900 mt-3">Valores</h3><p class="font-body-sm text-body-sm text-neutral-600 mt-1.5">Nuestra actitud de servicio, ética, disciplina, lealtad e integridad nos distingue con nuestros clientes, cumpliendo las expectativas deseadas; construimos entornos seguros y tecnológicos para el mundo.</p></div>
 </div>
 </div>
 </section>
+<!-- MARCAS Y EMPRESAS: carrusel infinito con detalle interactivo -->
+<section class="w-full bg-neutral-950">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-14 lg:py-20">
+<div class="text-center max-w-2xl mx-auto">
+<div class="inline-flex items-center gap-2 font-label-caps text-label-caps tracking-widest text-red-400 font-bold uppercase mb-3"><span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span><span>Respaldo comprobado</span></div>
+<h2 class="font-headline-xl text-headline-xl text-white font-extrabold">Marcas y empresas con las que se ha trabajado</h2>
+<p class="font-body-md text-body-md text-neutral-400 mt-3">Pasa el cursor sobre cada marca para ver los proyectos, instalaciones y trabajos realizados.</p>
+</div>
+<div class="nb-clientes mt-10 overflow-hidden" id="nb-clientes">
+<div class="nb-clientes-track" id="nb-clientes-track"></div>
+</div>
+<p class="text-center text-xs text-neutral-500 mt-4 md:hidden">Toca una marca para ver sus proyectos.</p>
+</div>
+<style>
+.nb-clientes-track{display:flex;gap:14px;width:max-content;animation:nb-marquesina 70s linear infinite;padding:4px 2px 10px}
+.nb-clientes:hover .nb-clientes-track{animation-play-state:paused}
+@keyframes nb-marquesina{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.nb-cli{position:relative;flex:0 0 auto;width:190px;background:#fff;border-radius:14px;padding:16px 14px;text-align:center;cursor:pointer;border:1px solid #e5e7eb;transition:transform .25s ease,box-shadow .25s ease}
+.nb-cli:hover,.nb-cli.activo{transform:translateY(-4px);box-shadow:0 12px 28px rgba(217,27,27,.25)}
+.nb-cli-mono{width:52px;height:52px;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#fff;letter-spacing:.5px}
+.nb-cli h3{font-size:14px;font-weight:800;color:#0b1c30;margin:0 0 4px}
+.nb-cli p{font-size:11.5px;color:#64748b;margin:0;line-height:1.45}
+.nb-cli-det{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(6px);width:250px;background:#0b1c30;color:#e5e7eb;border-radius:12px;padding:14px;text-align:left;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:20;box-shadow:0 16px 40px rgba(0,0,0,.45)}
+.nb-cli:hover .nb-cli-det,.nb-cli.activo .nb-cli-det{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+.nb-cli-det h4{font-size:12px;font-weight:800;color:#fff;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em}
+.nb-cli-det ul{margin:0;padding-left:16px;font-size:11.5px;line-height:1.55;color:#cbd5e1}
+.nb-cli-det li{margin-bottom:4px}
+@media (prefers-reduced-motion:reduce){.nb-clientes-track{animation:none}.nb-clientes{overflow-x:auto}}
+body.reduce-motion-enabled .nb-clientes-track{animation:none}
+body.reduce-motion-enabled .nb-clientes{overflow-x:auto}
+</style>
+<script>
+(function () {
+  var CLIENTES = [
+    { n: 'Audi', c: '#4d4d4f5', s: 'Videovigilancia en piso de venta, talleres y bodega.', p: ['Estudios de riesgo y catálogos de conceptos', 'Videovigilancia en piso de venta', 'Talleres y bodega de almacenaje'] },
+    { n: 'SEAT', c: '#1a1a1a', s: 'Videovigilancia en piso de venta, talleres y bodega.', p: ['Estudios de riesgo y catálogos de conceptos', 'Videovigilancia en piso de venta', 'Talleres y bodega de almacenaje'] },
+    { n: 'UAEH', c: '#a11d21', s: 'Control de acceso vehicular y peatonal, campus ICSHU.', p: ['Planos y catálogos de equipamiento', 'Fibra óptica para acceso vehicular y peatonal', 'Hidráulico de estacionamiento y CCTV', 'Subterráneo y portón a medida'] },
+    { n: 'Coca-Cola', c: '#d61f26', s: 'Puerta rápida para control de flujo peatonal.', p: ['Suministro e instalación de puerta rápida', 'Control de flujo peatonal', 'Condiciones de limpieza del área'] },
+    { n: 'OXXO', c: '#e31837', s: 'Videovigilancia en tiendas y bodegas.', p: ['Estudios de riesgo y catálogos', 'Videovigilancia en piso de venta, talleres y bodega'] },
+    { n: 'PEMEX', c: '#0a7a3d', s: 'Cortinas para litoteca, sede Hidalgo.', p: ['Cortinas para control y almacenamiento', 'Muestreo de rocas y minerales', 'Litoteca de petróleos, sede Hidalgo'] },
+    { n: 'Tuzobús', c: '#7ac143', s: 'Sistemas tipo aeropuerto en terminales BRT.', p: ['Sistemas automáticos en terminales de pasajeros', 'Mantenimiento de infraestructura BRT'] },
+    { n: 'Tec de Monterrey', c: '#0039a6', s: 'Detección de incendio y evacuación en campus.', p: ['Detección de incendio y evacuación total', 'Activación y mantenimiento de carriles de ingreso'] },
+    { n: 'CCEEU', c: '#0e9aa7', s: 'Voz, datos, CCTV y control de acceso.', p: ['Voz, datos, CCTV, DI y control de acceso', 'Puertas contra incendio', 'Backbone de fibra óptica con fusión térmica'] },
+    { n: 'Vinte', c: '#f5a800', s: 'Automatismos e intercomunicación, Hidalgo.', p: ['Automatismos e intercomunicación', 'Control vehicular con barreras hidráulicas', 'CCTV'] },
+    { n: 'DSF Industrias', c: '#1d4ed8', s: 'Alarma contra intrusión y evacuación.', p: ['Alarma contra intrusión y evacuación', 'Puertas rápidas de control peatonal'] },
+    { n: 'IMSS', c: '#0a6c2f', s: 'Telefonía IP, fibra óptica y detección de incendio.', p: ['Telefonía IP y conmutadores PBX', 'Voz, datos, CCTV, CATV, CA, DI', 'Backbone de fibra óptica', 'Detección de incendio'] },
+    { n: 'Esmeralda', c: '#2f7d4f', s: 'Control de acceso vehicular con bolardos.', p: ['Catálogos de conceptos y suministro', 'Control de acceso con bolardos', 'Videovigilancia'] },
+    { n: 'CONAGUA', c: '#b8860b', s: 'Acceso con barreras vehiculares.', p: ['Suministro e instalación de acceso con barreras vehiculares'] },
+    { n: 'Catastro Hidalgo', c: '#334155', s: 'Acceso con portón americano.', p: ['Suministro e instalación de acceso con portón americano'] },
+    { n: 'Hemodiálisis', c: '#c026d3', s: 'Voz, datos, CCTV y alarmas, Pachuca.', p: ['Voz, datos, CCTV, CATV, CA, DI', 'Backbone de fibra óptica', 'Sonido de ambientación y alarma por monitoreo', 'Puertas contra incendio'] },
+    { n: 'Lagos', c: '#0284c7', s: 'Ingenierías aplicadas por estudio de riesgo.', p: ['Desarrollo de ingenierías aplicadas', 'Con base en estudio de riesgo'] },
+    { n: 'IQT', c: '#7c3aed', s: 'Mantenimiento BRT CROBUS, Querétaro.', p: ['Mantenimientos preventivos BRT CROBUS', 'Cabezales en 8 nuevas terminales'] },
+    { n: 'Innova', c: '#475569', s: 'Alarmas de intrusión para interiores.', p: ['Suministro e instalación de alarmas de intrusión'] },
+  ];
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function iniciales(n) { return n.split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0); }).join('').toUpperCase(); }
+  function tarjeta(cl) {
+    return '<div class="nb-cli" tabindex="0"><div class="nb-cli-mono" style="background:' + cl.c + '">' + iniciales(cl.n) + '</div>' +
+      '<h3>' + esc(cl.n) + '</h3><p>' + esc(cl.s) + '</p>' +
+      '<div class="nb-cli-det"><h4>Proyectos con ' + esc(cl.n) + '</h4><ul>' +
+      cl.p.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div></div>';
+  }
+  var track = document.getElementById('nb-clientes-track');
+  if (!track) return;
+  var html = CLIENTES.map(tarjeta).join('');
+  track.innerHTML = html + html;
+  track.addEventListener('click', function (e) {
+    var card = e.target && e.target.closest ? e.target.closest('.nb-cli') : null;
+    if (!card) return;
+    var era = card.classList.contains('activo');
+    Array.prototype.forEach.call(track.querySelectorAll('.nb-cli.activo'), function (x) { x.classList.remove('activo'); });
+    if (!era) card.classList.add('activo');
+  });
+})();
+</script>
 <!-- CTA FINAL -->
 <section class="w-full bg-neutral-50 border-y border-neutral-200">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-tablet lg:px-margin-desktop py-14 text-center">
