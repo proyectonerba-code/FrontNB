@@ -1059,6 +1059,11 @@
     function cardHTML(c) {
       var estado = String(c.estado || 'PENDIENTE').toUpperCase();
       var ok = estado === 'APROBADA';
+      // Un proyecto especial aprobado ya no se puede eliminar desde la cuenta:
+      // hay personal asignado y fases en curso. El personal si puede, por eso el
+      // bloqueo es solo del cliente (el backend lo valida igual).
+      var especial = c.area === 'PROYECTOS_ESPECIALES' || c.tipoInmueble === 'Proyecto Especial';
+      var bloqueada = especial && ok;
       return '<article data-estado="' + estado + '" class="bg-white rounded-2xl border border-slate-200 hover:border-slate-300 transition-all shadow-xs overflow-hidden">' +
         '<div class="p-6 bg-slate-50/70 border-b border-slate-200/80 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">' +
         '<div class="flex flex-wrap items-center gap-3"><div class="flex items-center gap-2">' +
@@ -1069,7 +1074,11 @@
         '<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200/80">No editable</span>' +
         '<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-300 shadow-2xs transition-colors" data-view="' + UN.esc(c.folio) + '">Ver Detalle</button>' +
         '<button class="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold shadow-2xs transition-all" data-dl="' + UN.esc(c.folio) + '">Descargar PDF Oficial</button>' +
-        '<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-red-50 text-red-700 text-xs font-bold border border-slate-300 hover:border-red-300 shadow-2xs transition-colors" data-del="' + UN.esc(c.folio) + '" title="Eliminar mi cotización">Eliminar</button>' +
+        (bloqueada
+          ? '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-400 bg-slate-100 border border-slate-200 text-[11px] font-semibold cursor-not-allowed select-none" title="Este proyecto especial ya fue aprobado. Para darlo de baja, avisale a Grupo NERBA HIDALGO.">' +
+            '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>' +
+            'Aprobada: no se puede eliminar</span>'
+          : '<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-red-50 text-red-700 text-xs font-bold border border-slate-300 hover:border-red-300 shadow-2xs transition-colors" data-del="' + UN.esc(c.folio) + '" title="Eliminar mi cotización">Eliminar</button>') +
         '</div></div>' +
         '<div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">' +
         '<div class="space-y-4 pr-0 lg:pr-6 border-b lg:border-b-0 lg:border-r border-slate-100 pb-6 lg:pb-0 lg:col-span-8">' +
@@ -1229,6 +1238,13 @@
       b._unDel = true;
       var folio = b.getAttribute('data-del');
       var c = window.__quotes ? window.__quotes[folio] : null;
+      // Un proyecto especial aprobado no se elimina desde la cuenta.
+      if (c && (c.area === 'PROYECTOS_ESPECIALES' || c.tipoInmueble === 'Proyecto Especial') &&
+          String(c.estado || '').toUpperCase() === 'APROBADA') {
+        b._unDel = false;
+        alert('Este proyecto especial ya fue aprobado, por eso ya no se puede eliminar. Si necesitas darlo de baja, avisale a Grupo NERBA HIDALGO.');
+        return;
+      }
       var ok = await UN.confirmarEnvio({
         titulo: 'Eliminar mi cotizacion ' + folio,
         lineas: [
