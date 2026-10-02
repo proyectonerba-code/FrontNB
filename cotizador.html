@@ -294,7 +294,7 @@
             </div>
 <div>
 <h2 class="font-bold text-slate-900 text-lg">Fotos de Referencia para la Instalación</h2>
-<p class="text-xs text-slate-500" id="photoSubtext">Máximo 5 imágenes para dimensionar cableados, alturas y ángulos de cobertura.</p>
+<p class="text-xs text-slate-500" id="photoSubtext">Sube al menos una foto. Para agregar más, usa "Adjuntar más fotos".</p>
 </div>
 </div>
 <span class="badge-contador bg-red-100 text-red-800 font-bold text-xs px-3 py-1 rounded-full border border-red-200" id="photoCounter">0 de 5 fotos cargadas</span>
@@ -315,44 +315,8 @@
 <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
 <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
 </div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto 1</span>
+<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto</span>
 <span class="text-[9px] text-slate-400">JPG, PNG máx 10MB</span>
-</label>
-<!-- SLOT VACÍO 2 -->
-<label class="slot-upload border-2 border-dashed border-slate-300 hover:border-red-500 hover:bg-red-50/20 rounded-xl aspect-square flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all group">
-<input accept="image/*" class="sr-only" onchange="simularSubidaFoto(this)" type="file">
-<div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
-<i class="fa-solid fa-plus text-sm"></i>
-</div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto 2</span>
-<span class="text-[9px] text-slate-400">Imagen clara</span>
-</label>
-<!-- SLOT VACÍO 3 -->
-<label class="slot-upload border-2 border-dashed border-slate-300 hover:border-red-500 hover:bg-red-50/20 rounded-xl aspect-square flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all group">
-<input accept="image/*" class="sr-only" onchange="simularSubidaFoto(this)" type="file">
-<div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
-<i class="fa-solid fa-plus text-sm"></i>
-</div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto 3</span>
-<span class="text-[9px] text-slate-400">Imagen clara</span>
-</label>
-<!-- SLOT VACÍO 4 -->
-<label class="slot-upload border-2 border-dashed border-slate-300 hover:border-red-500 hover:bg-red-50/20 rounded-xl aspect-square flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all group">
-<input accept="image/*" class="sr-only" onchange="simularSubidaFoto(this)" type="file">
-<div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
-<i class="fa-solid fa-plus text-sm"></i>
-</div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto 4</span>
-<span class="text-[9px] text-slate-400">Imagen clara</span>
-</label>
-<!-- SLOT VACÍO 5 -->
-<label class="slot-upload border-2 border-dashed border-slate-300 hover:border-red-500 hover:bg-red-50/20 rounded-xl aspect-square flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all group">
-<input accept="image/*" class="sr-only" onchange="simularSubidaFoto(this)" type="file">
-<div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
-<i class="fa-solid fa-plus text-sm"></i>
-</div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto 5</span>
-<span class="text-[9px] text-slate-400">Imagen clara</span>
 </label>
 </div>
 <div class="mt-4 p-3.5 rounded-xl bg-red-50/70 border border-red-200 text-xs text-red-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" id="avisoFotosProyectoEspecial">
@@ -360,6 +324,14 @@
 <i class="fa-solid fa-images text-[#d91b1b] text-base"></i>
 <span class=""><strong>Capacidad ampliada para Proyecto Especial:</strong> Puedes adjuntar hasta 20 imágenes técnicas de planos, acometidas y perímetros extendidos.</span>
 </div>
+
+</div>
+
+<!-- Boton para agregar mas fotos. Antes vivia dentro del aviso de
+       Proyecto Especial, asi que los clientes normales no podian agregar
+       una segunda foto. Ahora esta siempre visible porque solo se muestra
+       un cuadro de subida y las demás se agregan con este boton. -->
+<div class="mt-3 flex justify-center">
 <input accept="image/*" class="sr-only" id="extra-photo-input" onchange="simularSubidaFoto(this)" type="file">
 <button class="px-3.5 py-1.5 bg-red-600 text-white rounded-lg font-bold text-xs hover:bg-red-700 shadow-sm flex items-center gap-1.5 flex-shrink-0 transition-all" onclick="document.getElementById('extra-photo-input').click()" type="button">
 <i class="fa-solid fa-plus"></i> Adjuntar más fotos
