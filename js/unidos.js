@@ -460,9 +460,10 @@
       return typeof s === 'string' && s.indexOf('data:image/') === 0;
     }) : [];
     var bloqueFotos = fotos.length
-      ? '<div class="sec"><h3>' + (items.length ? '5' : '4') + '. Fotografías del inmueble</h3>' +
-        '<div class="fotos">' + fotos.slice(0, 3).map(function (s) {
-          return '<img src="' + esc(s) + '" alt="Fotografía del inmueble">';
+      ? '<div class="sec"><h3>' + (items.length ? '5' : '4') + '. Fotografías del inmueble (' + fotos.length + ')</h3>' +
+        '<div class="fotos">' + fotos.map(function (s, i) {
+          return '<figure><img src="' + esc(s) + '" alt="Fotografía ' + (i + 1) + ' del inmueble">' +
+            '<figcaption>Foto ' + (i + 1) + ' de ' + fotos.length + '</figcaption></figure>';
         }).join('') + '</div></div>'
       : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>' + esc(c.folio) + ' - ' + esc(BRAND_NAME) + '</title>' +
@@ -502,6 +503,8 @@
       '.tfoot{text-align:right;font-size:9.5px;color:#64748b;margin-top:5px;padding-right:2px}' +
       '.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}' +
       '.fotos img{width:100%;height:30mm;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px;display:block}' +
+      '.fotos figure{margin:0;break-inside:avoid}' +
+      '.fotos figcaption{font-size:7.5px;color:#94a3b8;text-align:center;padding-top:1.5mm}' +
       '.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:#94a3b8;break-inside:avoid}' +
       '@media print{body{font-size:10.5px}.sheet{max-width:none}}' +
       '</style></head><body><div class="sheet">' +
@@ -560,9 +563,10 @@
       return typeof s === 'string' && s.indexOf('data:image/') === 0;
     }) : [];
     var bloqueFotos = fotos.length
-      ? '<div class="sec"><h3>4. Fotografías del inmueble</h3>' +
-        '<div class="fotos">' + fotos.slice(0, 3).map(function (s) {
-          return '<img src="' + esc(s) + '" alt="Fotografía del inmueble">';
+      ? '<div class="sec"><h3>4. Fotografías del inmueble (' + fotos.length + ')</h3>' +
+        '<div class="fotos">' + fotos.map(function (s, i) {
+          return '<figure><img src="' + esc(s) + '" alt="Fotografía ' + (i + 1) + ' del inmueble">' +
+            '<figcaption>Foto ' + (i + 1) + ' de ' + fotos.length + '</figcaption></figure>';
         }).join('') + '</div></div>'
       : '';
     var html = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>' + esc(m.id) + ' - ' + esc(BRAND_NAME) + '</title>' +
@@ -591,6 +595,8 @@
       '.box{border:1px solid #e2e8f0;border-radius:7px;padding:9px 11px;font-size:10.5px;line-height:1.6;white-space:pre-line;background:#f8fafc}' +
       '.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}' +
       '.fotos img{width:100%;height:30mm;object-fit:cover;border:1px solid #e2e8f0;border-radius:6px;display:block}' +
+      '.fotos figure{margin:0;break-inside:avoid}' +
+      '.fotos figcaption{font-size:7.5px;color:#94a3b8;text-align:center;padding-top:1.5mm}' +
       '.foot{margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:12px;font-size:8.5px;color:#94a3b8;break-inside:avoid}' +
       '</style></head><body>' +
       '<div class="head"><div class="brand"><img src="' + UN_LOGO + '" alt="' + esc(BRAND_ALT) + '">' +

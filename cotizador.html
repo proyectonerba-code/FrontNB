@@ -297,7 +297,7 @@
 <p class="text-xs text-slate-500" id="photoSubtext">Sube al menos una foto. Para agregar más, usa "Adjuntar más fotos".</p>
 </div>
 </div>
-<span class="badge-contador bg-red-100 text-red-800 font-bold text-xs px-3 py-1 rounded-full border border-red-200" id="photoCounter">0 de 5 fotos cargadas</span>
+<span class="badge-contador bg-red-100 text-red-800 font-bold text-xs px-3 py-1 rounded-full border border-red-200" id="photoCounter">0 fotos cargadas</span>
 </div>
 <!-- AVISO DE CALIDAD -->
 <div class="aviso-calidad bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 mb-5 flex items-start gap-3">
@@ -311,11 +311,11 @@
 <div class="grid grid-cols-2 sm:grid-cols-5 gap-3.5" id="photoGrid">
 <!-- SLOT VACÍO 1 -->
 <label class="slot-upload border-2 border-dashed border-slate-300 hover:border-red-500 hover:bg-red-50/20 rounded-xl aspect-square flex flex-col items-center justify-center p-3 text-center cursor-pointer transition-all group">
-<input accept="image/*" class="sr-only" onchange="simularSubidaFoto(this)" type="file">
+<input accept="image/*" class="sr-only" multiple onchange="simularSubidaFoto(this)" type="file">
 <div class="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-red-100 text-slate-500 group-hover:text-red-600 flex items-center justify-center mb-1.5 transition-colors">
 <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
 </div>
-<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir foto</span>
+<span class="text-xs font-bold text-slate-700 group-hover:text-[#d91b1b]">Subir fotos</span>
 <span class="text-[9px] text-slate-400">JPG, PNG máx 10MB</span>
 </label>
 </div>
@@ -332,7 +332,7 @@
        una segunda foto. Ahora esta siempre visible porque solo se muestra
        un cuadro de subida y las demás se agregan con este boton. -->
 <div class="mt-3 flex justify-center">
-<input accept="image/*" class="sr-only" id="extra-photo-input" onchange="simularSubidaFoto(this)" type="file">
+<input accept="image/*" class="sr-only" id="extra-photo-input" multiple onchange="simularSubidaFoto(this)" type="file">
 <button class="px-3.5 py-1.5 bg-red-600 text-white rounded-lg font-bold text-xs hover:bg-red-700 shadow-sm flex items-center gap-1.5 flex-shrink-0 transition-all" onclick="document.getElementById('extra-photo-input').click()" type="button">
 <i class="fa-solid fa-plus"></i> Adjuntar más fotos
           </button>
@@ -872,27 +872,32 @@
 
 // Actualizador dinámico de contador y textos de fotos
     function actualizarContadorFotos() {
-      const photos = document.querySelectorAll('#photoGrid > div[data-foto="true"]').length;
+      const photoGrid = document.getElementById('photoGrid');
+      const celdas = photoGrid ? photoGrid.querySelectorAll(':scope > div[data-foto="true"]') : [];
+      const tope = maxFotosPermitidas();
+      const especial = esProyectoEspecial();
+
+      // Si el cliente tenía muchas fotos de Proyecto Especial y cambió a un
+      // tipo normal, se recortan las que ya no caben: si no, quedaría el
+      // contador marcando más fotos de las permitidas y el envío llevaría
+      // menos de las que dice la pantalla.
+      if (celdas.length > tope) {
+        Array.prototype.slice.call(celdas).slice(tope).forEach(function (el) { el.remove(); });
+      }
+      const photos = Math.min(celdas.length, tope);
+
       const counter = document.getElementById('photoCounter');
       const subtext = document.getElementById('photoSubtext');
-      const isProyectoEspecial = document.querySelector('input[name="tipoInmueble"]:checked')?.value === 'Proyecto Especial';
-      
-      if (isProyectoEspecial) {
-        if (counter) {
-          counter.innerText = `${photos} de 20 fotos cargadas`;
-          counter.className = 'badge-contador bg-red-100 text-red-800 font-bold text-xs px-3 py-1 rounded-full border border-red-200';
-        }
-        if (subtext) {
-          subtext.innerText = 'Máximo 20 imágenes para dimensionar cableados, alturas y ángulos de cobertura.';
-        }
-      } else {
-        if (counter) {
-          counter.innerText = `${photos} de 5 fotos cargadas`;
-          counter.className = 'badge-contador bg-slate-100 text-slate-700 font-bold text-xs px-3 py-1 rounded-full border border-slate-200';
-        }
-        if (subtext) {
-          subtext.innerText = 'Máximo 5 imágenes para dimensionar cableados, alturas y ángulos de cobertura.';
-        }
+      if (counter) {
+        counter.innerText = `${photos} de ${tope} fotos cargadas`;
+        counter.className = 'badge-contador ' + (especial || photos >= tope
+          ? 'bg-red-100 text-red-800 border-red-200'
+          : 'bg-slate-100 text-slate-700 border-slate-200') + ' font-bold text-xs px-3 py-1 rounded-full border';
+      }
+      if (subtext) {
+        subtext.innerText = especial
+          ? `Máximo ${tope} imágenes para dimensionar cableados, alturas y ángulos de cobertura.`
+          : `Máximo ${tope} imágenes para dimensionar cableados, alturas y ángulos de cobertura.`;
       }
     }
 
@@ -910,23 +915,50 @@
     // Ahora se achica antes de guardarla: recorta el lado mayor a 1200 px y la
     // guarda en JPEG de calidad 0.75. Así entra en el PDF a un tamaño razonable
     // y el envío no se pasa del límite del servidor. El backend acepta 3 fotos.
-    var MAX_FOTOS_SOLICITUD = 5;
+    // El limite de fotos depende del tipo de inmueble: Proyecto Especial abre
+    // la grilla a 20 imagenes tecnicas, cualquier otro tipo se queda en 5.
+    // Antes el tope era una constante de 5 y por eso el contador prometia 20
+    // pero el navegador rechazaba la foto 6 con "Maximo 5 fotos permitidas".
+    var MAX_FOTOS_PROYECTO_ESPECIAL = 20;
+    var MAX_FOTOS_ESTANDAR = 5;
     var LADO_MAXIMO_FOTO = 1200;
-    var CALIDAD_FOTO = 0.75;
+    var CALIDAD_FOTO = 0.72;
 
-    function achicaImagen(file, alTerminar) {
+    function esProyectoEspecial() {
+      var sel = document.querySelector('input[name="tipoInmueble"]:checked');
+      return !!sel && sel.value === 'Proyecto Especial';
+    }
+    function maxFotosPermitidas() {
+      return esProyectoEspecial() ? MAX_FOTOS_PROYECTO_ESPECIAL : MAX_FOTOS_ESTANDAR;
+    }
+
+    /* Achica la foto antes de mandarla. La calidad se ajusta al cupo que ya se
+       llenó: las primeras salen a 1200 px / 0.72 (nitidas para medir) y de la
+       6a en adelante bajan a 1000 px / 0.62. Con 20 fotos a 1200 px el envío
+       se va a ~7 MB y la base de datos carga con filas enormes; a 1000 px las
+       20 quedan en ~2 MB y el equipo de ingeniería sigue viendo el detalle. */
+    function perfilFoto(indice) {
+      return indice < 5
+        ? { lado: LADO_MAXIMO_FOTO, calidad: CALIDAD_FOTO }
+        : { lado: 1000, calidad: 0.62 };
+    }
+
+    function achicaImagen(file, alTerminar, perfil) {
+      perfil = perfil || { lado: LADO_MAXIMO_FOTO, calidad: CALIDAD_FOTO };
       var reader = new FileReader();
       reader.onerror = function () {
         alert('No se pudo leer la imagen. Intenta con otra foto.');
+        alTerminar(null, '');
       };
       reader.onload = function (e) {
         var img = new Image();
         img.onerror = function () {
           alert('El archivo no es una imagen válida.');
+          alTerminar(null, '');
         };
         img.onload = function () {
           var lado = Math.max(img.width, img.height);
-          var escala = lado > LADO_MAXIMO_FOTO ? LADO_MAXIMO_FOTO / lado : 1;
+          var escala = lado > perfil.lado ? perfil.lado / lado : 1;
           var w = Math.max(1, Math.round(img.width * escala));
           var h = Math.max(1, Math.round(img.height * escala));
           var lienzo = document.createElement('canvas');
@@ -934,7 +966,7 @@
           lienzo.height = h;
           lienzo.getContext('2d').drawImage(img, 0, 0, w, h);
           try {
-            alTerminar(lienzo.toDataURL('image/jpeg', CALIDAD_FOTO), w + 'x' + h);
+            alTerminar(lienzo.toDataURL('image/jpeg', perfil.calidad), w + 'x' + h);
           } catch (err) {
             // Si el navegador no puede exportar (imagen con bloqueo raro), se
             // manda la original; el backend la descarta si no es data URL.
@@ -948,50 +980,64 @@
 
     function fotosDeLaSolicitud() {
       var salida = [];
+      var tope = maxFotosPermitidas();
       var imgs = document.querySelectorAll('#photoGrid [data-foto="true"] img');
-      for (var i = 0; i < imgs.length && salida.length < MAX_FOTOS_SOLICITUD; i++) {
+      for (var i = 0; i < imgs.length && salida.length < tope; i++) {
         var src = (imgs[i].getAttribute('src') || '').trim();
         if (src.indexOf('data:image/') === 0) salida.push(src);
       }
       return salida;
     }
 
-    // Carga real de fotos desde PC
+    // Carga real de fotos desde PC. Acepta varias en una sola seleccion
+    // (los inputs llevan `multiple`) y respeta el tope del tipo de inmueble.
     function simularSubidaFoto(input) {
-      const isProyectoEspecial = document.querySelector('input[name="tipoInmueble"]:checked')?.value === 'Proyecto Especial';
-      const maximo = MAX_FOTOS_SOLICITUD;
-
       if (!input || !input.files || input.files.length === 0) return;
 
-      const file = input.files[0];
-      if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
-        return;
-      }
-
-      if (file.size > 10 * 1024 * 1024) {
-        alert('El archivo es muy grande. Máximo 10MB por imagen.');
-        return;
-      }
-
-      // Se limpia el input primero para que la misma foto se pueda volver a
-      // elegir aunque se cancele la lectura.
+      const archivos = Array.prototype.slice.call(input.files);
+      // Se limpia el input primero para que las mismas fotos se puedan volver
+      // a elegir aunque se cancele la lectura de alguna.
       input.value = '';
 
-      achicaImagen(file, function (dataUrl, medida) {
-        agregarFotoAGrilla(dataUrl, file.name + ' · ' + medida);
-        actualizarContadorFotos();
+      const pendientes = archivos.filter(function (file) {
+        if (!file.type || file.type.indexOf('image/') !== 0) {
+          alert('"' + file.name + '" no es una imagen. Solo se permiten JPG, PNG o WebP.');
+          return false;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          alert('"' + file.name + '" es muy grande. Máximo 10MB por imagen.');
+          return false;
+        }
+        return true;
       });
+      if (!pendientes.length) return;
+
+      let cola = pendientes.slice();
+      const indice = function () {
+        var g = document.getElementById('photoGrid');
+        return g ? g.querySelectorAll('[data-foto="true"]').length : 0;
+      };
+      const siguiente = function () {
+        const file = cola.shift();
+        if (!file) { actualizarContadorFotos(); return; }
+        const perfil = perfilFoto(indice());
+        achicaImagen(file, function (dataUrl, medida) {
+          if (dataUrl) agregarFotoAGrilla(dataUrl, file.name + ' · ' + medida);
+          actualizarContadorFotos();
+          siguiente();
+        }, perfil);
+      };
+      siguiente();
     }
 
     function agregarFotoAGrilla(dataUrl, fileName) {
       const photoGrid = document.getElementById('photoGrid');
-      const maximo = MAX_FOTOS_SOLICITUD;
+      const maximo = maxFotosPermitidas();
       
       // Contar fotos actuales (excluyendo slots de subida)
       const fotosActuales = photoGrid.querySelectorAll('[data-foto="true"]').length;
       if (fotosActuales >= maximo) {
-        alert(`Máximo ${maximo} fotos permitidas.`);
+        alert(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyectos especiales' : 'este tipo de inmueble'}.`);
         return;
       }
       
@@ -1098,7 +1144,7 @@
   </script>
 
 
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=6.0"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=6.1"></script>
 <script src="js/menu-unico.js?v=3.1"></script>
 <script src="js/cliente.js?v=3.3"></script>
 <script>
