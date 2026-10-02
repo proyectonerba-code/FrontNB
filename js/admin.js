@@ -474,18 +474,31 @@ window.eliminarCotizacion = async function (folio) {
       load().then(function () { mostrarToast('Bandeja sincronizada con la central.', 'emerald'); }).catch(function (e) { alert(e.message); });
     };
     window.exportarReporte = function () {
-      var rows = [['folio', 'fecha', 'cliente', 'email', 'telefono', 'inmueble', 'direccion', 'producto', 'estado', 'total']];
-      Object.keys(QUOTES).forEach(function (k) {
+      var filas = Object.keys(QUOTES).map(function (k) {
         var c = QUOTES[k];
-        rows.push([c.folio, c.fecha, c.nombre, c.email, c.telefono, c.tipoInmueble, c.direccion, c.producto, c.estado, c.total]);
+        return [c.folio, c.fecha, c.nombre, c.email, c.telefono, c.tipoInmueble, c.direccion, c.producto, c.estado, c.total];
       });
-      var csv = rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8' }));
-      a.download = 'cotizaciones.csv';
-      document.body.appendChild(a); a.click();
-      setTimeout(function () { document.body.removeChild(a); }, 500);
-      mostrarToast('Reporte CSV descargado.', 'emerald');
+      if (!filas.length) { mostrarToast('No hay cotizaciones para exportar.', 'emerald'); return; }
+      var ok = (window.EXCEL ? EXCEL.descargar({
+        nombre: 'grupo_nerba_hidalgo_cotizaciones',
+        hoja: 'Cotizaciones',
+        titulo: 'Cotizaciones · Grupo Nerba Hidalgo',
+        columnas: [
+          { titulo: 'FOLIO', ancho: 21 },
+          { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+          { titulo: 'CLIENTE', ancho: 26 },
+          { titulo: 'EMAIL', ancho: 28 },
+          { titulo: 'TELEFONO', ancho: 15 },
+          { titulo: 'INMUEBLE', ancho: 18 },
+          { titulo: 'DIRECCION', ancho: 32 },
+          { titulo: 'PRODUCTO', ancho: 26 },
+          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' },
+          { titulo: 'TOTAL', ancho: 14, tipo: 'moneda' }
+        ],
+        filas: filas,
+        totales: true
+      }) : false);
+      mostrarToast(ok ? 'Excel descargado con ' + filas.length + ' cotizaciones.' : 'No se pudo generar el Excel.', 'emerald');
     };
     load().catch(function (e) { alert(e.message); });
     return;
@@ -801,17 +814,29 @@ window.eliminarCotizacion = async function (folio) {
       document.querySelectorAll('button').forEach(function (b) {
         var t = b.textContent.trim();
         if (t === 'Exportar CSV') b.addEventListener('click', function () {
-          var rows = [['id', 'folio', 'fecha', 'cliente', 'email', 'telefono', 'direccion', 'descripcion', 'estado']];
-          Object.keys(MANTS).forEach(function (k) {
+          var filas = Object.keys(MANTS).map(function (k) {
             var m = MANTS[k];
-            rows.push([m.id, m.folio, m.fecha, m.nombre, m.email, m.telefono, m.direccion, m.descripcion, m.estado]);
+            return [m.id, m.folio, m.fecha, m.nombre, m.email, m.telefono, m.direccion, m.descripcion, m.estado];
           });
-          var csv = rows.map(function (r) { return r.map(function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
-          var a = document.createElement('a');
-          a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8' }));
-          a.download = 'mantenimientos.csv';
-          document.body.appendChild(a); a.click();
-          setTimeout(function () { document.body.removeChild(a); }, 500);
+          if (!filas.length) { alert('No hay mantenimientos para exportar.'); return; }
+          var ok = (window.EXCEL ? EXCEL.descargar({
+            nombre: 'grupo_nerba_hidalgo_mantenimientos',
+            hoja: 'Mantenimientos',
+            titulo: 'Mantenimientos · Grupo Nerba Hidalgo',
+            columnas: [
+              { titulo: 'ID', ancho: 16 },
+              { titulo: 'FOLIO', ancho: 21 },
+              { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+              { titulo: 'CLIENTE', ancho: 26 },
+              { titulo: 'EMAIL', ancho: 28 },
+              { titulo: 'TELEFONO', ancho: 15 },
+              { titulo: 'DIRECCION', ancho: 32 },
+              { titulo: 'DESCRIPCION', ancho: 40 },
+              { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
+            ],
+            filas: filas
+          }) : false);
+          if (!ok) alert('No se pudo generar el Excel.');
         });
         if (t === 'Sincronizar') b.addEventListener('click', function () { load().catch(function (e) { alert(e.message); }); });
       });

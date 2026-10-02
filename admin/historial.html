@@ -60,7 +60,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; }
         <input id="historySearch" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-700 focus:bg-white transition" placeholder="Buscar por título, folio o cliente..." type="text">
         <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"></path></svg>
       </div>
-      <button id="btnHistoryCsv" type="button" class="inline-flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition whitespace-nowrap">Exportar CSV</button>
+      <button id="btnHistoryCsv" type="button" class="inline-flex items-center px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition whitespace-nowrap">Exportar Excel</button>
     </div>
   </div>
   <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
@@ -178,13 +178,24 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; }
   });
   document.getElementById('btnHistoryRefresh').addEventListener('click', load);
   document.getElementById('btnHistoryCsv').addEventListener('click', function () {
-    var rows = [['titulo', 'folio', 'fecha', 'cliente', 'email', 'tipo', 'estado', 'responsable']];
-    all.forEach(function (c) { rows.push([titleOf(c), c.folio, c.fecha, c.nombre, c.email, c.tipoInmueble, stateOf(c), attributionOf(c)]); });
-    var csv = rows.map(function (row) { return row.map(function (value) { return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
-    var link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
-    link.download = 'historial_general_cotizaciones.csv';
-    document.body.appendChild(link); link.click(); setTimeout(function () { document.body.removeChild(link); }, 500);
+    var filas = all.map(function (c) { return [titleOf(c), c.folio, c.fecha, c.nombre, c.email, c.tipoInmueble, stateOf(c), attributionOf(c)]; });
+    if (!filas.length) return;
+    if (window.EXCEL) EXCEL.descargar({
+      nombre: 'historial_general_cotizaciones',
+      hoja: 'Historial',
+      titulo: 'Historial General de Cotizaciones · Grupo Nerba Hidalgo',
+      columnas: [
+        { titulo: 'TITULO', ancho: 30 },
+        { titulo: 'FOLIO', ancho: 21 },
+        { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+        { titulo: 'CLIENTE', ancho: 26 },
+        { titulo: 'EMAIL', ancho: 28 },
+        { titulo: 'TIPO', ancho: 20 },
+        { titulo: 'ESTADO', ancho: 14, tipo: 'estado' },
+        { titulo: 'RESPONSABLE', ancho: 26 }
+      ],
+      filas: filas
+    });
   });
   async function load() {
     body.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Cargando historial...</td></tr>';
@@ -202,6 +213,7 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; }
   load();
 })();
 </script>
+<script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 </body>
