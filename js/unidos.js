@@ -555,7 +555,9 @@
       a.click();
       setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
     }).catch(function () {
-      printMant(m);
+      var listo = (m && Array.isArray(m.fotos)) ? Promise.resolve(m) : pideCompleta('/api/mantenimiento/' + encodeURIComponent(id));
+      listo.then(function (completa) { printMant(completa || m); })
+        .catch(function () { printMant(m); });
     });
   }
   function printMant(m) {
@@ -713,9 +715,22 @@
       a.click();
       setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
     }).catch(function () {
-      printQuote(c);
+      // El respaldo lo arma el navegador con los datos que tiene a la mano. Si la
+      // cotizacion vino de una lista (que ya no trae fotos), se piden antes de
+      // imprimir para que el documento salga con las fotografias.
+      var listo = (c && Array.isArray(c.fotos)) ? Promise.resolve(c) : pideCompleta('/api/cotizaciones/' + encodeURIComponent(folio));
+      listo.then(function (completa) { printQuote(completa || c); })
+        .catch(function () { printQuote(c); });
     });
   }
+  // Trae un registro completo (con fotos) desde el servidor.
+  function pideCompleta(ruta) {
+    var token = '';
+    try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+    return fetch(API + ruta, { headers: token ? { 'Authorization': 'Bearer ' + token } : {} })
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
+  }
+
   function printQuote(c) {
     var blob = new Blob([quoteDoc(c)], { type: 'text/html;charset=utf-8' });
     var url = URL.createObjectURL(blob);

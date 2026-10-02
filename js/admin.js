@@ -146,7 +146,72 @@
         badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full mr-1 ' + m[1] + '"></span>' + m[2];
       }
     }
-    function fillRow(tr, c) {
+    // Pinta las miniaturas de una fila. Se separa del llenado para poder reutilizarla
+// cuando las fotos llegan despues (la lista ya no las trae).
+function pintaFotosEnFila(celda, folio, fotos) {
+  celda.innerHTML = '';
+  var tira = document.createElement('div');
+  tira.className = 'flex flex-wrap gap-1.5';
+  // Solo 5 miniaturas para que la fila no crezca, pero el clic abre el
+  // visor con TODAS (en Proyecto Especial son hasta 20).
+  fotos.slice(0, 5).forEach(function (src) {
+    var c = document.createElement('div');
+    c.className = 'w-12';
+    var im = document.createElement('img');
+    im.src = src;
+    im.alt = 'Fotografía adjunta';
+    im.className = 'w-12 h-12 rounded-md object-cover border border-slate-200 cursor-zoom-in';
+    im.style.objectFit = 'cover';
+    im.addEventListener('click', function () { abrirGaleriaFotos(folio, fotos); });
+    c.appendChild(im);
+    tira.appendChild(c);
+  });
+  celda.appendChild(tira);
+  var mas = document.createElement('button');
+  mas.type = 'button';
+  mas.className = 'text-[10px] font-semibold text-brand-700 hover:text-brand-800 underline mt-1 text-left';
+  mas.textContent = fotos.length + (fotos.length === 1 ? ' foto adjunta' : ' fotos adjuntas') + ' · ver todas';
+  mas.addEventListener('click', function () { abrirGaleriaFotos(folio, fotos); });
+  celda.appendChild(mas);
+}
+
+// Pide las fotos de UNA cotizacion. Se cachean para no volver a pedirlas si la
+// fila se vuelve a pintar.
+var FOTOS_CACHE = {};
+function cargarFotosDeFila(folio, celda) {
+  if (!folio || !celda) return;
+  if (FOTOS_CACHE[folio]) {
+    if (FOTOS_CACHE[folio].length) pintaFotosEnFila(celda, folio, FOTOS_CACHE[folio]);
+    return;
+  }
+  if (typeof UN === 'undefined' || !UN.api) return;
+  UN.api('/api/cotizaciones/' + encodeURIComponent(folio)).then(function (c) {
+    var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (f) {
+      return typeof f === 'string' && f.indexOf('data:image/') === 0;
+    }) : [];
+    FOTOS_CACHE[folio] = fotos;
+    // La fila pudo haberse cambiado mientras cargaba.
+    var tr = document.querySelector('tr[data-folio="' + folio + '"]');
+    var destino = celda;
+    if (tr && tr.children[3]) destino = tr.children[3];
+    if (fotos.length) pintaFotosEnFila(destino, folio, fotos);
+    else {
+      destino.innerHTML = '';
+      var note = document.createElement('p');
+      note.className = 'text-[10px] text-slate-400 italic';
+      note.textContent = 'Sin fotos adjuntas.';
+      destino.appendChild(note);
+    }
+  }).catch(function () {
+    celda.innerHTML = '';
+    var note = document.createElement('p');
+    note.className = 'text-[10px] text-slate-400 italic';
+    note.textContent = 'No se pudieron cargar las fotos.';
+    celda.appendChild(note);
+  });
+}
+
+function fillRow(tr, c) {
       c.estado = String(c.estado || 'PENDIENTE').toUpperCase();
       tr.setAttribute('data-estado', c.estado);
       tr.setAttribute('data-folio', c.folio);
@@ -215,30 +280,18 @@
         var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (f) {
           return typeof f === 'string' && f.indexOf('data:image/') === 0;
         }) : [];
+        var cuantas = fotos.length || Number(c.fotosN || 0);
         if (fotos.length) {
-          var tira = document.createElement('div');
-          tira.className = 'flex flex-wrap gap-1.5';
-          // Solo 5 miniaturas para que la fila no crezca, pero el clic abre el
-          // visor con TODAS (en Proyecto Especial son hasta 20).
-          fotos.slice(0, 5).forEach(function (src) {
-            var celda = document.createElement('div');
-            celda.className = 'w-12';
-            var im = document.createElement('img');
-            im.src = src;
-            im.alt = 'Fotografía adjunta';
-            im.className = 'w-12 h-12 rounded-md object-cover border border-slate-200 cursor-zoom-in';
-            im.style.objectFit = 'cover';
-            im.addEventListener('click', function () { abrirGaleriaFotos(c.folio, fotos); });
-            celda.appendChild(im);
-            tira.appendChild(celda);
-          });
-          tds3.appendChild(tira);
-          var mas = document.createElement('button');
-          mas.type = 'button';
-          mas.className = 'text-[10px] font-semibold text-brand-700 hover:text-brand-800 underline mt-1 text-left';
-          mas.textContent = fotos.length + (fotos.length === 1 ? ' foto adjunta' : ' fotos adjuntas') + ' · ver todas';
-          mas.addEventListener('click', function () { abrirGaleriaFotos(c.folio, fotos); });
-          tds3.appendChild(mas);
+          pintaFotosEnFila(tds3, c.folio, fotos);
+        } else if (cuantas) {
+          // La lista ya no trae las fotos (solo el numero): se piden cuando la
+          // fila entra en pantalla. Antes cada refresco del panel se descargaba
+          // TODAS las fotos de TODAS las cotizaciones.
+          var aviso = document.createElement('p');
+          aviso.className = 'text-[10px] text-slate-400 italic';
+          aviso.textContent = 'Cargando ' + cuantas + (cuantas === 1 ? ' foto…' : ' fotos…');
+          tds3.appendChild(aviso);
+          cargarFotosDeFila(c.folio, tds3);
         } else {
           var note = document.createElement('p');
           note.className = 'text-[10px] text-slate-400 italic';
