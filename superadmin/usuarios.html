@@ -811,7 +811,7 @@
           
           row.setAttribute('data-role', newRole);
           applyFilters();
-          alert(`Jerarquía de ${row.getAttribute('data-name')} actualizada a: ${newRole}`);
+          aviso(`Jerarquía de ${row.getAttribute('data-name')} actualizada a: ${newRole}`);
         });
       });
 
@@ -841,7 +841,7 @@
       if (userAdminForm) {
         userAdminForm.addEventListener('submit', (e) => {
           e.preventDefault();
-          alert('Usuario guardado exitosamente con privilegios cifrados en base de datos.');
+          aviso('Usuario guardado exitosamente con privilegios cifrados en base de datos.');
           closeUserModal();
         });
       }
@@ -850,7 +850,7 @@
       const btnExportCSV = document.getElementById('btnExportCSV');
       if (btnExportCSV) {
         btnExportCSV.addEventListener('click', () => {
-          alert('Generando archivo seguro "grupo_nerba_hidalgo_usuarios_2025.csv"... La descarga comenzará de inmediato.');
+          aviso('Generando archivo seguro "grupo_nerba_hidalgo_usuarios_2025.csv"... La descarga comenzará de inmediato.');
         });
       }
     })();
@@ -1110,7 +1110,11 @@
           var order = ['ADMIN', 'SUPERADMIN', 'PROYECTOS_ESPECIALES', 'PRODUCTOS_ELECTRONICOS'];
           var nx = order[(order.indexOf(u.rol) + 1) % order.length];
           if (order.indexOf(u.rol) < 0) nx = 'ADMIN';
-          if (!confirm('Cambiar jerarquía de ' + u.nombre + ' a ' + dispRole(nx) + '?')) return;
+          if (!await confirmar({
+            titulo: 'Cambiar jerarquía',
+            lineas: [u.nombre + ' → ' + dispRole(nx), 'Cambia el acceso de esta cuenta en todo el sistema.'],
+            boton: 'Sí, cambiar'
+          })) return;
           try { await SA.saveUser(u.email, { rol: nx }); SA.toast('Jerarquía actualizada a ' + dispRole(nx), 'Usuarios'); load(); }
           catch (err) { SA.toast(err.message || 'No se pudo cambiar el rol', 'Error'); }
         });
@@ -1130,7 +1134,11 @@
           e.stopPropagation();
           var email = b.getAttribute('data-email');
           var nombre = b.getAttribute('data-name') || email;
-          if (!confirm('¿Restringir la cuenta de ' + nombre + ' (' + email + ')? Ya no podrá ingresar.')) return;
+          if (!await confirmar({
+            titulo: 'Restringir la cuenta',
+            lineas: [nombre + ' (' + email + ')', 'Deja de poder entrar al sistema. Después puedes reactivarla.'],
+            boton: 'Sí, restringir'
+          })) return;
           try { await SA.saveUser(email, { activo: false }); SA.toast('Cuenta restringida: ' + nombre, 'Usuarios'); load(); }
           catch (err) { SA.toast(err.message || 'No se pudo restringir', 'Error'); }
         });
@@ -1140,7 +1148,12 @@
           e.stopPropagation();
           var email = b.getAttribute('data-email');
           var nombre = b.getAttribute('data-name') || email;
-          if (!confirm('¿Quitar la restricción a ' + nombre + ' (' + email + ')? Volverá a poder ingresar.')) return;
+          if (!await confirmar({
+            titulo: 'Reactivar la cuenta',
+            lineas: [nombre + ' (' + email + ')', 'Vuelve a poder entrar al sistema con su mismo rol.'],
+            tipo: 'ok',
+            boton: 'Sí, reactivar'
+          })) return;
           try { await SA.saveUser(email, { activo: true }); SA.toast('Restricción retirada: ' + nombre, 'Usuarios'); load(); }
           catch (err) { SA.toast(err.message || 'No se pudo reactivar', 'Error'); }
         });
@@ -1243,6 +1256,7 @@
 <script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

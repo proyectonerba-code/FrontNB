@@ -917,12 +917,12 @@
     function achicaImagen(file, alTerminar) {
       var reader = new FileReader();
       reader.onerror = function () {
-        alert('No se pudo leer la imagen. Intenta con otra foto.');
+        aviso('No se pudo leer la imagen. Intenta con otra foto.');
       };
       reader.onload = function (e) {
         var img = new Image();
         img.onerror = function () {
-          alert('El archivo no es una imagen válida.');
+          aviso('El archivo no es una imagen válida.');
         };
         img.onload = function () {
           var lado = Math.max(img.width, img.height);
@@ -965,12 +965,12 @@
 
       const file = input.files[0];
       if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+        aviso('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        alert('El archivo es muy grande. Máximo 10MB por imagen.');
+        aviso('El archivo es muy grande. Máximo 10MB por imagen.');
         return;
       }
 
@@ -991,7 +991,7 @@
       // Contar fotos actuales (excluyendo slots de subida)
       const fotosActuales = photoGrid.querySelectorAll('[data-foto="true"]').length;
       if (fotosActuales >= maximo) {
-        alert(`Máximo ${maximo} fotos permitidas.`);
+        aviso(`Máximo ${maximo} fotos permitidas.`);
         return;
       }
       
@@ -1084,11 +1084,11 @@
     }
 
     function descargarPDFSimulado() {
-      alert('Descargando archivo Cotizacion_UN-2024-8849.pdf con todas las especificaciones y descripción de medidas.');
+      aviso('Descargando archivo Cotizacion_UN-2024-8849.pdf con todas las especificaciones y descripción de medidas.');
     }
 
     function limpiarFormulario() {
-      alert('Redirigiendo a tu historial de presupuestos y cotizaciones...');
+      aviso('Redirigiendo a tu historial de presupuestos y cotizaciones...');
     }
 
     // Inicialización
@@ -1123,7 +1123,7 @@
       if (!g('inputRequerimiento')) {
         var rq = document.getElementById('inputRequerimiento');
         if (rq) rq.focus();
-        alert('Describe lo que necesitas cotizar.');
+        aviso('Describe lo que necesitas cotizar.');
         return;
       }
       var tipoEl = document.querySelector('input[name="tipoInmueble"]:checked');
@@ -1131,8 +1131,8 @@
       var esPE = tipo === 'Proyecto Especial';
       var espInfra = document.getElementById('espTipoInfraestructura');
       var med = document.getElementById('inputMedidasDescriptivas');
-      if (esPE && espInfra && !espInfra.value) { espInfra.focus(); alert('Selecciona el alcance o tipo de infraestructura del proyecto especial.'); return; }
-      if (esPE && med && !med.value.trim()) { med.focus(); alert('Describe las medidas y cotas del espacio para el proyecto especial.'); return; }
+      if (esPE && espInfra && !espInfra.value) { espInfra.focus(); aviso('Selecciona el alcance o tipo de infraestructura del proyecto especial.'); return; }
+      if (esPE && med && !med.value.trim()) { med.focus(); aviso('Describe las medidas y cotas del espacio para el proyecto especial.'); return; }
       // Confirmacion antes de crear el folio: el cliente revisa y acepta.
       if (window.UN && UN.confirmarEnvio) {
         var okEnvio = await UN.confirmarEnvio({
@@ -1167,7 +1167,7 @@
         // Pantalla blanca de exito antes de abrir el documento.
         if (window.UN && UN.exitoCotizacion) { try { await UN.exitoCotizacion(c.folio); } catch (e) {} }
       } catch (err) {
-        alert((err && err.message) || 'No se pudo registrar tu solicitud. Inténtalo de nuevo.');
+        aviso((err && err.message) || 'No se pudo registrar tu solicitud. Inténtalo de nuevo.');
         return;
       }
       // Limpieza total y redireccion a Mis Cotizaciones: el folio ya quedo
@@ -1199,7 +1199,7 @@
     };
     window.descargarPDFSimulado = function () {
       if (window.__lastQuote) UN.viewQuote(window.__lastQuote);
-      else alert('Genera primero tu cotización para descargar el documento.');
+      else aviso('Genera primero tu cotización para descargar el documento.');
     };
     window.limpiarFormulario = function () {
       location.href = '/mis-cotizaciones.html';
@@ -1210,6 +1210,7 @@
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/exito-cotizacion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

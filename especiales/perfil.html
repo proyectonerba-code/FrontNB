@@ -485,12 +485,12 @@ body.reduce-motion-enabled *::after {
       
       const file = input.files[0];
       if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+        aviso('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
         return;
       }
       
       if (file.size > 5 * 1024 * 1024) {
-        alert('El archivo es muy grande. M�ximo 5MB.');
+        aviso('El archivo es muy grande. M�ximo 5MB.');
         return;
       }
       
@@ -619,12 +619,12 @@ body.reduce-motion-enabled *::after {
         var t = document.getElementById('toast-feedback');
         var tt = document.getElementById('toast-title');
         var tm = document.getElementById('toast-message');
-        if (!t) { alert(msg); return; }
+        if (!t) { aviso(msg); return; }
         if (tt) tt.textContent = title || 'Listo';
         if (tm) tm.textContent = msg;
         t.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
         setTimeout(function () { t.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none'); }, 3500);
-      } catch (e) { alert(msg); }
+      } catch (e) { aviso(msg); }
     }
     // Breadcrumb al inicio de la zona + logout real (el diseno solo recarga).
     // Corre aqui (parseo): los listeners del diseno aun no existen y mueren con el clon.
@@ -678,7 +678,7 @@ body.reduce-motion-enabled *::after {
         UN.setSession(localStorage.getItem('unidos_token'), me);
         peToast('Datos actualizados.', 'perfil actualizado');
         ESP.paintUser();
-      } catch (e) { alert(e.message); }
+      } catch (e) { aviso(e.message); }
     });
     // Insignia del nav con proyectos en curso
     UN.api('/api/cotizaciones').then(function (lista) {
@@ -691,6 +691,7 @@ body.reduce-motion-enabled *::after {
 
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

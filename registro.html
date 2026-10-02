@@ -290,7 +290,7 @@
     var btn = this.querySelector('button[type="submit"]');
     var label = btn.querySelector('span');
     var orig = label ? label.textContent : btn.textContent;
-    if (p1 !== p2) { alert('Las contraseñas no coinciden.'); return; }
+    if (p1 !== p2) { aviso('Las contraseñas no coinciden.'); return; }
     if (label) label.textContent = 'Creando tu cuenta...';
     btn.disabled = true;
     try {
@@ -300,7 +300,7 @@
       if (label) label.textContent = '¡Cuenta creada! Redirigiendo...';
       setTimeout(function () { location.href = 'cotizador.html'; }, 900);
     } catch (err) {
-      alert(err.message);
+      aviso(err.message);
       if (label) label.textContent = orig;
       btn.disabled = false;
     }
@@ -405,6 +405,7 @@
 </script>
 
 <script src="/js/transicion.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

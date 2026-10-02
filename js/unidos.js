@@ -535,7 +535,7 @@
   // Si el servidor no trae el generador, cae a la vista de impresion de abajo.
   function downloadMant(m, viewOnly) {
     var id = m && (m.id || m.folio);
-    if (!id) { alert('Sin folio no se puede descargar el documento.'); return; }
+    if (!id) { aviso('Sin folio no se puede descargar el documento.'); return; }
     var token = '';
     try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
     fetch(API + '/api/mantenimiento/' + encodeURIComponent(id) + '/pdf', {
@@ -690,7 +690,7 @@
   // "Guardar como PDF". Si el servidor no trae el generador, cae a printQuote.
   function downloadQuote(c, viewOnly) {
     var folio = c && (c.folio || c.id);
-    if (!folio) { alert('Sin folio no se puede descargar el documento.'); return; }
+    if (!folio) { aviso('Sin folio no se puede descargar el documento.'); return; }
     var token = '';
     try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
     fetch(API + '/api/cotizaciones/' + encodeURIComponent(folio) + '/pdf', {

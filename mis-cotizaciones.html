@@ -992,7 +992,7 @@
     window.confirmarGuardarMantenimiento = async function () {
       var input = document.getElementById('mant-descripcion-input');
       var desc = input ? input.value.trim() : '';
-      if (!desc) { alert('Describe el mantenimiento requerido.'); return; }
+      if (!desc) { aviso('Describe el mantenimiento requerido.'); return; }
       try {
         var alta = await UN.api('/api/mantenimiento', { method: 'POST', body: { folio: window.__mantFolio || '', descripcion: desc } });
         // Velo de exito con el folio de la solicitud, antes de cerrar el modal.
@@ -1007,7 +1007,7 @@
         if (input) input.value = '';
         if (window.__reloadMants) window.__reloadMants();
         if (origConf) origConf();
-      } catch (e) { alert(e.message); }
+      } catch (e) { aviso(e.message); }
     };
   })();
 </script>
@@ -1147,7 +1147,7 @@
         } catch (e) { c = null; }
       }
       if (c) { UN.viewQuote(c); return; }
-      alert('No se encontró esa cotización en tu historial.');
+      aviso('No se encontró esa cotización en tu historial.');
     };
     load();
   })();
@@ -1242,7 +1242,7 @@
       if (c && (c.area === 'PROYECTOS_ESPECIALES' || c.tipoInmueble === 'Proyecto Especial') &&
           String(c.estado || '').toUpperCase() === 'APROBADA') {
         b._unDel = false;
-        alert('Este proyecto especial ya fue aprobado, por eso ya no se puede eliminar. Si necesitas darlo de baja, avisale a Grupo NERBA HIDALGO.');
+        aviso('Este proyecto especial ya fue aprobado, por eso ya no se puede eliminar. Si necesitas darlo de baja, avisale a Grupo NERBA HIDALGO.');
         return;
       }
       var ok = await UN.confirmarEnvio({
@@ -1261,7 +1261,7 @@
         var card = b.closest('article');
         if (card && card.parentNode) card.parentNode.removeChild(card);
         counts(); paint(); apply();
-      }).catch(function (err) { b._unDel = false; alert(err.message); });
+      }).catch(function (err) { b._unDel = false; aviso(err.message); });
     });
     // Contadores reales
     function counts() {
@@ -1498,6 +1498,7 @@
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/exito-cotizacion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

@@ -827,7 +827,7 @@ window.PEwhatsapp = function (folio) {
       var folio = window.targetFolio;
       var code = document.getElementById('ap-code').value;
       try { await ESP.setEstado(folio, 'APROBADA'); }
-      catch (err) { alert(err.message); return; }
+      catch (err) { aviso(err.message); return; }
       closeModal('modal-approve');
       if (QUOTES[folio]) QUOTES[folio].estado = 'APROBADA';
       window.__peCodes[folio] = code;
@@ -851,7 +851,7 @@ window.PEwhatsapp = function (folio) {
       try {
         await ESP.setEstado(folio, 'RECHAZADA');
         if (comments && comments.trim()) { try { await ESP.saveProyecto(folio, { notas: comments.trim() }); } catch (e) {} }
-      } catch (err) { alert(err.message); return; }
+      } catch (err) { aviso(err.message); return; }
       closeModal('modal-reject');
       if (QUOTES[folio]) QUOTES[folio].estado = 'RECHAZADA';
       paintRow(folio);
@@ -863,7 +863,7 @@ window.PEwhatsapp = function (folio) {
       var c = QUOTES[folio];
       if (!c || c.estado !== 'PENDIENTE') return;
       try { await ESP.saveProyecto(folio, { enRevision: !c.enRevision }); }
-      catch (err) { alert(err.message); return; }
+      catch (err) { aviso(err.message); return; }
       c.enRevision = !c.enRevision;
       paintRow(folio);
       showToast(c.enRevision ? 'Solicitud ' + folio + ' marcada en revisión' : 'Solicitud ' + folio + ' de vuelta a pendientes');
@@ -905,6 +905,7 @@ window.PEwhatsapp = function (folio) {
 
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

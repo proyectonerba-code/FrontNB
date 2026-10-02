@@ -541,12 +541,12 @@ body.reduce-motion-enabled *::after {
       
       const file = input.files[0];
       if (!file.type.startsWith('image/')) {
-        alert('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+        aviso('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
         return;
       }
       
       if (file.size > 5 * 1024 * 1024) {
-        alert('El archivo es muy grande. M�ximo 5MB.');
+        aviso('El archivo es muy grande. M�ximo 5MB.');
         return;
       }
       
@@ -702,7 +702,7 @@ body.reduce-motion-enabled *::after {
         telefonoSec: val('input-phone2').trim(),
         empresa: val('input-company').trim(),
       };
-      if (!body.nombre) { alert('Escribe tu nombre completo.'); return; }
+      if (!body.nombre) { aviso('Escribe tu nombre completo.'); return; }
       try {
         var me = await UN.api('/api/me', { method: 'PUT', body: body });
         UN.setSession(localStorage.getItem('unidos_token'), me);
@@ -713,8 +713,8 @@ body.reduce-motion-enabled *::after {
         var h3 = document.querySelector('#seccion-contacto h3');
         if (h3 && me.nombre) h3.textContent = me.nombre;
         if (typeof showToast === 'function') showToast('datos de contacto actualizados y sincronizados con tu sesi�n.', 'perfil actualizado');
-        else alert('perfil actualizado.');
-      } catch (e) { alert(e.message); }
+        else aviso('perfil actualizado.');
+      } catch (e) { aviso(e.message); }
     }
     var btnSave = document.getElementById('btn-save-master');
     if (btnSave) btnSave.addEventListener('click', save);
@@ -733,7 +733,7 @@ body.reduce-motion-enabled *::after {
       var me = (window.UN && UN.getUser && UN.getUser()) || {};
       var tag = document.getElementById('del-acc-email');
       if (tag && me.email) tag.textContent = me.email;
-      function falla(t) { if (err) { err.textContent = t; err.classList.remove('hidden'); } else alert(t); }
+      function falla(t) { if (err) { err.textContent = t; err.classList.remove('hidden'); } else aviso(t); }
       btnDel.addEventListener('click', function () {
         if (err) err.classList.add('hidden');
         box.classList.remove('hidden');
@@ -754,7 +754,7 @@ body.reduce-motion-enabled *::after {
           try { localStorage.removeItem('unidos_token'); } catch (e) {}
           try { localStorage.removeItem('unidos_user'); } catch (e) {}
           try { sessionStorage.clear(); } catch (e) {}
-          alert('Tu cuenta fue eliminada por completo.');
+          aviso('Tu cuenta fue eliminada por completo.');
           location.href = '/index.html';
         } catch (e) {
           falla((e && e.message) || 'No se pudo eliminar la cuenta.');
@@ -776,6 +776,7 @@ body.reduce-motion-enabled *::after {
 <script src="/js/chatbot.js?v=2.3"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

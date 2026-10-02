@@ -795,7 +795,7 @@
         toggleUserMenu(false);
         showToast('Cerrando sesión de Proyectos Especiales...');
         setTimeout(() => {
-          alert('Sesión finalizada. Redirigiendo a la pantalla de inicio...');
+          aviso('Sesión finalizada. Redirigiendo a la pantalla de inicio...');
           window.location.hash = '#login';
         }, 600);
       });
@@ -1221,7 +1221,7 @@
       var done = fases.filter(function (f) { return f.estado === 'Completada'; }).length;
       var avance = fases.length ? Math.round(done / fases.length * 100) : 0;
       try { await ESP.saveProyecto(folio, { fases: fases, entregado: entregado, avance: avance }); }
-      catch (err) { alert(err.message); return; }
+      catch (err) { aviso(err.message); return; }
       // Refresca el objeto local para que al reabrir se vea lo guardado sin recargar
       var qc = (window.__peQuotes || {})[folio];
       if (qc) { qc.fases = fases; qc.entregado = !!entregado; qc.avance = avance; }
@@ -1258,7 +1258,7 @@
         e.preventDefault();
         e.stopImmediatePropagation();
         function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
-        if (!v('np-org') || !v('np-client') || !v('np-title')) { alert('Completa empresa, contacto y título del proyecto.'); return; }
+        if (!v('np-org') || !v('np-client') || !v('np-title')) { aviso('Completa empresa, contacto y título del proyecto.'); return; }
         try {
           var c = await UN.api('/api/cotizaciones', { method: 'POST', body: {
             telefono: v('np-phone'), tipoInmueble: 'Proyecto Especial', espTipoInfraestructura: 'Otro',
@@ -1273,7 +1273,7 @@
           if (npc) npc.value = 'Automático';
           await loadGestion();
           showToast('Proyecto ' + c.folio + ' registrado.');
-        } catch (err) { alert(err.message); }
+        } catch (err) { aviso(err.message); }
       });
     })();
     // CSV real + rewire de perfil/salir y guardado de fases.
@@ -1347,6 +1347,7 @@
 <script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
+<script src="/js/avisos.js?v=1.0"></script>
 </body></html>
 
 

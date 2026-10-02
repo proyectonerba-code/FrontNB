@@ -79,7 +79,7 @@
   function imprimir(html) {
     var v = window.open('', '_blank');
     if (!v) {
-      alert('El navegador bloqueó la ventana del documento. Permite las ventanas emergentes e intenta de nuevo.');
+      aviso('El navegador bloqueó la ventana del documento. Permite las ventanas emergentes e intenta de nuevo.');
       return false;
     }
     v.document.open();
@@ -92,7 +92,7 @@
   }
 
   window.descargarPDF = function (folio) {
-    if (!folio) { alert('No se indicó el folio de la cotización.'); return; }
+    if (!folio) { aviso('No se indicó el folio de la cotización.'); return; }
     if (window.UN && UN.toast) UN.toast('Preparando el documento...', 'info');
     else if (window.mostrarToast) mostrarToast('Preparando el documento...', 'blue');
 
@@ -123,7 +123,7 @@
         if (window.UN && UN.printQuote) UN.printQuote(q || { folio: folio });
         else imprimir(documento(q || {}));
       };
-      var fallo = function () { alert('No se pudo cargar la cotización ' + folio + '.'); };
+      var fallo = function () { aviso('No se pudo cargar la cotización ' + folio + '.'); };
       if (window.UN && UN.api) {
         UN.api('/api/cotizaciones/' + encodeURIComponent(folio)).then(fin).catch(fallo);
       } else {

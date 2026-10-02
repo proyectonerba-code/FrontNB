@@ -206,7 +206,7 @@
   function toast(msg, title) {
     try {
       var t = document.getElementById('toast-feedback') || document.getElementById('toast-container');
-      if (!t) { alert(msg); return; }
+      if (!t) { aviso(msg); return; }
       var tm = document.getElementById('toast-message');
       var tt = document.getElementById('toast-title');
       if (tt && title) tt.textContent = title;
@@ -216,7 +216,7 @@
       t._saT = setTimeout(function () {
         t.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
       }, 3500);
-    } catch (e) { try { alert(msg); } catch (_) {} }
+    } catch (e) { try { aviso(msg); } catch (_) {} }
   }
   // Actualiza los contadores del nav con datos reales, con caché de 60 s en
   // memoria para no pegarle al backend en cada navegación.

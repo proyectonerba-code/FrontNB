@@ -368,7 +368,7 @@
         if (!f) return;
         fileToDataURL(f, 1200, function (url) {
           if (url) { photoSlots[k] = url; renderSlots(); }
-          else alert('No se pudo leer esa imagen. Prueba con JPG o PNG.');
+          else aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.');
         });
       });
     })(fi);
@@ -385,7 +385,7 @@
     if (!f) return;
     fileToDataURL(f, 800, function (url) {
       if (url) { catImg = url; pickedCatImg = url; renderCatImg(); }
-      else alert('No se pudo leer esa imagen. Prueba con JPG o PNG.');
+      else aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.');
     });
   });
   var brandFile = document.getElementById('un-brandfile');
@@ -397,7 +397,7 @@
     if (!f) return;
     fileToDataURL(f, 800, function (url) {
       if (url) { brandImg = url; pickedBrandImg = url; renderBrandImg(); }
-      else alert('No se pudo leer esa imagen. Prueba con JPG o PNG.');
+      else aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.');
     });
   });
   document.getElementById('un-delcancel').addEventListener('click', function () {
@@ -419,7 +419,7 @@
       document.getElementById('un-delmodal').classList.add('hidden');
       closeModal();
       reload();
-    } catch (err) { alert((err && err.message) || 'No se pudo eliminar'); }
+    } catch (err) { aviso((err && err.message) || 'No se pudo eliminar'); }
   });
   async function saveCat(code, label) {
     if (!catImg) return;
@@ -453,18 +453,18 @@
     var label = '';
     if (brand === '__new__') {
       brand = g('unp-newbrand');
-      if (!brand) { alert('Escribe el nombre de la nueva marca.'); return; }
+      if (!brand) { aviso('Escribe el nombre de la nueva marca.'); return; }
     }
     if (code === '__new__') {
       label = g('unp-newcat');
-      if (!label) { alert('Escribe el nombre del nuevo tipo.'); return; }
+      if (!label) { aviso('Escribe el nombre del nuevo tipo.'); return; }
       code = slug(label);
     } else {
       var sel = document.getElementById('unp-cat');
       label = sel && sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.trim() : code;
     }
-    if (!title) { alert('El título es obligatorio.'); return; }
-    if (!brand) { alert('La marca es obligatoria: es la categoría principal del catálogo.'); return; }
+    if (!title) { aviso('El título es obligatorio.'); return; }
+    if (!brand) { aviso('La marca es obligatoria: es la categoría principal del catálogo.'); return; }
     var ideal = g('unp-ideal').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
     var imgs = photoSlots.filter(Boolean);
     var elec = !!document.getElementById('unp-elec').checked;
@@ -477,7 +477,7 @@
       await saveBrand(brand);
       closeModal();
       reload();
-    } catch (err) { alert((err && err.message) || 'No se pudo guardar'); }
+    } catch (err) { aviso((err && err.message) || 'No se pudo guardar'); }
   });
   /* ---- quitar marcas y tipos ---- */
   function brandSlug(s) {
@@ -619,14 +619,14 @@
       cerrarQuitar();
       reload();
       setTimeout(function () { try { if (window.__unReloadCatalog) window.__unReloadCatalog(); } catch (e) {} renderMgmt(); }, 800);
-    } catch (err) { alert((err && err.message) || 'No se pudo quitar'); }
+    } catch (err) { aviso((err && err.message) || 'No se pudo quitar'); }
   }
   // Mover las publicaciones a otro destino y luego quitar la marca/tipo.
     document.getElementById('un-quitmover').addEventListener('click', async function () {
     if (!pending) return;
     var sel = document.getElementById('un-quitdest');
     var dest = sel ? sel.value : '';
-    if (!dest) { alert('Elige el destino de las publicaciones.'); return; }
+    if (!dest) { aviso('Elige el destino de las publicaciones.'); return; }
     var nombre = pending.label;
     var body = { desde: pending.kind === 'marca' ? 'marca' : 'tipo', code: pending.code };
     if (pending.kind === 'marca') body.brand = dest;
@@ -638,16 +638,20 @@
     try {
       var r = await UN.api('/api/productos/reasignar', { method: 'POST', body: body });
       await quitarDefinitivo();
-      alert('Se movieron ' + ((r && r.movidas) || 0) + ' publicación(es) y se quitó "' + nombre + '".');
+      aviso('Se movieron ' + ((r && r.movidas) || 0) + ' publicación(es) y se quitó "' + nombre + '".');
     } catch (err) {
       this.disabled = false;
-      alert((err && err.message) || 'No se pudo mover');
+      aviso((err && err.message) || 'No se pudo mover');
     }
   });
   // Quitar la marca/tipo junto con sus publicaciones.
   document.getElementById('un-quitdel').addEventListener('click', async function () {
     if (!pending) return;
-    if (!confirm('Se eliminará "' + pending.label + '" y sus ' + pending.n + ' publicación(es). ¿Continuar?')) return;
+    if (!await confirmar({
+      titulo: 'Quitar del catálogo',
+      lineas: [pending.label, 'Se elimina junto con sus ' + pending.n + ' publicación(es).'],
+      boton: 'Sí, quitar'
+    })) return;
     var tok = localStorage.getItem('unidos_token');
     var ids = [];
     try {
@@ -666,7 +670,7 @@
       await quitarDefinitivo();
     } catch (err) {
       this.disabled = false;
-      alert((err && err.message) || 'No se pudo eliminar');
+      aviso((err && err.message) || 'No se pudo eliminar');
     }
   });
   document.getElementById('un-mgmtx').addEventListener('click', function () { document.getElementById('un-mgmtmodal').classList.add('hidden'); });

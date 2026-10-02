@@ -305,7 +305,7 @@
             if (typeof mostrarToast === 'function') mostrarToast('Estatus actualizado a ' + est.charAt(0) + est.slice(1).toLowerCase() + '.', 'emerald');
           } catch (err) {
             if (typeof mostrarToast === 'function') mostrarToast(err.message || 'No se pudo actualizar el estatus.', 'red');
-            else alert(err.message);
+            else aviso(err.message);
           }
         });
       });
@@ -472,7 +472,7 @@
     }, true);
     window.descargarPDF = function (folio) {
       var c = QUOTES[folio];
-      if (!c) { alert('Folio no encontrado en esta sesión.'); return; }
+      if (!c) { aviso('Folio no encontrado en esta sesión.'); return; }
       // Cierra el modal del expediente primero: una sola ventana (print tab directo, sin visor encima)
       if (typeof cerrarModalPdfOficial === 'function') { try { cerrarModalPdfOficial(); } catch (e) {} }
       UN.downloadQuote(c);
@@ -500,10 +500,10 @@ window.eliminarCotizacion = async function (folio) {
         if (tr && tr.parentNode) tr.parentNode.removeChild(tr);
         recount();
         if (typeof mostrarToast === 'function') mostrarToast('Cotizacion ' + folio + ' quitada del panel. El cliente la sigue viendo.', 'emerald');
-      } catch (err) { alert(err.message); }
+      } catch (err) { aviso(err.message); }
     };
     window.actualizarLista = function () {
-      load().then(function () { mostrarToast('Bandeja sincronizada con la central.', 'emerald'); }).catch(function (e) { alert(e.message); });
+      load().then(function () { mostrarToast('Bandeja sincronizada con la central.', 'emerald'); }).catch(function (e) { aviso(e.message); });
     };
     window.exportarReporte = function () {
       var filas = Object.keys(QUOTES).map(function (k) {
@@ -530,7 +530,7 @@ window.eliminarCotizacion = async function (folio) {
       }) : false);
       mostrarToast(ok ? 'Excel descargado con ' + filas.length + ' cotizaciones.' : 'No se pudo generar el Excel.', 'emerald');
     };
-    load().catch(function (e) { alert(e.message); });
+    load().catch(function (e) { aviso(e.message); });
     return;
   }
 
@@ -656,7 +656,7 @@ window.eliminarCotizacion = async function (folio) {
           var upd = await UN.api('/api/mantenimiento/' + encodeURIComponent(c.id), { method: 'PUT', body: { estado: est } });
           MANTS[upd.id] = upd;
           render();
-        } catch (e) { alert(e.message); }
+        } catch (e) { aviso(e.message); }
       }
       if (c.estado === 'PENDIENTE') {
         box.appendChild(mkBtn('w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition', 'Coordinar Visita', function () { setEst('EN_PROCESO'); }));
@@ -911,7 +911,7 @@ window.eliminarCotizacion = async function (folio) {
         });
       });
     })();
-    load().catch(function (e) { alert(e.message); });
+    load().catch(function (e) { aviso(e.message); });
     return;
   }
 
@@ -966,12 +966,12 @@ window.eliminarCotizacion = async function (folio) {
           telefonoSec: v('input-phone2').trim(),
           empresa: v('input-company').trim(),
         };
-        if (!body.nombre) { alert('Escribe tu nombre completo.'); return; }
+        if (!body.nombre) { aviso('Escribe tu nombre completo.'); return; }
         var me = await UN.api('/api/me', { method: 'PUT', body: body });
         UN.setSession(localStorage.getItem('unidos_token'), me);
         if (typeof showToast === 'function') showToast('Datos actualizados.', 'Perfil Actualizado');
-        else alert('Perfil actualizado.');
-      } catch (e) { alert(e.message); }
+        else aviso('Perfil actualizado.');
+      } catch (e) { aviso(e.message); }
     });
 
   }
