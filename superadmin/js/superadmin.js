@@ -324,5 +324,43 @@
       var qs = Object.keys(params || {}).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); }).join('&');
       return UN.api('/api/auditoria' + (qs ? '?' + qs : ''));
     },
+    // ----- archivo de fotos -----
+    // Archivar NO borra la cotizacion: le saca las imagenes de la memoria del
+    // servidor y las deja guardadas aparte. La tabla, el historial, las
+    // busquedas y los Excel siguen igual, y el PDF se sigue pudiendo bajar con
+    // sus fotos (el servidor las recupera del archivo al momento de armarlo).
+    archivoFotos: {
+      archivar: function (meses) {
+        return UN.api('/api/archivo/fotos', { method: 'POST', body: { meses: Number(meses) || 0 } });
+      },
+      listar: function () { return UN.api('/api/archivo/fotos'); },
+      restaurar: function (folio) {
+        return UN.api('/api/archivo/fotos/' + encodeURIComponent(folio) + '/restaurar', { method: 'POST' });
+      },
+      fotos: function (folio) { return UN.api('/api/archivo/fotos/' + encodeURIComponent(folio)); },
+      // El ZIP lo arma el servidor por trozos (no se carga entero en memoria).
+      // Por eso va con fetch normal en vez de UN.api: aqui no hay JSON.
+      bajarZip: function () {
+        var token = '';
+        try { token = localStorage.getItem('unidos_token') || ''; } catch (e) {}
+        return fetch(API + '/api/archivo/fotos.zip', {
+          headers: token ? { Authorization: 'Bearer ' + token } : {},
+        }).then(function (r) {
+          if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || ('http ' + r.status)); });
+          var disp = r.headers.get('content-disposition') || '';
+          var m = /filename="?([^";]+)"?/.exec(disp);
+          return r.blob().then(function (b) {
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(b);
+            a.download = m ? m[1] : 'archivo-fotos.zip';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+            return b.size;
+          });
+        });
+      },
+    },
   };
 })();

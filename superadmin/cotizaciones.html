@@ -109,6 +109,12 @@
 </svg>
           Exportar Excel
         </button>
+<button class="inline-flex items-center px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition shadow-xs" onclick="abrirArchivoFotos()">
+<svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Archivo de fotos
+        </button>
 <button class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition shadow-sm hover:shadow" onclick="actualizarLista()">
 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
@@ -937,7 +943,7 @@
 
 <script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.1"></script>
 <script src="/js/excel.js?v=1.0"></script>
-<script src="js/superadmin.js?v=3.4"></script>
+<script src="js/superadmin.js?v=3.5"></script>
 <script>
   // SuperAdmin real: bandeja centralizada con datos del backend. Diseno intacto.
   (function () {
@@ -1286,6 +1292,203 @@ else if (action === 'restaurar') {
       }
     };
     window.actualizarLista = load;
+
+    // ----- archivo de fotos -----
+    // Las fotos son casi todo el peso del sistema. Este panel las saca de la
+    // memoria del servidor sin borrar nada: la cotizacion sigue en la tabla, en
+    // el historial y en los Excel, y su PDF se sigue bajando con sus fotos
+    // porque el servidor las recupera del archivo al armarlo.
+    function archivoModal() {
+      var m = document.getElementById('modal-archivo-fotos');
+      if (m) return m;
+      m = document.createElement('div');
+      m.id = 'modal-archivo-fotos';
+      m.className = 'fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4';
+      m.setAttribute('role', 'dialog');
+      m.setAttribute('aria-modal', 'true');
+      m.innerHTML =
+        '<div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[86vh]">' +
+          '<div class="px-5 py-4 border-b border-slate-100 flex items-start gap-3">' +
+            '<span class="w-10 h-10 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center shrink-0">' +
+              '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>' +
+            '</span>' +
+            '<div class="min-w-0 flex-1"><p class="font-extrabold text-slate-900 text-sm leading-snug">Archivo de fotos</p>' +
+            '<p class="text-xs text-slate-500 mt-0.5">Las fotos archived se guardan aparte del servidor. No se borra ninguna cotizaci&oacute;n y sus PDFs se siguen generando con las im&aacute;genes.</p></div>' +
+            '<button type="button" data-cerrar class="text-slate-400 hover:text-slate-700 text-xl leading-none px-1">&times;</button>' +
+          '</div>' +
+          '<div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-end">' +
+            '<div class="flex-1">' +
+              '<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Archivar cotizaciones de hace m&aacute;s de</label>' +
+              '<select id="archivoMeses" class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-600">' +
+                '<option value="24">24 meses</option>' +
+                '<option value="12" selected>12 meses</option>' +
+                '<option value="6">6 meses</option>' +
+                '<option value="0">Todo lo que tenga fotos (sin filtro de fecha)</option>' +
+              '</select>' +
+            '</div>' +
+            '<button type="button" id="btnArchivar" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold transition shadow whitespace-nowrap">Archivar fotos</button>' +
+            '<button type="button" id="btnZip" class="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50 transition whitespace-nowrap">Descargar ZIP</button>' +
+          '</div>' +
+          '<div class="px-5 py-3 bg-slate-50 border-b border-slate-100 text-xs text-slate-600" id="archivoResumen">Cargando&hellip;</div>' +
+          '<div class="px-5 py-4 overflow-y-auto" id="archivoLista"></div>' +
+        '</div>';
+      document.body.appendChild(m);
+      m.querySelector('[data-cerrar]').addEventListener('click', function () {
+        m.classList.add('hidden'); m.classList.remove('flex');
+        document.body.style.overflow = '';
+      });
+      m.addEventListener('click', function (e) {
+        if (e.target === m) { m.classList.add('hidden'); m.classList.remove('flex'); document.body.style.overflow = ''; }
+      });
+      m.querySelector('#btnArchivar').addEventListener('click', archivarFotos);
+      m.querySelector('#btnZip').addEventListener('click', descargarZipFotos);
+      return m;
+    }
+    window.cerrarArchivoFotos = function () {
+      var m = document.getElementById('modal-archivo-fotos');
+      if (m) { m.classList.add('hidden'); m.classList.remove('flex'); }
+      document.body.style.overflow = '';
+    };
+    window.abrirArchivoFotos = function () {
+      var m = archivoModal();
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      cargarArchivoFotos();
+    };
+    window.verFotosArchivadas = function (folio) {
+      SA.archivoFotos.fotos(folio).then(function (r) {
+        var fotos = (r && r.fotos) || [];
+        if (!fotos.length) { SA.toast('Esta cotizaci&oacute;n ya no tiene fotos en el archivo.', 'Archivo'); return; }
+        if (typeof window.abrirGaleriaFotos === 'function') { window.abrirGaleriaFotos(folio, fotos); return; }
+        abrirGaleriaArchivos(folio, fotos);
+      }).catch(function (e) { SA.toast('No se pudieron abrir las fotos: ' + (e.message || ''), 'Archivo'); });
+    };
+    // Visor propio. Este panel no carga /js/admin.js (que es donde vive la
+    // galeria general), asi que no se puede depender de ella.
+    function abrirGaleriaArchivos(folio, fotos) {
+      var vieja = document.getElementById('galeria-archivos');
+      if (vieja) vieja.parentNode.removeChild(vieja);
+      var g = document.createElement('div');
+      g.id = 'galeria-archivos';
+      g.className = 'fixed inset-0 z-[95] flex flex-col bg-slate-950/92 backdrop-blur-sm';
+      g.innerHTML =
+        '<div class="flex items-center justify-between px-5 py-4 text-white">' +
+          '<p class="text-sm font-bold">' + SA.esc(folio) + ' &middot; <span id="gaCont"></span></p>' +
+          '<button type="button" data-cerrar class="text-2xl leading-none text-white/70 hover:text-white px-2">&times;</button>' +
+        '</div>' +
+        '<div class="flex-1 flex items-center justify-center px-4 pb-4 min-h-0">' +
+          '<button type="button" data-prev class="text-white/70 hover:text-white text-4xl px-4 shrink-0" aria-label="Anterior">&#8249;</button>' +
+          '<img id="gaImg" alt="Fotograf&iacute;a" class="max-h-full max-w-full object-contain rounded-xl shadow-2xl">' +
+          '<button type="button" data-next class="text-white/70 hover:text-white text-4xl px-4 shrink-0" aria-label="Siguiente">&#8250;</button>' +
+        '</div>';
+      document.body.appendChild(g);
+      var i = 0;
+      function pinta() {
+        g.querySelector('#gaImg').src = fotos[i];
+        g.querySelector('#gaCont').textContent = (i + 1) + ' de ' + fotos.length;
+      }
+      function mover(d) { i = (i + d + fotos.length) % fotos.length; pinta(); }
+      function cerrar() { document.body.style.overflow = ''; if (g.parentNode) g.parentNode.removeChild(g); }
+      g.querySelector('[data-cerrar]').addEventListener('click', cerrar);
+      g.querySelector('[data-prev]').addEventListener('click', function () { mover(-1); });
+      g.querySelector('[data-next]').addEventListener('click', function () { mover(1); });
+      g.addEventListener('click', function (e) { if (e.target === g) cerrar(); });
+      document.body.style.overflow = 'hidden';
+      pinta();
+    }
+    window.restaurarFotos = function (folio) {
+      UN.confirmarEnvio({
+        titulo: 'Devolver las fotos a su lugar',
+        lineas: ['Folio ' + folio, 'Las im&aacute;genes vuelven a la cotizaci&oacute;n y salen del archivo.'],
+        boton: 'Devolver fotos',
+      }).then(function (ok) {
+        if (!ok) return;
+        SA.archivoFotos.restaurar(folio).then(function (r) {
+          SA.toast('Fotos restauradas: ' + ((r && r.fotos) || 0), 'Archivo de fotos');
+          cargarArchivoFotos();
+          load();
+        }).catch(function (e) { SA.toast('No se pudieron restaurar: ' + (e.message || ''), 'Archivo'); });
+      });
+    };
+    function cargarArchivoFotos() {
+      var m = archivoModal();
+      SA.archivoFotos.listar().then(function (lista) {
+        pintarArchivo(m, Array.isArray(lista) ? lista : []);
+      }).catch(function (e) {
+        m.querySelector('#archivoResumen').textContent = 'No se pudo leer el archivo: ' + (e.message || '');
+        m.querySelector('#archivoLista').innerHTML = '';
+      });
+    }
+    function pintarArchivo(m, lista) {
+      var kb = lista.reduce(function (a, x) { return a + (Number(x.kb) || 0); }, 0);
+      var fotos = lista.reduce(function (a, x) { return a + (Number(x.n) || 0); }, 0);
+      m.querySelector('#archivoResumen').innerHTML = lista.length
+        ? 'En el archivo: <strong>' + lista.length + '</strong> cotizaci&oacute;n(es), <strong>' + fotos + '</strong> fotos, <strong>' +
+          (kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : kb + ' KB') + '</strong> liberados de la memoria del servidor.'
+        : 'Todav&iacute;a no hay fotos archivadas. Quando las haya, se pueden restaurar una por una o bajar el ZIP completo.';
+      if (!lista.length) {
+        m.querySelector('#archivoLista').innerHTML = '';
+        return;
+      }
+      m.querySelector('#archivoLista').innerHTML =
+        '<table class="w-full text-xs"><thead><tr class="text-left text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-100">' +
+          '<th class="py-2 pr-2 font-bold">Folio</th><th class="py-2 pr-2 font-bold">Fecha</th><th class="py-2 pr-2 font-bold">Cliente</th>' +
+          '<th class="py-2 pr-2 font-bold">Fotos</th><th class="py-2 pr-2 font-bold">Peso</th><th class="py-2 font-bold text-right">Acci&oacute;n</th>' +
+        '</tr></thead><tbody>' +
+        lista.map(function (x) {
+          return '<tr class="border-b border-slate-50">' +
+            '<td class="py-2 pr-2 font-mono font-bold text-slate-700">' + SA.esc(x.folio || '') + '</td>' +
+            '<td class="py-2 pr-2 text-slate-500">' + SA.esc(SA.fmtFecha ? SA.fmtFecha(x.fecha) : (x.fecha || '')) + '</td>' +
+            '<td class="py-2 pr-2 text-slate-600 truncate max-w-[10rem]">' + SA.esc(x.cliente || '') + '</td>' +
+            '<td class="py-2 pr-2 text-slate-600">' + (Number(x.n) || 0) + '</td>' +
+            '<td class="py-2 pr-2 text-slate-500">' + (Number(x.kb) || 0) + ' KB</td>' +
+            '<td class="py-2 text-right whitespace-nowrap">' +
+              '<button type="button" class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-50" onclick="verFotosArchivadas(\'' + SA.esc(x.folio || '') + '\')">Ver</button> ' +
+              '<button type="button" class="px-2.5 py-1 rounded-lg border border-brand-200 text-brand-700 font-bold hover:bg-brand-50" onclick="restaurarFotos(\'' + SA.esc(x.folio || '') + '\')">Devolver</button>' +
+            '</td></tr>';
+        }).join('') +
+        '</tbody></table>';
+    }
+    function archivarFotos() {
+      var m = archivoModal();
+      var meses = m.querySelector('#archivoMeses').value;
+      UN.confirmarEnvio({
+        titulo: 'Archivar fotos',
+        lineas: [
+          'Seguardan aparte las fotos de las cotizaciones selected.',
+          'Ninguna cotizaci&oacute;n se borra ni desaparece de la tabla.',
+          'Sus PDFs se siguen bajando con las im&aacute;genes.',
+          meses === '0' ? 'Ojo: esta opci&oacute;n toma TODAS las que tengan fotos, sin importar la fecha.' : 'Solo las de hace m&aacute;s de ' + meses + ' meses.',
+        ],
+        boton: 'Archivar',
+      }).then(function (ok) {
+        if (!ok) return;
+        m.querySelector('#btnArchivar').disabled = true;
+        SA.archivoFotos.archivar(meses).then(function (r) {
+          m.querySelector('#btnArchivar').disabled = false;
+          SA.toast(r.movidas
+            ? r.movidas + ' cotizaci&oacute;n(es) archivadas, ' + r.fotos + ' fotos liberadas (' + (r.kb > 1024 ? (r.kb / 1024).toFixed(1) + ' MB' : r.kb + ' KB') + ').'
+            : 'No havia nada que archivar con ese filtro.', 'Archivo de fotos');
+          cargarArchivoFotos();
+          load();
+        }).catch(function (e) {
+          m.querySelector('#btnArchivar').disabled = false;
+          SA.toast('No se pudo archivar: ' + (e.message || ''), 'Archivo de fotos');
+        });
+      });
+    }
+    function descargarZipFotos() {
+      var m = archivoModal();
+      m.querySelector('#btnZip').disabled = true;
+      SA.archivoFotos.bajarZip().then(function (bytes) {
+        m.querySelector('#btnZip').disabled = false;
+        SA.toast('ZIP descargado (' + (bytes > 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.round(bytes / 1024) + ' KB') + ').', 'Archivo de fotos');
+      }).catch(function (e) {
+        m.querySelector('#btnZip').disabled = false;
+        SA.toast('No se pudo descargar: ' + (e.message || ''), 'Archivo de fotos');
+      });
+    }
     window.descargarPDF = function (folio) {
       var c = ALL.find(function (x) { return x.folio === folio; });
       if (c) UN.viewQuote(c);

@@ -178,6 +178,12 @@ function pintaFotosEnFila(celda, folio, fotos) {
 // Pide las fotos de UNA cotizacion. Se cachean para no volver a pedirlas si la
 // fila se vuelve a pintar.
 var FOTOS_CACHE = {};
+// La fila pudo haberse reordenado o filtrado mientras cargaba: se busca de nuevo
+// su celda de fotos antes de pintar.
+function destinoDeFila(folio, celda) {
+  var tr = document.querySelector('tr[data-folio="' + folio + '"]');
+  return (tr && tr.children[3]) ? tr.children[3] : celda;
+}
 function cargarFotosDeFila(folio, celda) {
   if (!folio || !celda) return;
   if (FOTOS_CACHE[folio]) {
@@ -186,14 +192,19 @@ function cargarFotosDeFila(folio, celda) {
   }
   if (typeof UN === 'undefined' || !UN.api) return;
   UN.api('/api/cotizaciones/' + encodeURIComponent(folio)).then(function (c) {
+    // Con las fotos archivadas el registro llega sin imagenes: se piden al
+    // archivo. Si no, la fila diria "Sin fotos adjuntas" cuando si las tiene.
+    if (c && c.fotosArchivadas && !(Array.isArray(c.fotos) && c.fotos.length)) {
+      return UN.api('/api/archivo/fotos/' + encodeURIComponent(folio)).then(function (a) {
+        pintarFotosEnFila(destinoDeFila(folio, celda), folio, (a && a.fotos) || []);
+      }).catch(function () { pintaFotosEnFila(destinoDeFila(folio, celda), folio, []); });
+    }
     var fotos = Array.isArray(c.fotos) ? c.fotos.filter(function (f) {
       return typeof f === 'string' && f.indexOf('data:image/') === 0;
     }) : [];
     FOTOS_CACHE[folio] = fotos;
     // La fila pudo haberse cambiado mientras cargaba.
-    var tr = document.querySelector('tr[data-folio="' + folio + '"]');
-    var destino = celda;
-    if (tr && tr.children[3]) destino = tr.children[3];
+    var destino = destinoDeFila(folio, celda);
     if (fotos.length) pintaFotosEnFila(destino, folio, fotos);
     else {
       destino.innerHTML = '';
