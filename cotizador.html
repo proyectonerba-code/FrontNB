@@ -337,6 +337,28 @@
 <i class="fa-solid fa-plus"></i> Adjuntar más fotos
           </button>
 </div>
+<!-- MODAL AVISO DE FOTOS: ventana bonita con el estilo de la marca.
+     Antes el límite salía en un toast oscuro abajo a la derecha que se veía
+     horrible; ahora todos los avisos de fotos (límite, archivo no válido,
+     archivo muy pesado) abren esta ventana centrada. -->
+<div class="fixed inset-0 z-[130] hidden items-center justify-center p-4" id="modalAvisoFotos" role="dialog" aria-modal="true" aria-labelledby="modalAvisoFotosTitulo">
+<div class="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px]" onclick="cerrarModalAvisoFotos()"></div>
+<div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+<div class="h-1.5 bg-gradient-to-r from-red-700 via-red-600 to-red-500"></div>
+<div class="px-5 pt-5 pb-2 text-center">
+<div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3" id="modalAvisoFotosIcono">
+<i class="fa-solid fa-images text-lg"></i>
+</div>
+<h3 class="font-bold text-slate-900 text-base" id="modalAvisoFotosTitulo">Límite de fotos alcanzado</h3>
+<p class="mt-2" id="modalAvisoFotosContadorWrap"><span class="inline-block bg-red-100 text-red-800 font-bold text-xs px-3 py-1 rounded-full border border-red-200" id="modalAvisoFotosContador">10 de 10</span></p>
+<p class="text-sm text-slate-600 leading-relaxed mt-3" id="modalAvisoFotosTexto"></p>
+</div>
+<div class="px-5 pb-5 pt-2 flex flex-col gap-2">
+<button class="w-full px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 shadow-sm transition-all" id="modalAvisoFotosBoton" onclick="cerrarModalAvisoFotos()" type="button">Entendido</button>
+<button class="w-full px-4 py-2 text-slate-500 rounded-xl font-semibold text-xs hover:text-slate-800 hover:bg-slate-100 transition-all" id="modalAvisoFotosSecundario" onclick="cerrarModalAvisoFotos(true)" type="button">Ver mis fotos</button>
+</div>
+</div>
+</div>
 </section>
 <!-- SECCIÓN 4: ESPECIFICACIÓN DEL REQUERIMIENTO -->
 <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 md:p-8">
@@ -953,9 +975,10 @@
 
     /* Achica la foto antes de mandarla. La calidad se ajusta al cupo que ya se
        llenó: las primeras salen a 1200 px / 0.72 (nitidas para medir) y de la
-       6a en adelante bajan a 1000 px / 0.62. Con 20 fotos a 1200 px el envío
-       se va a ~7 MB y la base de datos carga con filas enormes; a 1000 px las
-       20 quedan en ~2 MB y el equipo de ingeniería sigue viendo el detalle. */
+       6a en adelante bajan a 1000 px / 0.62. Con 10 fotos a 1200 px el envío
+       se va a ~3 MB y la base de datos no carga con filas enormes; a 1000 px
+       las que pasan de la 5a quedan más ligeras y el equipo de ingeniería
+       sigue viendo el detalle necesario. */
     function perfilFoto(indice) {
       return indice < 5
         ? { lado: LADO_MAXIMO_FOTO, calidad: CALIDAD_FOTO }
@@ -966,13 +989,23 @@
       perfil = perfil || { lado: LADO_MAXIMO_FOTO, calidad: CALIDAD_FOTO };
       var reader = new FileReader();
       reader.onerror = function () {
-        aviso('No se pudo leer la imagen. Intenta con otra foto.');
+        mostrarModalAvisoFotos({
+          modo: 'error',
+          titulo: 'No se pudo leer la imagen',
+          texto: 'Intenta de nuevo con otra foto.',
+          boton: 'Entendido'
+        });
         alTerminar(null, '');
       };
       reader.onload = function (e) {
         var img = new Image();
         img.onerror = function () {
-          aviso('El archivo no es una imagen válida.');
+          mostrarModalAvisoFotos({
+            modo: 'error',
+            titulo: 'Archivo no válido',
+            texto: 'El archivo no es una imagen válida. Solo se permiten JPG, PNG o WebP.',
+            boton: 'Entendido'
+          });
           alTerminar(null, '');
         };
         img.onload = function () {
@@ -1008,6 +1041,89 @@
       return salida;
     }
 
+/* Ventana bonita para los avisos de fotos. Antes el límite salía en un toast
+       oscuro abajo a la derecha; ahora se abre esta ventana centrada con el
+       estilo de la marca (franja roja, icono, contador y botón Entendido).
+       Uso: mostrarModalAvisoFotos({ titulo, texto, contador, boton }) y se
+       cierra con cerrarModalAvisoFotos(). Si ya está abierta, solo se
+       actualiza el texto: al subir varias fotos de golpe no se enciman
+       ventanas. `alCerrar` se ejecuta al cerrar (p. ej. para redirigir). */
+    window.__avisoFotosAlCerrar = null;
+    function mostrarModalAvisoFotos(o) {
+      o = o || {};
+      var modal = document.getElementById('modalAvisoFotos');
+      if (!modal) return;
+      var titulo = document.getElementById('modalAvisoFotosTitulo');
+      var texto = document.getElementById('modalAvisoFotosTexto');
+      var contador = document.getElementById('modalAvisoFotosContador');
+      var contadorWrap = document.getElementById('modalAvisoFotosContadorWrap');
+      var icono = document.getElementById('modalAvisoFotosIcono');
+      var boton = document.getElementById('modalAvisoFotosBoton');
+      var secundario = document.getElementById('modalAvisoFotosSecundario');
+      if (titulo && o.titulo) titulo.innerText = o.titulo;
+      if (texto && o.texto) texto.innerText = o.texto;
+      if (contador && contadorWrap) {
+        if (o.contador) { contador.innerText = o.contador; contadorWrap.style.display = ''; }
+        else { contadorWrap.style.display = 'none'; }
+      }
+      if (icono) {
+        var modo = o.modo || 'limite';
+        icono.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ' +
+          (modo === 'advertencia' ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600');
+        icono.innerHTML = '<i class="fa-solid ' +
+          (modo === 'limite' ? 'fa-images' : (modo === 'advertencia' ? 'fa-triangle-exclamation' : 'fa-circle-exclamation')) +
+          ' text-lg"></i>';
+      }
+      if (boton) boton.innerText = o.boton || 'Entendido';
+      if (secundario) secundario.style.display = o.sinSecundario ? 'none' : '';
+      window.__avisoFotosAlCerrar = (typeof o.alCerrar === 'function') ? o.alCerrar : null;
+      if (!modal.classList.contains('flex')) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+    function cerrarModalAvisoFotos(irAFotos) {
+      var modal = document.getElementById('modalAvisoFotos');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+      document.body.style.overflow = '';
+      var cb = window.__avisoFotosAlCerrar;
+      window.__avisoFotosAlCerrar = null;
+      if (irAFotos === true) {
+        var grid = document.getElementById('photoGrid');
+        if (grid && grid.scrollIntoView) {
+          try { grid.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { grid.scrollIntoView(); }
+        }
+        return;
+      }
+      if (cb) { try { cb(); } catch (e) {} }
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var modal = document.getElementById('modalAvisoFotos');
+        if (modal && modal.classList.contains('flex')) cerrarModalAvisoFotos();
+      }
+    });
+
+    // Aviso de límite con la ventana bonita: cuántas van, cuántas permite y
+    // qué hacer (borrar una o cambiarla por una mejor toma).
+    function avisarLimiteFotos() {
+      var maximo = maxFotosPermitidas();
+      var actuales = 0;
+      var grid = document.getElementById('photoGrid');
+      if (grid) actuales = grid.querySelectorAll('[data-foto="true"]').length;
+      var especial = esProyectoEspecial();
+      mostrarModalAvisoFotos({
+        modo: 'limite',
+        titulo: 'Límite de fotos alcanzado',
+        contador: actuales + ' de ' + maximo,
+        texto: 'Ya adjuntaste las ' + maximo + ' imágenes permitidas ' +
+          (especial ? 'para Proyecto Especial.' : 'para este tipo de inmueble.') +
+          ' Si necesitas agregar otra, elimina una de las actuales o cámbiala por una mejor toma.',
+        boton: 'Entendido'
+      });
+    }
+
     // Carga real de fotos desde PC. Acepta varias en una sola seleccion
     // (los inputs llevan `multiple`) y respeta el tope del tipo de inmueble.
     function simularSubidaFoto(input) {
@@ -1021,11 +1137,21 @@
 
       const pendientes = archivos.filter(function (file) {
         if (!file.type || file.type.indexOf('image/') !== 0) {
-          aviso('"' + file.name + '" no es una imagen. Solo se permiten JPG, PNG o WebP.', 'error');
+          mostrarModalAvisoFotos({
+            modo: 'error',
+            titulo: 'Archivo no válido',
+            texto: '"' + file.name + '" no es una imagen. Solo se permiten fotos en JPG, PNG o WebP.',
+            boton: 'Entendido'
+          });
           return false;
         }
         if (file.size > 10 * 1024 * 1024) {
-          aviso('"' + file.name + '" es muy grande. Máximo 10MB por imagen.', 'error');
+          mostrarModalAvisoFotos({
+            modo: 'error',
+            titulo: 'Imagen muy pesada',
+            texto: '"' + file.name + '" pesa más de 10MB. Sube una versión más ligera o una mejor toma.',
+            boton: 'Entendido'
+          });
           return false;
         }
         return true;
@@ -1057,7 +1183,7 @@
       // Contar fotos actuales (excluyendo slots de subida)
       const fotosActuales = photoGrid.querySelectorAll('[data-foto="true"]').length;
       if (fotosActuales >= maximo) {
-aviso(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyectos especiales' : 'este tipo de inmueble'}.`);
+        avisarLimiteFotos();
         return;
       }
       
@@ -1231,8 +1357,8 @@ aviso(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyect
         });
         window.__lastQuote = c;
         // Si el servidor no pudo guardar todas las fotos, se avisa antes de
-        // redirigir: el folio ya quedo registrado, pero el cliente tiene que
-        // saber que no viajaron las 20 imagenes que subio.
+        // redirigir: el folio ya quedó registrado, pero el cliente tiene que
+        // saber que no viajaron todas las imágenes que subió.
         var pedidas = (typeof c.fotosRecibidas === 'number') ? c.fotosRecibidas : 0;
         var guardadas = (typeof c.fotosGuardadas === 'number') ? c.fotosGuardadas : pedidas;
         window.__fotosDescartadas = Math.max(0, pedidas - guardadas);
@@ -1268,9 +1394,20 @@ aviso(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyect
       } catch (e) {}
       setTimeout(function () {
         if (window.__fotosDescartadas > 0) {
-          alert('Tu solicitud ' + window.__lastQuote.folio + ' quedó registrada, pero solo se guardaron ' +
-            (window.__lastQuote.fotosGuardadas || 0) + ' de las ' + window.__lastQuote.fotosRecibidas +
-            ' imágenes.\n\nPara que ingeniería vea todo el levantamiento, vuelve al cotizador y manda una nueva solicitud solo con las fotos que faltan, o comunícate con nosotros para anexarlas a este folio.');
+          // Ventana bonita en vez del alert() gris de Windows: el cliente
+          // confirma y ahí sí se redirige a Mis Cotizaciones.
+          mostrarModalAvisoFotos({
+            modo: 'advertencia',
+            titulo: 'Solicitud registrada',
+            contador: (window.__lastQuote.fotosGuardadas || 0) + ' de ' + window.__lastQuote.fotosRecibidas + ' fotos guardadas',
+            texto: 'Tu solicitud ' + window.__lastQuote.folio + ' quedó registrada, pero solo se guardaron ' +
+              (window.__lastQuote.fotosGuardadas || 0) + ' de las ' + window.__lastQuote.fotosRecibidas +
+              ' imágenes. Para que ingeniería vea todo el levantamiento, manda una nueva solicitud solo con las fotos que faltan o avísanos para anexarlas a este folio.',
+            boton: 'Ver mis cotizaciones',
+            sinSecundario: true,
+            alCerrar: function () { location.href = '/mis-cotizaciones.html'; }
+          });
+          return;
         }
         location.href = '/mis-cotizaciones.html';
       }, 600);
