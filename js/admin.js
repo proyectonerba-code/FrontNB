@@ -809,6 +809,31 @@ window.eliminarCotizacion = async function (folio) {
           render();
         });
       });
+      // Avisos en la esquina. Esta pagina no tiene contenedor de toast ni
+      // mostrarToast, asi que Sincronizar recargaba los datos sin cambiar nada
+      // en pantalla y parecia un boton muerto: no habia forma de saber si
+      // estaba trabajando, si ya estaba al dia o si habia fallado.
+      function avisoMant(msg, tipo) {
+        var cont = document.getElementById('toast-mantenimiento');
+        if (!cont) {
+          cont = document.createElement('div');
+          cont.id = 'toast-mantenimiento';
+          cont.style.cssText = 'position:fixed;bottom:18px;right:18px;z-index:120;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:92vw';
+          document.body.appendChild(cont);
+        }
+        var el = document.createElement('div');
+        el.style.cssText = 'color:#fff;font-size:13px;font-weight:600;padding:11px 16px;border-radius:12px;' +
+          'box-shadow:0 10px 24px rgba(0,0,0,.18);max-width:330px;transition:opacity .25s,transform .25s;' +
+          'background:' + (tipo === 'error' ? '#b91c1c' : (tipo === 'info' ? '#0f172a' : '#047857'));
+        el.textContent = msg;
+        cont.appendChild(el);
+        setTimeout(function () {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+          setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+        }, 2800);
+      }
+
       document.querySelectorAll('button').forEach(function (b) {
         var t = b.textContent.trim().toLowerCase();
         // Por PREFIJO, no texto exacto: si se cambia la etiqueta del boton
@@ -818,7 +843,7 @@ window.eliminarCotizacion = async function (folio) {
             var m = MANTS[k];
             return [m.id, m.folio, m.fecha, m.nombre, m.email, m.telefono, m.direccion, m.descripcion, m.estado];
           });
-          if (!filas.length) { alert('No hay mantenimientos para exportar.'); return; }
+          if (!filas.length) { avisoMant('No hay mantenimientos para exportar.', 'error'); return; }
           var ok = (window.EXCEL ? EXCEL.descargar({
             nombre: 'grupo_nerba_hidalgo_mantenimientos',
             hoja: 'Mantenimientos',
@@ -836,14 +861,19 @@ window.eliminarCotizacion = async function (folio) {
             ],
             filas: filas
           }) : false);
-          if (!ok) alert('No se pudo generar el Excel.');
+          avisoMant(ok ? 'Excel descargado: ' + filas.length + ' registros.' : 'No se pudo generar el Excel.', ok ? 'ok' : 'error');
         });
         if (t.indexOf('sincronizar') === 0) b.addEventListener('click', function () {
           // El icono solo gira MIENTRAS carga: antes giraba siempre por una
           // clase fija en el HTML y parecia trabajar sin hacer nada.
           var ico = b.querySelector('svg');
           if (ico) ico.classList.add('animate-spin');
-          load().catch(function (e) { alert(e.message); }).then(function () {
+          avisoMant('Sincronizando con la central...', 'info');
+          load().then(function () {
+            avisoMant('Lista actualizada: ' + Object.keys(MANTS).length + ' solicitudes.', 'ok');
+          }).catch(function (e) {
+            avisoMant('No se pudo sincronizar: ' + (e.message || e), 'error');
+          }).then(function () {
             if (ico) ico.classList.remove('animate-spin');
           });
         });
