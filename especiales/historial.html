@@ -17,7 +17,7 @@
     </p>
 </div>
 <div class="flex items-center gap-3 shrink-0">
-<button class="inline-flex items-center gap-2 bg-primary hover:bg-surface-tint active:bg-on-primary-fixed-variant text-on-primary px-4 py-2.5 rounded-lg font-label-lg transition-all shadow-sm" onclick="alert('Generando descarga del expediente global consolidado...')">
+<button class="inline-flex items-center gap-2 bg-primary hover:bg-surface-tint active:bg-on-primary-fixed-variant text-on-primary px-4 py-2.5 rounded-lg font-label-lg transition-all shadow-sm" onclick="exportarHistorialPE()">
 <span class="material-symbols-outlined text-base">file_download</span>
 <span class="">Exportar Listado Completo</span>
 </button>
@@ -931,6 +931,26 @@
       });
       renderHistorial();
     }
+    window.exportarHistorialPE = function () {
+      var filas = Object.values(window.__peQuotes || {}).map(function (c) {
+        return [c.folio, c.fecha, c.nombre, c.email, c.producto || '', c.estado || 'APROBADA'];
+      });
+      if (!filas.length) { alert('No hay proyectos en el historial para exportar.'); return; }
+      if (window.EXCEL) EXCEL.descargar({
+        nombre: 'historial_proyectos_especiales',
+        hoja: 'Historial',
+        titulo: 'Historial de Proyectos Especiales · Grupo Nerba Hidalgo',
+        columnas: [
+          { titulo: 'FOLIO', ancho: 21 },
+          { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+          { titulo: 'CLIENTE', ancho: 26 },
+          { titulo: 'EMAIL', ancho: 28 },
+          { titulo: 'PROYECTO', ancho: 30 },
+          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
+        ],
+        filas: filas
+      });
+    };
     window.abrirModalDetalle = function (id) {
       var data = window.__peH[id];
       if (!data) return;
@@ -1040,6 +1060,7 @@
   })();
 </script>
 
+<script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 </body></html>

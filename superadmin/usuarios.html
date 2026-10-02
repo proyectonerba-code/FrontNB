@@ -6,7 +6,7 @@
 <!-- Main Administrative Container -->
 <section class="max-w-container-max mx-auto px-gutter-md lg:px-gutter-xl py-8 space-y-8 w-full">
 <!-- Hero / Action Header -->
-<div class="bg-surface-container-lowest rounded-xl p-6 lg:p-8 shadow-sm relative overflow-hidden"><div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10"><div class="space-y-2 max-w-3xl"><div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-caps text-label-caps font-bold tracking-wider"><span class="material-symbols-outlined text-sm">verified_user</span><span class="">MÓDULO DE ADMINISTRACIÓN CENTRAL • SUPER ADMIN</span></div><h1 class="font-headline-xl text-headline-xl lg:font-display-lg lg:text-display-lg text-on-surface font-extrabold tracking-tight">Gestión de Usuarios y Accesos</h1><p class="font-body-md text-body-md text-secondary leading-relaxed">Administra y audita las cuentas del sistema. Asigna roles con jerarquía (Super Admin, Administrador y Cliente), configura estados de acceso y mantén la seguridad integral de la plataforma Grupo NERBA HIDALGO.</p></div><div class="flex flex-wrap items-center gap-3 shrink-0"><button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold transition-all shadow-sm active:scale-95" id="btnExportCSV"><span class="material-symbols-outlined text-xl text-secondary">download</span><span class="">Exportar Resumen (CSV)</span></button><button class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-bold shadow-md hover:shadow-lg transition-all active:scale-95" id="btnOpenCreateModal" onclick="openUserModalForCreate()"><span class="material-symbols-outlined text-xl">person_add</span><span class="">+ Nuevo Usuario</span></button></div></div></div>
+<div class="bg-surface-container-lowest rounded-xl p-6 lg:p-8 shadow-sm relative overflow-hidden"><div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10"><div class="space-y-2 max-w-3xl"><div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-caps text-label-caps font-bold tracking-wider"><span class="material-symbols-outlined text-sm">verified_user</span><span class="">MÓDULO DE ADMINISTRACIÓN CENTRAL • SUPER ADMIN</span></div><h1 class="font-headline-xl text-headline-xl lg:font-display-lg lg:text-display-lg text-on-surface font-extrabold tracking-tight">Gestión de Usuarios y Accesos</h1><p class="font-body-md text-body-md text-secondary leading-relaxed">Administra y audita las cuentas del sistema. Asigna roles con jerarquía (Super Admin, Administrador y Cliente), configura estados de acceso y mantén la seguridad integral de la plataforma Grupo NERBA HIDALGO.</p></div><div class="flex flex-wrap items-center gap-3 shrink-0"><button class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg font-semibold transition-all shadow-sm active:scale-95" id="btnExportCSV"><span class="material-symbols-outlined text-xl text-secondary">download</span><span class="">Exportar Resumen (Excel)</span></button><button class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg font-bold shadow-md hover:shadow-lg transition-all active:scale-95" id="btnOpenCreateModal" onclick="openUserModalForCreate()"><span class="material-symbols-outlined text-xl">person_add</span><span class="">+ Nuevo Usuario</span></button></div></div></div>
 <!-- Quick Metric Cards (KPIs) -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 <!-- Total Users -->
@@ -1166,10 +1166,25 @@
         var nb = b.cloneNode(true);
         b.parentNode.replaceChild(nb, b);
         nb.addEventListener('click', function () {
-          SA.csvDownload('grupo_nerba_hidalgo_usuarios.csv', [['NOMBRE', 'EMAIL', 'TELEFONO', 'EMPRESA', 'ROL', 'ESTADO', 'ALTA']].concat(ALL.map(function (u) {
+          var filas = ALL.map(function (u) {
             return [u.nombre, u.email, u.telefono || '', u.empresa || '', u.rol, u.activo === false ? 'INACTIVO' : 'ACTIVO', u.createdAt || ''];
-          })));
-          SA.toast('Resumen CSV descargado con ' + ALL.length + ' usuarios.', 'Exportación');
+          });
+          if (window.EXCEL) EXCEL.descargar({
+            nombre: 'grupo_nerba_hidalgo_usuarios',
+            hoja: 'Usuarios',
+            titulo: 'Usuarios · Grupo Nerba Hidalgo',
+            columnas: [
+              { titulo: 'NOMBRE', ancho: 28 },
+              { titulo: 'EMAIL', ancho: 30 },
+              { titulo: 'TELEFONO', ancho: 16 },
+              { titulo: 'EMPRESA', ancho: 26 },
+              { titulo: 'ROL', ancho: 22 },
+              { titulo: 'ESTADO', ancho: 12, tipo: 'estado' },
+              { titulo: 'ALTA', ancho: 12, tipo: 'fecha' }
+            ],
+            filas: filas
+          });
+          SA.toast('Resumen Excel descargado con ' + ALL.length + ' usuarios.', 'Exportación');
         });
       }
     })();
@@ -1225,6 +1240,7 @@
     load();
   })();
 </script>
+<script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 </body></html>

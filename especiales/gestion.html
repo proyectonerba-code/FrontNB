@@ -44,7 +44,7 @@
 <div class="flex items-center gap-3 shrink-0">
 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest shadow-sm hover:bg-surface-container text-on-surface font-label-lg text-label-lg transition-all active:scale-[0.98]" id="btn-export-csv" type="button">
 <span class="material-symbols-outlined text-lg text-secondary">file_download</span>
-<span class="">Exportar CSV</span>
+<span class="">Exportar Excel</span>
 </button>
 <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm hover:bg-primary transition-all active:scale-[0.98]" id="btn-open-new-project" type="button">
 <span class="material-symbols-outlined text-lg">add</span>
@@ -1010,7 +1010,7 @@
       });
     });
 
-    // 5. Botón Exportar CSV
+    // 5. Botón Exportar Excel
     const btnExportCsv = document.getElementById('btn-export-csv');
     if (btnExportCsv) {
       btnExportCsv.addEventListener('click', () => {
@@ -1301,11 +1301,24 @@
     (function () {
       var b = document.getElementById('btn-export-csv');
       if (b) b.addEventListener('click', function () {
-        var rows = [['FOLIO', 'CLIENTE', 'EMAIL', 'PROYECTO', 'ESTADO', 'AVANCE']];
-        Object.values(window.__peQuotes || {}).forEach(function (c) {
-          rows.push([c.folio, c.nombre, c.email, c.producto || c.espTipoInfraestructura, c.entregado ? 'Finalizado' : 'En proceso', ESP.avanceOf(c) + '%']);
+        var filas = Object.values(window.__peQuotes || {}).map(function (c) {
+          return [c.folio, c.nombre, c.email, c.producto || c.espTipoInfraestructura, c.entregado ? 'Finalizado' : 'En proceso', ESP.avanceOf(c) + '%'];
         });
-        ESP.csvDownload('proyectos_especiales.csv', rows);
+        if (!filas.length) return;
+        if (window.EXCEL) EXCEL.descargar({
+          nombre: 'proyectos_especiales',
+          hoja: 'Proyectos',
+          titulo: 'Proyectos Especiales · Grupo Nerba Hidalgo',
+          columnas: [
+            { titulo: 'FOLIO', ancho: 21 },
+            { titulo: 'CLIENTE', ancho: 26 },
+            { titulo: 'EMAIL', ancho: 28 },
+            { titulo: 'PROYECTO', ancho: 30 },
+            { titulo: 'ESTADO', ancho: 16, tipo: 'estado' },
+            { titulo: 'AVANCE', ancho: 10 }
+          ],
+          filas: filas
+        });
       });
     })();
     function closePeConfirm() {
@@ -1331,6 +1344,7 @@
   })();
 </script>
 
+<script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 </body></html>

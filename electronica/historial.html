@@ -34,7 +34,7 @@
 <p class="text-sm text-slate-500 mt-1 max-w-2xl">Todas las solicitudes de Electrónica y refacciones en orden de llegada, con su estado y expediente oficial.</p>
 </div>
 <div class="flex items-center gap-3">
-<button class="inline-flex items-center px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition shadow-xs" id="btnHistCsv" type="button">Exportar CSV</button>
+<button class="inline-flex items-center px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition shadow-xs" id="btnHistCsv" type="button">Exportar Excel</button>
 <button class="inline-flex items-center px-4 py-2.5 rounded-xl bg-red-700 hover:bg-red-800 text-white text-sm font-semibold transition shadow-sm" id="btnHistSync" type="button">Actualizar</button>
 </div>
 </div>
@@ -167,19 +167,25 @@
     });
     document.getElementById('btnHistSync').addEventListener('click', function () { load(); });
     document.getElementById('btnHistCsv').addEventListener('click', function () {
-      var rows = [['FOLIO', 'FECHA', 'CLIENTE', 'EMAIL', 'TELEFONO', 'PRODUCTO', 'ESTADO']];
-      ALL.forEach(function (c) {
-        rows.push([c.folio, c.fecha, c.nombre, c.email, c.telefono || '', c.producto || '', c.estado]);
+      var filas = ALL.map(function (c) {
+        return [c.folio, c.fecha, c.nombre, c.email, c.telefono || '', c.producto || '', c.estado];
       });
-      var csv = rows.map(function (r) {
-        return r.map(function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(',');
-      }).join('\r\n');
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8' }));
-      a.download = 'historial_electronicos.csv';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function () { document.body.removeChild(a); }, 500);
+      if (!filas.length) return;
+      if (window.EXCEL) EXCEL.descargar({
+        nombre: 'historial_electronicos',
+        hoja: 'Historial',
+        titulo: 'Historial de Electrónicos · Grupo Nerba Hidalgo',
+        columnas: [
+          { titulo: 'FOLIO', ancho: 21 },
+          { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+          { titulo: 'CLIENTE', ancho: 26 },
+          { titulo: 'EMAIL', ancho: 28 },
+          { titulo: 'TELEFONO', ancho: 15 },
+          { titulo: 'PRODUCTO', ancho: 30 },
+          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
+        ],
+        filas: filas
+      });
     });
     async function load() {
       var list = [];
@@ -193,6 +199,7 @@
     load();
   })();
 </script>
+<script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 </body></html>

@@ -219,11 +219,26 @@
           b._saCsv = true;
           b.removeAttribute('onclick');
           b.addEventListener('click', function () {
-            var rows = [['FECHA', 'HORA', 'MODULO', 'EVENTO', 'DETALLE', 'FOLIO', 'USUARIO', 'ROL']];
-            Object.values(EVENTS).forEach(function (e) {
-              rows.push([e.fecha, e.hora, e.modulo, e.evento, e.detalle, e.folio, (e.nombre || e.usuario || ''), e.rol]);
+            var filas = Object.values(EVENTS).map(function (e) {
+              return [e.fecha, e.hora, e.modulo, e.evento, e.detalle, e.folio, (e.nombre || e.usuario || ''), e.rol];
             });
-            SA.csvDownload('bitacora_auditoria.csv', rows);
+            if (!filas.length) return;
+            if (window.EXCEL) EXCEL.descargar({
+              nombre: 'bitacora_auditoria',
+              hoja: 'Bitácora',
+              titulo: 'Bitácora de Auditoría · Grupo Nerba Hidalgo',
+              columnas: [
+                { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+                { titulo: 'HORA', ancho: 10 },
+                { titulo: 'MODULO', ancho: 18 },
+                { titulo: 'EVENTO', ancho: 22 },
+                { titulo: 'DETALLE', ancho: 50 },
+                { titulo: 'FOLIO', ancho: 21 },
+                { titulo: 'USUARIO', ancho: 28 },
+                { titulo: 'ROL', ancho: 20 }
+              ],
+              filas: filas
+            });
           });
         }
         if (t.indexOf('Rango de Fechas') >= 0 && !b._saRange) {
@@ -266,7 +281,8 @@
     })();
     load();
   })();
-</script><script src="/js/transicion.js?v=1.0"></script>
+</script><script src="/js/excel.js?v=1.0"></script>
+<script src="/js/transicion.js?v=1.0"></script>
 <script src="/js/pie-empresa.js?v=1.0"></script>
 <script src="/js/bitacora-dias.js?v=1.2"></script>
 </body></html>
