@@ -476,7 +476,7 @@ window.eliminarCotizacion = async function (folio) {
     window.exportarReporte = function () {
       var filas = Object.keys(QUOTES).map(function (k) {
         var c = QUOTES[k];
-        return [c.folio, c.fecha, c.nombre, c.email, c.telefono, c.tipoInmueble, c.direccion, c.producto, c.estado, c.total];
+        return [c.folio, c.fecha, c.nombre, c.email, c.telefono, c.tipoInmueble, c.direccion, c.producto, c.estado];
       });
       if (!filas.length) { mostrarToast('No hay cotizaciones para exportar.', 'emerald'); return; }
       var ok = (window.EXCEL ? EXCEL.descargar({
@@ -492,11 +492,9 @@ window.eliminarCotizacion = async function (folio) {
           { titulo: 'INMUEBLE', ancho: 18 },
           { titulo: 'DIRECCION', ancho: 32 },
           { titulo: 'PRODUCTO', ancho: 26 },
-          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' },
-          { titulo: 'TOTAL', ancho: 14, tipo: 'moneda' }
+          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
         ],
-        filas: filas,
-        totales: true
+        filas: filas
       }) : false);
       mostrarToast(ok ? 'Excel descargado con ' + filas.length + ' cotizaciones.' : 'No se pudo generar el Excel.', 'emerald');
     };
@@ -812,8 +810,10 @@ window.eliminarCotizacion = async function (folio) {
         });
       });
       document.querySelectorAll('button').forEach(function (b) {
-        var t = b.textContent.trim();
-        if (t === 'Exportar CSV') b.addEventListener('click', function () {
+        var t = b.textContent.trim().toLowerCase();
+        // Por PREFIJO, no texto exacto: si se cambia la etiqueta del boton
+        // ("CSV" -> "Excel") el cableado no se rompe.
+        if (t.indexOf('exportar') === 0) b.addEventListener('click', function () {
           var filas = Object.keys(MANTS).map(function (k) {
             var m = MANTS[k];
             return [m.id, m.folio, m.fecha, m.nombre, m.email, m.telefono, m.direccion, m.descripcion, m.estado];
@@ -838,7 +838,15 @@ window.eliminarCotizacion = async function (folio) {
           }) : false);
           if (!ok) alert('No se pudo generar el Excel.');
         });
-        if (t === 'Sincronizar') b.addEventListener('click', function () { load().catch(function (e) { alert(e.message); }); });
+        if (t.indexOf('sincronizar') === 0) b.addEventListener('click', function () {
+          // El icono solo gira MIENTRAS carga: antes giraba siempre por una
+          // clase fija en el HTML y parecia trabajar sin hacer nada.
+          var ico = b.querySelector('svg');
+          if (ico) ico.classList.add('animate-spin');
+          load().catch(function (e) { alert(e.message); }).then(function () {
+            if (ico) ico.classList.remove('animate-spin');
+          });
+        });
       });
     })();
     load().catch(function (e) { alert(e.message); });

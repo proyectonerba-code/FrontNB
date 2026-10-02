@@ -1262,12 +1262,11 @@ else if (action === 'restaurar') {
         { titulo: 'INMUEBLE', ancho: 18 },
         { titulo: 'DIRECCION', ancho: 32 },
         { titulo: 'PRODUCTO', ancho: 26 },
-        { titulo: 'ESTADO', ancho: 14, tipo: 'estado' },
-        { titulo: 'TOTAL', ancho: 14, tipo: 'moneda' }
+        { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
       ];
       var filas = ALL.map(function (c) {
         return [c.folio, c.fecha, c.nombre, c.email, c.telefono || '', c.tipoInmueble || '',
-          c.direccion || '', c.producto || '', c.estado, c.total || ''];
+          c.direccion || '', c.producto || '', c.estado];
       });
       if (!filas.length) {
         SA.toast('No hay cotizaciones para exportar.', 'Exportación');
@@ -1278,15 +1277,12 @@ else if (action === 'restaurar') {
         hoja: 'Cotizaciones',
         titulo: 'Cotizaciones · Grupo Nerba Hidalgo',
         columnas: columnas,
-        filas: filas,
-        totales: true
+        filas: filas
       });
       if (ok) {
         SA.toast('Excel descargado con ' + filas.length + ' cotizaciones.', 'Exportación');
       } else {
-        SA.csvDownload('grupo_nerba_hidalgo_cotizaciones.csv',
-          [['FOLIO', 'FECHA', 'CLIENTE', 'EMAIL', 'TELEFONO', 'INMUEBLE', 'DIRECCION', 'PRODUCTO', 'ESTADO', 'TOTAL']].concat(filas));
-        SA.toast('Excel descargado en formato CSV.', 'Exportación');
+        SA.toast('No se pudo generar el Excel.', 'Exportación');
       }
     };
     window.actualizarLista = load;
