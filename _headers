@@ -12,6 +12,9 @@
   #
   # Se listan a mano solo los origenes que el sitio usa de verdad:
   #   - Tailwind y FontAwesome por CDN, y Google Sign-In.
+  # NOTA: FontAwesome (cdnjs) va en style-src Y font-src: el CSS vive ahi y
+  # las fuentes woff2 tambien. Sin esto el navegador bloquea los iconos del
+  # cotizador (es la unica pagina que carga all.min.css de cdnjs).
   #   - El backend en Railway (connect-src) para los fetch de la API.
   #   - blob: porque el visor de PDF abre el documento en un iframe blob.
   #   - data: para los logos y las fotos de la cotizacion en base64.
@@ -20,4 +23,4 @@
   # new Function. Para quitarlos hay que autoalojar Tailwind y pasar los
   # scripts a nonces; mientras tanto, esto al menos cierra el origen de los
   # scripts que el navegador puede cargar.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://lh3.googleusercontent.com https://ui-avatars.com https://images.unsplash.com; connect-src 'self' https://backendnb-production.up.railway.app https://accounts.google.com https://apis.google.com https://cdn.tailwindcss.com; frame-src 'self' blob: data: https://accounts.google.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: blob: https://lh3.googleusercontent.com https://ui-avatars.com https://images.unsplash.com; connect-src 'self' https://backendnb-production.up.railway.app https://accounts.google.com https://apis.google.com https://cdn.tailwindcss.com; frame-src 'self' blob: data: https://accounts.google.com; form-action 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; upgrade-insecure-requests
