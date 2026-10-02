@@ -5,6 +5,60 @@
   var isElec = /^\/electronica\//.test(location.pathname);
   var BASE = isElec ? '/electronica' : '/admin';
   if (!/^\/admin\//.test(location.pathname) && !isElec) return;
+  /* Visor de las fotos adjuntas. Va aqui, bien arriba del archivo, y no mas
+     abajo: cada bloque de pagina termina con su propio `return`, asi que lo que
+     se defina despues de uno de esos return nunca llega a ejecutarse.
+     El diseño original traia un modal de zoom que solo mostrava un ícono de
+     imagen y el nombre del archivo: el personal nunca veía la foto real. Este
+     visor abre TODAS las que subió el cliente (hasta 20 en Proyecto Especial)
+     y se construye desde JS porque admin.js lo comparten varias paginas y cada
+     una trae su propio modal-stub. */
+  var GALERIA_ID = 'nb-galeria-fotos';
+  window.abrirGaleriaFotos = function (folio, fotos) {
+    var lista = (Array.isArray(fotos) ? fotos : []).filter(function (s) {
+      return typeof s === 'string' && s.indexOf('data:image/') === 0;
+    });
+    if (!lista.length) return;
+    var viejo = document.getElementById(GALERIA_ID);
+    if (viejo) viejo.remove();
+    var d = document.createElement('div');
+    d.id = GALERIA_ID;
+    d.className = 'fixed inset-0 z-[200] overflow-y-auto p-4 sm:p-8';
+    d.style.background = 'rgba(2,6,23,.92)';
+    d.innerHTML =
+      '<div class="flex items-start justify-between gap-4 mb-5">' +
+        '<div><h3 style="color:#fff;font-weight:800;font-size:15px">Fotografías adjuntas</h3>' +
+        '<p style="color:#94a3b8;font-size:11.5px;margin-top:2px">' + lista.length +
+        (lista.length === 1 ? ' imagen · ' : ' imágenes · ') +
+        String(folio || '').replace(/[<>&]/g, '') + '</p></div>' +
+        '<button type="button" data-cerrar style="color:#cbd5e1;background:#1e293b;border:1px solid #334155;' +
+        'border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">Cerrar (Esc)</button>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">' +
+      lista.map(function (s, i) {
+        return '<figure style="margin:0;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px">' +
+          '<img src="' + s + '" alt="Fotografía ' + (i + 1) + '" ' +
+          'style="width:100%;height:190px;object-fit:cover;border-radius:6px;display:block">' +
+          '<figcaption style="color:#94a3b8;font-size:10px;text-align:center;padding-top:6px">Foto ' +
+          (i + 1) + ' de ' + lista.length + '</figcaption></figure>';
+      }).join('') + '</div>';
+    document.body.appendChild(d);
+    document.body.style.overflow = 'hidden';
+    d.addEventListener('click', function (e) {
+      if (e.target === d || (e.target.closest && e.target.closest('[data-cerrar]'))) window.cerrarGaleriaFotos();
+    });
+  };
+  window.cerrarGaleriaFotos = function () {
+    var v = document.getElementById(GALERIA_ID);
+    if (v) v.remove();
+    document.body.style.overflow = '';
+  };
+  // Escape cierra el visor. Va aqui porque el manejador general de modales que
+  // hay mas abajo esta despues de un return y nunca corre en esta pagina.
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.getElementById(GALERIA_ID)) window.cerrarGaleriaFotos();
+  });
+
   if (isElec) { if (!UN.requireElec(BASE + '/catalogo.html')) return; }
   else if (!UN.requireStaff(BASE + '/catalogo.html')) return;
   UN.rewriteLinks();
@@ -540,52 +594,6 @@ window.eliminarCotizacion = async function (folio) {
     load().catch(function (e) { aviso(e.message); });
     return;
   }
-
-  /* Visor de las fotos adjuntas. El diseño original traía un modal de zoom que
-     solo mostraba un ícono de imagen y el nombre del archivo: el personal
-     nunca veía la foto real. Este visor abre TODAS las que subió el cliente
-     (hasta 20 en Proyecto Especial) y se construye desde JS porque admin.js
-     lo comparten varias páginas y cada una trae su propio modal-stub. */
-  var GALERIA_ID = 'nb-galeria-fotos';
-  window.abrirGaleriaFotos = function (folio, fotos) {
-    var lista = (Array.isArray(fotos) ? fotos : []).filter(function (s) {
-      return typeof s === 'string' && s.indexOf('data:image/') === 0;
-    });
-    if (!lista.length) return;
-    var viejo = document.getElementById(GALERIA_ID);
-    if (viejo) viejo.remove();
-    var d = document.createElement('div');
-    d.id = GALERIA_ID;
-    d.className = 'fixed inset-0 z-[200] overflow-y-auto p-4 sm:p-8';
-    d.style.background = 'rgba(2,6,23,.92)';
-    d.innerHTML =
-      '<div class="flex items-start justify-between gap-4 mb-5">' +
-        '<div><h3 style="color:#fff;font-weight:800;font-size:15px">Fotografías adjuntas</h3>' +
-        '<p style="color:#94a3b8;font-size:11.5px;margin-top:2px">' + lista.length +
-        (lista.length === 1 ? ' imagen · ' : ' imágenes · ') +
-        String(folio || '').replace(/[<>&]/g, '') + '</p></div>' +
-        '<button type="button" data-cerrar style="color:#cbd5e1;background:#1e293b;border:1px solid #334155;' +
-        'border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">Cerrar (Esc)</button>' +
-      '</div>' +
-      '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">' +
-      lista.map(function (s, i) {
-        return '<figure style="margin:0;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px">' +
-          '<img src="' + s + '" alt="Fotografía ' + (i + 1) + '" ' +
-          'style="width:100%;height:190px;object-fit:cover;border-radius:6px;display:block">' +
-          '<figcaption style="color:#94a3b8;font-size:10px;text-align:center;padding-top:6px">Foto ' +
-          (i + 1) + ' de ' + lista.length + '</figcaption></figure>';
-      }).join('') + '</div>';
-    document.body.appendChild(d);
-    document.body.style.overflow = 'hidden';
-    d.addEventListener('click', function (e) {
-      if (e.target === d || (e.target.closest && e.target.closest('[data-cerrar]'))) cerrarGaleriaFotos();
-    });
-  };
-  window.cerrarGaleriaFotos = function () {
-    var v = document.getElementById(GALERIA_ID);
-    if (v) v.remove();
-    document.body.style.overflow = '';
-  };
 
   /* Anti-bloqueo de scroll: Escape cierra cualquier modal admin y libera el scroll.
      Red de seguridad por si algun flujo deja el overflow trabado. */

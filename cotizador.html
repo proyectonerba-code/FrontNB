@@ -1230,6 +1230,12 @@ aviso(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyect
           },
         });
         window.__lastQuote = c;
+        // Si el servidor no pudo guardar todas las fotos, se avisa antes de
+        // redirigir: el folio ya quedo registrado, pero el cliente tiene que
+        // saber que no viajaron las 20 imagenes que subio.
+        var pedidas = (typeof c.fotosRecibidas === 'number') ? c.fotosRecibidas : 0;
+        var guardadas = (typeof c.fotosGuardadas === 'number') ? c.fotosGuardadas : pedidas;
+        window.__fotosDescartadas = Math.max(0, pedidas - guardadas);
         // Pantalla blanca de exito antes de abrir el documento.
         if (window.UN && UN.exitoCotizacion) { try { await UN.exitoCotizacion(c.folio); } catch (e) {} }
       } catch (err) {
@@ -1260,7 +1266,14 @@ aviso(`Máximo ${maximo} fotos permitidas para ${esProyectoEspecial() ? 'proyect
           Array.prototype.slice.call(document.querySelectorAll('#photoGrid input[type="file"]')).forEach(function (inp) { inp.value = ''; });
         } catch (e) {}
       } catch (e) {}
-      setTimeout(function () { location.href = '/mis-cotizaciones.html'; }, 600);
+      setTimeout(function () {
+        if (window.__fotosDescartadas > 0) {
+          alert('Tu solicitud ' + window.__lastQuote.folio + ' quedó registrada, pero solo se guardaron ' +
+            (window.__lastQuote.fotosGuardadas || 0) + ' de las ' + window.__lastQuote.fotosRecibidas +
+            ' imágenes.\n\nPara que ingeniería vea todo el levantamiento, vuelve al cotizador y manda una nueva solicitud solo con las fotos que faltan, o comunícate con nosotros para anexarlas a este folio.');
+        }
+        location.href = '/mis-cotizaciones.html';
+      }, 600);
       return;
     };
     window.descargarPDFSimulado = function () {
