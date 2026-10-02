@@ -924,6 +924,9 @@
         '<td class="py-4 px-5 text-right"><div class="flex items-center justify-end gap-1.5 opacity-90 group-hover:opacity-100">' +
         '<button class="btn-action-edit p-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" data-email="' + SA.esc(u.email) + '" title="Editar Usuario"><span class="material-symbols-outlined text-lg">edit</span></button>' +
         '<button class="btn-action-role p-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" data-email="' + SA.esc(u.email) + '" title="Cambiar Jerarquía"><span class="material-symbols-outlined text-lg">manage_accounts</span></button>' +
+        (act
+          ? '<button class="btn-action-restrict p-2 rounded-lg bg-surface-container hover:bg-error-container hover:text-on-error-container text-secondary transition-colors" data-email="' + SA.esc(u.email) + '" data-name="' + SA.esc(u.nombre) + '" title="Restringir cuenta (bloquea el acceso)"><span class="material-symbols-outlined text-lg">block</span></button>'
+          : '<button class="btn-action-unrestrict p-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors" data-email="' + SA.esc(u.email) + '" data-name="' + SA.esc(u.nombre) + '" title="Quitar restricción (reactiva el acceso)"><span class="material-symbols-outlined text-lg">lock_open</span></button>') +
         '<button class="btn-action-delete p-2 rounded-lg bg-surface-container hover:bg-error-container hover:text-on-error-container text-secondary transition-colors" data-email="' + SA.esc(u.email) + '" data-name="' + SA.esc(u.nombre) + '" title="Eliminar Usuario"><span class="material-symbols-outlined text-lg">delete</span></button>' +
         '</div></td></tr>';
     }
@@ -1120,6 +1123,26 @@
           window._saDeleteEmail = b.getAttribute('data-email');
           var m = document.getElementById('deleteConfirmModal');
           if (m) m.classList.remove('hidden');
+        });
+      });
+      TB.querySelectorAll('.btn-action-restrict').forEach(function (b) {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          var email = b.getAttribute('data-email');
+          var nombre = b.getAttribute('data-name') || email;
+          if (!confirm('¿Restringir la cuenta de ' + nombre + ' (' + email + ')? Ya no podrá ingresar.')) return;
+          try { await SA.saveUser(email, { activo: false }); SA.toast('Cuenta restringida: ' + nombre, 'Usuarios'); load(); }
+          catch (err) { SA.toast(err.message || 'No se pudo restringir', 'Error'); }
+        });
+      });
+      TB.querySelectorAll('.btn-action-unrestrict').forEach(function (b) {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          var email = b.getAttribute('data-email');
+          var nombre = b.getAttribute('data-name') || email;
+          if (!confirm('¿Quitar la restricción a ' + nombre + ' (' + email + ')? Volverá a poder ingresar.')) return;
+          try { await SA.saveUser(email, { activo: true }); SA.toast('Restricción retirada: ' + nombre, 'Usuarios'); load(); }
+          catch (err) { SA.toast(err.message || 'No se pudo reactivar', 'Error'); }
         });
       });
     }
