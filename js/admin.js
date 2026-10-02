@@ -105,17 +105,49 @@
       var fechaEl = tds[0].querySelector('div.text-slate-500');
       if (fechaEl) fechaEl.textContent = fechaCorta(c.fecha);
       setBadge(tds[0], c.estado);
+      // La fila se clona de una plantilla del diseño que todavía trae textos de
+      // ejemplo de otro país (Mendoza, "+51 (01) 456-7890", "Ref: a dos cuadras
+      // del CC El Polo"). Aquí se pisan TODAS las celdas con lo que trae la
+      // cotización, porque lo que no se pisa se queda viendo en cada fila real.
+      var soloLectura = tds[0].querySelector('span.block');
+      if (soloLectura) soloLectura.textContent = 'Solo lectura';
       var cells1 = tds[1].querySelectorAll('div');
-      if (cells1[0]) cells1[0].textContent = c.nombre;
+      if (cells1[0]) cells1[0].textContent = c.nombre || '-';
       cells1.forEach(function (d) {
         if (/^\+[\d\s()+-]+$/.test(d.textContent.trim()) && d.querySelector('svg')) {
-          d.childNodes.forEach(function (n) { if (n.nodeType === 3) n.nodeValue = ' ' + c.telefono; });
+          d.childNodes.forEach(function (n) { if (n.nodeType === 3) n.nodeValue = ' ' + (c.telefono || 'Sin teléfono'); });
         }
-        if (/@/.test(d.textContent)) d.textContent = c.email;
+        if (/@/.test(d.textContent)) d.textContent = c.email || '-';
+        // "Cliente Verificado" y el teléfono secundario venía en la plantilla.
+        if (/^Cliente Verificado$/i.test(d.textContent.trim())) d.textContent = '';
+        if (/^Sec:/.test(d.textContent.trim())) d.textContent = c.telefonoSec ? 'Sec: ' + c.telefonoSec : '';
       });
+      // El orden de los div de esta celda es: chip, dirección, distrito y referencia.
+      // Antes se escribía el tipo de inmueble en el div de la dirección (todo
+      // corrido una posición) y la referencia de ejemplo se quedaba siempre.
       var tds2 = tds[2].querySelectorAll('div');
-      if (tds2[1]) tds2[1].textContent = c.tipoInmueble;
-      if (tds2[2]) tds2[2].textContent = c.direccion;
+      if (tds2[0]) {
+        var icoChip = tds2[0].querySelector('svg');
+        tds2[0].textContent = c.tipoInmueble || c.area || 'Proyecto';
+        if (icoChip) tds2[0].insertBefore(icoChip, tds2[0].firstChild);
+      }
+      if (tds2[1]) tds2[1].textContent = c.direccion || '-';
+      if (tds2[2]) tds2[2].textContent = c.distrito || '';
+      if (tds2[3]) {
+        var ref = String(c.referencia || '').trim();
+        if (ref) {
+          tds2[3].style.display = '';
+          var etiquetaRef = tds2[3].querySelector('span');
+          tds2[3].textContent = '';
+          if (etiquetaRef) tds2[3].appendChild(etiquetaRef);
+          tds2[3].appendChild(document.createTextNode(' ' + ref));
+        } else {
+          // Sin referencia no solo se oculta: tambien se vacia, para que el
+          // texto de ejemplo no quede ahi dentro.
+          tds2[3].style.display = 'none';
+          tds2[3].textContent = '';
+        }
+      }
       var tds3 = tds[3];
       if (tds3) {
         // La fila se clona de una plantilla que todavia trae los textos de
