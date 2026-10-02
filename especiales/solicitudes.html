@@ -108,7 +108,7 @@
 <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-<span class="">Exportar CSV</span>
+<span class="">Exportar Excel</span>
 </button>
 </div>
 </div>
@@ -211,310 +211,6 @@
 </tr>
 </thead>
 <tbody class="divide-y divide-slate-100 text-xs" id="table-rows" style="display:none">
-<!-- Row 1 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="ransa comercial" data-folio="REQ-ESP-2026-041" data-status="pendiente" data-type="perimetral">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-041</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">schedule</span>
-                  Hoy, 09:20 AM
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Portal B2B</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Ransa Comercial S.A.</div>
-<div class="text-slate-500 text-[11px] truncate">Lic. Martín Valenzuela (Gte. Ops)</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">mvalenzuela@ransa.pe</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">Cerco Eléctrico 15kV + 16 Domos PTZ</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">Perímetro 4.2 km • Callao Gambetta</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-041">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Pendiente
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<!-- Aprobar -->
-<button class="px-2 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-1 shadow-sm transition-all active:scale-95 shrink-0" onclick="openApproveModal('REQ-ESP-2026-041', 'Ransa Comercial S.A.', 'Lic. Martín Valenzuela', 'Cerco Eléctrico 15kV + 16 Domos')" title="Aprobar Solicitud">
-<svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Aprobar</span>
-</button>
-<!-- Rechazar -->
-<button class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 rounded-md flex items-center gap-1 transition-all active:scale-95 shrink-0" onclick="openRejectModal('REQ-ESP-2026-041', 'Ransa Comercial S.A.')" title="Desestimar">
-<svg class="w-3 h-3 text-slate-500 hover:text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Rechazar</span>
-</button>
-<!-- WhatsApp -->
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 987 654 321', 'Lic. Martín Valenzuela', 'Ransa Comercial S.A.', 'REQ-ESP-2026-041')" title="Coordinar WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<!-- Ver Requerimiento / PDF -->
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openDetailModal('REQ-ESP-2026-041', 'Ransa Comercial S.A.', 'Lic. Martín Valenzuela', '+51 987 654 321', 'mvalenzuela@ransa.pe', 'Callao - Complejo Gambetta', 'Instalación de cerco eléctrico industrial 15kV certificado con sensores de torsión en malla y 16 domos PTZ térmicos con analítica IA para detección perimetral a larga distancia.', 'Perímetro: 4.2 km / Área: 120,000 m²', 'Integración directa con VMS Milestone.', 'Pendiente')" title="Ver Ficha Técnica">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="corporacion minera ares" data-folio="REQ-ESP-2026-039" data-status="pendiente" data-type="cctv">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-039</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">schedule</span>
-                  Ayer, 16:45 PM
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Licitación</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Corp. Minera Ares S.A.C.</div>
-<div class="text-slate-500 text-[11px] truncate">Ing. Carlos Benavides</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">cbenavides@mineraares.com</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">Videovigilancia Térmico ATEX + Starlink</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">Perímetro 6.8 km • Arequipa Selene (4,600 msnm)</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-039">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Pendiente
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<button class="px-2 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-1 shadow-sm transition-all active:scale-95 shrink-0" onclick="openApproveModal('REQ-ESP-2026-039', 'Corp. Minera Ares S.A.C.', 'Ing. Carlos Benavides', 'Videovigilancia Térmico ATEX + Enlace Satelital')" title="Aprobar Solicitud">
-<svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Aprobar</span>
-</button>
-<button class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 rounded-md flex items-center gap-1 transition-all active:scale-95 shrink-0" onclick="openRejectModal('REQ-ESP-2026-039', 'Corp. Minera Ares S.A.C.')" title="Desestimar">
-<svg class="w-3 h-3 text-slate-500 hover:text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Rechazar</span>
-</button>
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 954 112 890', 'Ing. Carlos Benavides', 'Corp. Minera Ares', 'REQ-ESP-2026-039')" title="Coordinar WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openDetailModal('REQ-ESP-2026-039', 'Corp. Minera Ares S.A.C.', 'Ing. Carlos Benavides', '+51 954 112 890', 'cbenavides@mineraares.com', 'Arequipa - Selene (4,600 msnm)', 'Sistema de vigilancia perimétrica y monitoreo de polvorines con cámaras térmicas bifocales antiexplosión ATEX y enlace satelital redundante Starlink Enterprise.', 'Perímetro: 6.8 km / Área: 340,000 m²', 'Equipamiento debe operar bajo -15°C y alta salinidad.', 'Pendiente')" title="Ver Ficha Técnica">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="terminal portuario paracas" data-folio="REQ-ESP-2026-038" data-status="aprobado" data-type="accesos">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-038</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
-                  18 Feb 2026
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Código PBIP</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Terminal Portuario Paracas</div>
-<div class="text-slate-500 text-[11px] truncate">Cap. Fernando Ruiz</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">fruiz@portparacas.com</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">Control OCR Contenedores + Biometría</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">6 Garitas • Pisco Muelle San Martín</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-038">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  Aprobado
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">PRJ-2026-088</span>
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 961 800 241', 'Cap. Fernando Ruiz', 'Terminal Paracas', 'REQ-ESP-2026-038')" title="WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openPDFModal('REQ-ESP-2026-038', 'Terminal Portuario Paracas', 'LPR Contenedores y Biometría PBIP')" title="Expediente PDF">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="grupo gloria agroindustrial" data-folio="REQ-ESP-2026-035" data-status="aprobado" data-type="automatizacion">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-035</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
-                  15 Feb 2026
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Agroindustrial</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Grupo Gloria / Casa Grande</div>
-<div class="text-slate-500 text-[11px] truncate">Ing. Mariana Salcedo</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">msalcedo@casagrande.com.pe</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">14 Compuertas Motorizadas + Silos</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">210,000 m² • La Libertad Planta Azúcar</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-035">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  Aprobado
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<span class="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">PRJ-2026-074</span>
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 943 776 512', 'Ing. Mariana Salcedo', 'Grupo Gloria', 'REQ-ESP-2026-035')" title="WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openPDFModal('REQ-ESP-2026-035', 'Grupo Gloria', 'Automatización 14 Compuertas Naves')" title="Expediente PDF">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 5 (Desestimada) -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="falabella retail peru" data-folio="REQ-ESP-2026-032" data-status="desestimado" data-type="perimetral">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-032</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
-                  10 Feb 2026
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Hub Logístico</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Falabella Retail Perú</div>
-<div class="text-slate-500 text-[11px] truncate">Lic. Diego Arévalo</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">darevalo@falabella.com.pe</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">Radar 360° + Control Esclusas</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">3.1 km • Villa El Salvador Hub</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-032">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                  Desestimado
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<span class="text-[11px] text-slate-500 italic pr-1">No Factible</span>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openDetailModal('REQ-ESP-2026-032', 'Falabella Retail Perú', 'Lic. Diego Arévalo', '+51 991 320 045', 'darevalo@falabella.com.pe', 'Lima Sur - Villa El Salvador Hub', 'Blindaje electrónico perimetral con radar de microondas de 360 grados, enlace de fibra óptica en anillo cerrado redundante y control de esclusas.', '3.1 km / 95,000 m²', 'Desestimado por limitaciones topográficas ajenas.', 'Desestimado')" title="Ver Ficha">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 6 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="almacenes centrales" data-folio="REQ-ESP-2026-030" data-status="pendiente" data-type="cctv">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-030</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
-                  08 Feb 2026
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Zona Franca</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Almacenes Centrales del Perú</div>
-<div class="text-slate-500 text-[11px] truncate">Ing. Sandra Morán</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">smoran@almacenescentrales.pe</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">48 Puntos IP 4K Térmicos BASC</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">60,000 m² • Lurín Parque MacrOpolis</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-030">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Pendiente
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<button class="px-2 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-1 shadow-sm transition-all active:scale-95 shrink-0" onclick="openApproveModal('REQ-ESP-2026-030', 'Almacenes Centrales del Perú', 'Ing. Sandra Morán', 'CCTV IP 4K + Mapeo Térmico BASC')" title="Aprobar Solicitud">
-<svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Aprobar</span>
-</button>
-<button class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 rounded-md flex items-center gap-1 transition-all active:scale-95 shrink-0" onclick="openRejectModal('REQ-ESP-2026-030', 'Almacenes Centrales del Perú')" title="Desestimar">
-<svg class="w-3 h-3 text-slate-500 hover:text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Rechazar</span>
-</button>
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 977 441 209', 'Ing. Sandra Morán', 'Almacenes Centrales', 'REQ-ESP-2026-030')" title="WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openDetailModal('REQ-ESP-2026-030', 'Almacenes Centrales del Perú', 'Ing. Sandra Morán', '+51 977 441 209', 'smoran@almacenescentrales.pe', 'Lurín - MacrOpolis', 'Renovación integral a IP 4K con mapeo de calor en bodegas de químicos y analítica de cruce de línea.', '48 Puntos / 60,000 m²', 'Norma BASC estricta requerida.', 'Pendiente')" title="Ver Ficha">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 7 -->
-<tr class="table-row hover:bg-slate-50/70 transition-colors" data-client="cementos pacasmayo" data-folio="REQ-ESP-2026-028" data-status="pendiente" data-type="accesos">
-<td class="py-3.5 px-4 align-top">
-<span class="font-bold font-display text-primary text-[13px] block">REQ-ESP-2026-028</span>
-<span class="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-<span class="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
-                  05 Feb 2026
-                </span>
-<span class="inline-block mt-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded">Sede Piura</span>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-900 truncate">Cementos Pacasmayo S.A.A.</div>
-<div class="text-slate-500 text-[11px] truncate">Ing. Walter Guevara</div>
-<div class="mt-1 flex items-center gap-1.5 text-[11px] text-slate-600">
-<span class="material-symbols-outlined text-[13px] text-slate-400">mail</span>
-<span class="truncate">wguevara@cpacasmayo.com.pe</span>
-</div>
-</td>
-<td class="py-3.5 px-4 align-top">
-<div class="font-semibold text-slate-800 truncate">Talanqueras Alta Velocidad + RFID</div>
-<div class="text-slate-500 text-[11px] mt-0.5 line-clamp-1">4 Carriles Cantera • Piura Río Seco</div>
-
-</td>
-<td class="py-3.5 px-3 align-top text-center" id="badge-REQ-ESP-2026-028">
-<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                  Pendiente
-                </span>
-</td>
-<td class="py-3.5 px-4 align-top text-right">
-<div class="flex items-center justify-end gap-1.5">
-<button class="px-2 py-1 text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-md flex items-center gap-1 shadow-sm transition-all active:scale-95 shrink-0" onclick="openApproveModal('REQ-ESP-2026-028', 'Cementos Pacasmayo S.A.A.', 'Ing. Walter Guevara', 'Talanqueras Canteras + RFID SAP')" title="Aprobar Solicitud">
-<svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Aprobar</span>
-</button>
-<button class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 rounded-md flex items-center gap-1 transition-all active:scale-95 shrink-0" onclick="openRejectModal('REQ-ESP-2026-028', 'Cementos Pacasmayo S.A.A.')" title="Desestimar">
-<svg class="w-3 h-3 text-slate-500 hover:text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path></svg>
-<span class="">Rechazar</span>
-</button>
-<button class="w-8 h-8 flex items-center justify-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-md border border-emerald-200 transition-colors shrink-0" onclick="openWhatsAppModal('+51 973 550 918', 'Ing. Walter Guevara', 'Cementos Pacasmayo', 'REQ-ESP-2026-028')" title="WhatsApp"><svg class="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.66c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.79.6.26 1.07.41 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.1-.23-.16-.48-.29z"></path></svg></button>
-<button class="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors shrink-0" onclick="openDetailModal('REQ-ESP-2026-028', 'Cementos Pacasmayo S.A.A.', 'Ing. Walter Guevara', '+51 973 550 918', 'wguevara@cpacasmayo.com.pe', 'Piura - Río Seco', 'Implementación de talanqueras de alta velocidad para canteras y lectoras RFID integradas a pesaje balanza.', '4 Carriles / 180,000 m²', 'Integración SAP ERP obligatoria.', 'Pendiente')" title="Ver Ficha">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-</td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -580,10 +276,10 @@
 <div class="p-5 space-y-3.5 text-xs text-slate-700">
 <div class="p-3 bg-slate-50 rounded-lg border border-slate-200/80">
 <div class="flex justify-between items-center mb-1">
-<span class="font-bold text-primary font-display text-xs" id="ap-folio">REQ-ESP-2026-041</span>
+<span class="font-bold text-primary font-display text-xs" id="ap-folio">-</span>
 <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Factible</span>
 </div>
-<p class="font-semibold text-slate-900 text-xs" id="ap-client">Ransa Comercial S.A. (Lic. Martín Valenzuela)</p>
+<p class="font-semibold text-slate-900 text-xs" id="ap-client">-</p>
 <p class="text-slate-500 text-[11px] truncate mt-0.5" id="ap-scope">Cerco Eléctrico 15kV + 16 Domos</p>
 </div>
 <div>
@@ -618,8 +314,8 @@
 </div>
 <div class="p-5 space-y-3.5 text-xs text-slate-700">
 <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-<span class="font-bold text-primary font-display text-xs block" id="rj-folio">REQ-ESP-2026-041</span>
-<p class="font-semibold text-slate-800 text-xs" id="rj-client">Ransa Comercial S.A.</p>
+<span class="font-bold text-primary font-display text-xs block" id="rj-folio">-</span>
+<p class="font-semibold text-slate-800 text-xs" id="rj-client">-</p>
 </div>
 <div>
 <label class="block font-semibold text-slate-800 text-xs mb-1">Motivo de Rechazo</label>
@@ -657,7 +353,7 @@
 <div class="p-5 space-y-3 text-xs text-slate-700">
 <div class="p-2.5 rounded bg-slate-50 border border-slate-200">
 <p class="font-bold text-slate-900" id="wa-name">Lic. Martín Valenzuela</p>
-<p class="text-slate-500" id="wa-company">Ransa Comercial S.A.</p>
+<p class="text-slate-500" id="wa-company">-</p>
 <span class="font-semibold text-emerald-600 text-[11px]" id="wa-phone">+51 987 654 321</span>
 </div>
 <div>
@@ -671,60 +367,13 @@
 </div>
 </div>
 </div>
-<!-- MODAL: DETALLE / REQUERIMIENTO TÉCNICO -->
-<div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden" id="modal-detail">
-<div class="bg-white w-full max-w-2xl rounded-xl shadow-xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
-<div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-<div class="flex items-center gap-2.5">
-<div class="w-8 h-8 rounded-lg bg-red-100 text-primary flex items-center justify-center">
-<span class="material-symbols-outlined text-[20px]">assignment</span>
-</div>
-<div>
-<div class="flex items-center gap-2">
-<h3 class="font-display font-bold text-sm text-slate-900" id="dt-folio">REQ-ESP-2026-041</h3>
-<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800" id="dt-status">PENDIENTE</span>
-</div>
-<span class="text-[11px] text-slate-500" id="dt-company">Ransa Comercial S.A.</span>
-</div>
-</div>
-<button class="text-slate-400 hover:text-slate-700" onclick="closeModal('modal-detail')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</button>
-</div>
-<div class="p-5 overflow-y-auto space-y-4 text-xs text-slate-700">
-<div class="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-<div>
-<span class="text-slate-400 block text-[10px] uppercase font-bold">Contacto</span>
-<span class="font-semibold text-slate-900" id="dt-contact">Lic. Martín Valenzuela</span>
-<span class="text-slate-500 block text-[11px]" id="dt-email">mvalenzuela@ransa.pe</span>
-</div>
-<div>
-<span class="text-slate-400 block text-[10px] uppercase font-bold">Ubicación &amp; Alcance</span>
-<span class="font-semibold text-slate-900" id="dt-loc">Callao - Complejo Gambetta</span>
-<span class="text-slate-500 block text-[11px]" id="dt-scope">Perímetro: 4.2 km / Área: 120,000 m²</span>
-</div>
-</div>
-<div>
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Memoria Descriptiva Inicial</span>
-<div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-slate-800 leading-relaxed" id="dt-desc">Instalación de cerco eléctrico industrial 15kV certificado con sensores de torsión en malla y 16 domos PTZ térmicos con analítica IA para detección perimetral a larga distancia.</div>
-</div>
-<div>
-<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">Especificaciones Técnicas</span>
-<div class="p-2.5 bg-slate-50 rounded border border-slate-200 text-slate-600" id="dt-notes">Integración directa con VMS Milestone.</div>
-</div>
-</div>
-<div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
-<button class="px-4 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors" onclick="closeModal('modal-detail')">Cerrar</button>
-</div>
-</div>
-</div>
 <!-- MODAL: PDF EXPEDIENTE -->
 <div class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 hidden" id="modal-pdf">
 <div class="bg-white w-full max-w-lg rounded-xl shadow-xl border border-slate-200 overflow-hidden">
 <div class="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
 <div class="flex items-center gap-2">
 <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"></path></svg>
-<span class="font-bold text-xs" id="pdf-title">Expediente Oficial - REQ-ESP-2026-035</span>
+<span class="font-bold text-xs" id="pdf-title">Expediente oficial</span>
 </div>
 <button class="text-slate-400 hover:text-white" onclick="closeModal('modal-pdf')">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -863,20 +512,6 @@ document.addEventListener('click', function(e) {
       if (el) el.classList.add('hidden');
     }
 
-    // Modal Details
-    function openDetailModal(folio, comp, cont, ph, em, loc, desc, scp, nts, st) {
-      document.getElementById('dt-folio').innerText = folio;
-      document.getElementById('dt-company').innerText = comp;
-      document.getElementById('dt-contact').innerText = cont;
-      document.getElementById('dt-email').innerText = em;
-      document.getElementById('dt-loc').innerText = loc;
-      document.getElementById('dt-scope').innerText = scp;
-      document.getElementById('dt-desc').innerText = desc;
-      document.getElementById('dt-notes').innerText = nts;
-      document.getElementById('dt-status').innerText = st.toUpperCase();
-      openModal('modal-detail');
-    }
-
     // WhatsApp
     let currentWaPh = '';
     function openWhatsAppModal(ph, name, comp, folio) {
@@ -992,20 +627,6 @@ document.addEventListener('click', function(e) {
       }, 1000);
     }
 
-    function exportCSV() {
-      showToast('Generando reporte CSV de solicitudes...');
-      setTimeout(() => {
-        const csvContent = "data:text/csv;charset=utf-8,FOLIO,EMPRESA,CONTACTO,ESTADO\nREQ-041,Ransa Comercial,Martin Valenzuela,Pendiente\nREQ-039,Minera Ares,Carlos Benavides,Pendiente\nREQ-038,Terminal Paracas,Fernando Ruiz,Aprobado";
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "proyectos_recibidos.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }, 500);
-    }
-
     function showToast(msg) {
       const toast = document.getElementById('toast');
       document.getElementById('toast-text').innerText = msg;
@@ -1022,13 +643,13 @@ document.addEventListener('click', function(e) {
         closeModal('modal-approve');
         closeModal('modal-reject');
         closeModal('modal-whatsapp');
-        closeModal('modal-detail');
         closeModal('modal-pdf');
       }
     });
   </script>
 
 <script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.0"></script>
+<script src="/js/excel.js?v=1.0"></script>
 <script src="js/especiales.js?v=3.3"></script>
 <script>
   // Bandeja real de Proyectos Especiales: solo solicitudes con area
@@ -1123,19 +744,18 @@ document.addEventListener('click', function(e) {
       updateKpis();
       applyFilters();
     }
-    window.PEopenDetail = function (folio) {
+    // La ficha se abre con el mismo visor que usan los demas roles: el PDF real
+    // del servidor, con sus botones de Descargar e Imprimir. Antes se pintaba un
+    // modal propio con campos sueltos, que se veía feo y no dejaba descargar.
+    window.PEopenDetail = async function (folio) {
       var c = QUOTES[folio];
       if (!c) return;
-      document.getElementById('dt-folio').innerText = c.folio;
-      document.getElementById('dt-company').innerText = c.nombre || '';
-      document.getElementById('dt-contact').innerText = c.nombre || '';
-      document.getElementById('dt-email').innerText = c.email || '';
-      document.getElementById('dt-loc').innerText = c.direccion || '';
-      document.getElementById('dt-scope').innerText = c.espTipoInfraestructura || c.producto || 'Proyecto Especial';
-      document.getElementById('dt-desc').innerText = c.descripcion || '';
-      document.getElementById('dt-notes').innerText = c.medidasDescriptivas || 'Sin notas técnicas.';
-      document.getElementById('dt-status').innerText = String(c.estado || '').toUpperCase();
-      openModal('modal-detail');
+      try {
+        var completo = await UN.api('/api/cotizaciones/' + encodeURIComponent(folio));
+        UN.viewQuote(completo || c);
+      } catch (err) {
+        UN.viewQuote(c);
+      }
     };
     window.PEopenApprove = function (folio) {
       var c = QUOTES[folio];
@@ -1204,12 +824,28 @@ document.addEventListener('click', function(e) {
       showToast(c.enRevision ? 'Solicitud ' + folio + ' marcada en revisión' : 'Solicitud ' + folio + ' de vuelta a pendientes');
     };
     window.exportCSV = function () {
-      var rows = [['FOLIO', 'CLIENTE', 'EMAIL', 'TELEFONO', 'ALCANCE', 'ESTADO', 'FECHA']];
-      Object.values(QUOTES).forEach(function (c) {
-        rows.push([c.folio, c.nombre, c.email, c.telefono, c.espTipoInfraestructura || c.producto, c.estado, c.fecha]);
+      var filas = Object.values(QUOTES).map(function (c) {
+        return [c.folio, c.fecha, c.nombre, c.email, c.telefono || '',
+          c.espTipoInfraestructura || c.producto || 'Proyecto Especial', c.direccion || '', c.estado];
       });
-      ESP.csvDownload('proyectos_recibidos.csv', rows);
-      showToast('Reporte CSV de solicitudes generado');
+      if (!filas.length) { showToast('No hay solicitudes para exportar.'); return; }
+      var ok = EXCEL.descargar({
+        nombre: 'proyectos_recibidos',
+        hoja: 'Solicitudes',
+        titulo: 'Proyectos Especiales recibidos · Grupo Nerba Hidalgo',
+        columnas: [
+          { titulo: 'FOLIO', ancho: 21 },
+          { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+          { titulo: 'CLIENTE', ancho: 26 },
+          { titulo: 'EMAIL', ancho: 28 },
+          { titulo: 'TELEFONO', ancho: 15 },
+          { titulo: 'ALCANCE', ancho: 26 },
+          { titulo: 'DIRECCION', ancho: 32 },
+          { titulo: 'ESTADO', ancho: 14, tipo: 'estado' }
+        ],
+        filas: filas
+      });
+      showToast(ok ? 'Excel descargado con ' + filas.length + ' solicitudes.' : 'Reporte descargado.');
     };
     window.syncInbox = async function () {
       var icon = document.getElementById('sync-icon');
