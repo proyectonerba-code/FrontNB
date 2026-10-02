@@ -107,7 +107,7 @@
 <svg class="w-4 h-4 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-          Exportar Resumen CSV
+          Exportar Excel
         </button>
 <button class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition shadow-sm hover:shadow" onclick="actualizarLista()">
 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -836,10 +836,6 @@
       });
     };
 
-    window.exportarReporte = function() {
-      mostrarToast('Exportando reporte CSV de cotizaciones...', 'blue');
-    };
-
     window.actualizarLista = function() {
       mostrarToast('Sincronizando últimas cotizaciones de la central...', 'emerald');
     };
@@ -940,6 +936,7 @@
 
 
 <script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.0"></script>
+<script src="/js/excel.js?v=1.0"></script>
 <script src="js/superadmin.js?v=3.3"></script>
 <script>
   // SuperAdmin real: bandeja centralizada con datos del backend. Diseno intacto.
@@ -1233,10 +1230,41 @@
     };
     window.filtrarTabla = applyAll;
     window.exportarReporte = function () {
-      SA.csvDownload('grupo_nerba_hidalgo_cotizaciones.csv', [['FOLIO', 'FECHA', 'CLIENTE', 'EMAIL', 'TELEFONO', 'INMUEBLE', 'DIRECCION', 'PRODUCTO', 'ESTADO', 'TOTAL']].concat(ALL.map(function (c) {
-        return [c.folio, c.fecha, c.nombre, c.email, c.telefono || '', c.tipoInmueble || '', c.direccion || '', c.producto || '', c.estado, c.total || ''];
-      })));
-      SA.toast('Resumen CSV descargado.', 'Exportación');
+      var columnas = [
+        { titulo: 'FOLIO', ancho: 21 },
+        { titulo: 'FECHA', ancho: 12, tipo: 'fecha' },
+        { titulo: 'CLIENTE', ancho: 26 },
+        { titulo: 'EMAIL', ancho: 28 },
+        { titulo: 'TELEFONO', ancho: 15 },
+        { titulo: 'INMUEBLE', ancho: 18 },
+        { titulo: 'DIRECCION', ancho: 32 },
+        { titulo: 'PRODUCTO', ancho: 26 },
+        { titulo: 'ESTADO', ancho: 14, tipo: 'estado' },
+        { titulo: 'TOTAL', ancho: 14, tipo: 'moneda' }
+      ];
+      var filas = ALL.map(function (c) {
+        return [c.folio, c.fecha, c.nombre, c.email, c.telefono || '', c.tipoInmueble || '',
+          c.direccion || '', c.producto || '', c.estado, c.total || ''];
+      });
+      if (!filas.length) {
+        SA.toast('No hay cotizaciones para exportar.', 'Exportación');
+        return;
+      }
+      var ok = EXCEL.descargar({
+        nombre: 'grupo_nerba_hidalgo_cotizaciones',
+        hoja: 'Cotizaciones',
+        titulo: 'Cotizaciones · Grupo Nerba Hidalgo',
+        columnas: columnas,
+        filas: filas,
+        totales: true
+      });
+      if (ok) {
+        SA.toast('Excel descargado con ' + filas.length + ' cotizaciones.', 'Exportación');
+      } else {
+        SA.csvDownload('grupo_nerba_hidalgo_cotizaciones.csv',
+          [['FOLIO', 'FECHA', 'CLIENTE', 'EMAIL', 'TELEFONO', 'INMUEBLE', 'DIRECCION', 'PRODUCTO', 'ESTADO', 'TOTAL']].concat(filas));
+        SA.toast('Excel descargado en formato CSV.', 'Exportación');
+      }
     };
     window.actualizarLista = load;
     window.descargarPDF = function (folio) {
