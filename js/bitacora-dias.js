@@ -130,20 +130,106 @@
   };
 
   // ---- Boton de vaciar la bitacora ----------------------------------------
+  // Ventana propia con el estilo de la zona superadmin. Antes se usaban
+  // confirm() y prompt() del navegador, que se veian genericos.
+  var idModal = 'auditVaciarModal';
+
+  function construirModal(total) {
+    var viejo = document.getElementById(idModal);
+    if (viejo) return viejo;
+    var m = document.createElement('div');
+    m.id = idModal;
+    m.style.cssText = 'position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;' +
+      'background:rgba(2,6,23,.72);padding:16px';
+    m.innerHTML =
+      '<div class="w-full max-w-md rounded-2xl bg-surface-container-lowest shadow-2xl border border-surface-container overflow-hidden">' +
+        '<div class="flex items-center gap-3 px-5 py-4 border-b border-surface-container">' +
+          '<span class="material-symbols-outlined text-error text-xl">delete_sweep</span>' +
+          '<div><h3 class="text-sm font-bold text-on-surface">Vaciar bitácora</h3>' +
+          '<p class="text-[11px] text-secondary mt-0.5">Solo SuperAdmin</p></div>' +
+        '</div>' +
+        '<div class="px-5 py-5 space-y-4">' +
+          '<div class="rounded-lg border border-error/30 bg-error/5 p-3.5 flex gap-2.5">' +
+            '<span class="material-symbols-outlined text-error text-lg shrink-0">warning</span>' +
+            '<p class="text-xs text-on-surface leading-relaxed">Se van a borrar <strong>' + total +
+            '</strong> registros de la bitácora. <strong>Esta acción no se puede deshacer.</strong></p>' +
+          '</div>' +
+          '<div>' +
+            '<label class="text-xs font-semibold text-on-surface block mb-1.5">Para confirmar, escribe ' +
+              '<strong class="text-error">BORRAR</strong> en mayúsculas</label>' +
+            '<input id="auditVaciarTexto" type="text" autocomplete="off" spellcheck="false" placeholder="BORRAR" ' +
+              'class="w-full rounded-lg border border-surface-container bg-surface-container-low px-3 py-2.5 ' +
+              'text-sm text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 uppercase">' +
+            '<p id="auditVaciarError" class="text-[11px] text-error mt-1.5 hidden">La palabra no coincide.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="px-5 py-4 border-t border-surface-container flex items-center justify-end gap-2.5">' +
+          '<button type="button" id="auditCancelar" class="px-4 py-2 rounded-lg text-on-surface text-xs font-bold ' +
+            'hover:bg-surface-container transition-colors">Cancelar</button>' +
+          '<button type="button" id="auditConfirmar" disabled class="px-4 py-2 rounded-lg bg-error text-white text-xs ' +
+            'font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">Vaciar bitácora</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(m);
+
+    var input = document.getElementById('auditVaciarTexto');
+    var btn = document.getElementById('auditConfirmar');
+    var err = document.getElementById('auditVaciarError');
+    input.addEventListener('input', function () {
+      btn.disabled = input.value.trim().toUpperCase() !== 'BORRAR';
+      err.classList.add('hidden');
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !btn.disabled) btn.click();
+      if (e.key === 'Escape') cerrarModal();
+    });
+    document.getElementById('auditCancelar').addEventListener('click', cerrarModal);
+    m.addEventListener('click', function (e) { if (e.target === m) cerrarModal(); });
+    return m;
+  }
+
+  function cerrarModal() {
+    var m = document.getElementById(idModal);
+    if (m) m.style.display = 'none';
+    var i = document.getElementById('auditVaciarTexto');
+    if (i) i.value = '';
+    var b = document.getElementById('auditConfirmar');
+    if (b) { b.disabled = true; b.textContent = 'Vaciar bitácora'; }
+  }
+
+  function avisar(texto, tipo) {
+    if (window.SA && SA.toast) { SA.toast(texto, tipo); return; }
+    if (window.UN && UN.toast) { UN.toast(texto, tipo === 'emerald' ? 'exito' : 'error'); return; }
+    window.alert(texto);
+  }
+
   window.__bitacoraLimpiar = function () {
     var total = estado.dias.reduce(function (n, d) { return n + d.eventos.length; }, 0);
-    if (!confirm('Vas a BORRAR los ' + total + ' registros de la bitácora.\n\nEsta acción no se puede deshacer.\n\n¿Continuar?')) return;
-    var palabra = prompt('Para confirmar, escribe BORRAR en mayúsculas:');
-    if (palabra === null) return;
-    if (String(palabra).trim().toUpperCase() !== 'BORRAR') {
-      alert('No coincide. No se borró nada.');
-      return;
-    }
-    SA.api('/api/auditoria', { method: 'DELETE', body: { confirmar: palabra } }).then(function (r) {
-      alert('Bitácora vaciada. Se borraron ' + ((r && r.borrados) || 0) + ' registros.');
-      if (typeof window.__bitacoraRefrescar === 'function') window.__bitacoraRefrescar();
-    }).catch(function (err) {
-      alert('No se pudo vaciar: ' + (err && err.message ? err.message : 'error desconocido'));
-    });
+    var modal = construirModal(total);
+    modal.style.display = 'flex';
+    var input = document.getElementById('auditVaciarTexto');
+    if (input) setTimeout(function () { input.focus(); }, 40);
+
+    var btn = document.getElementById('auditConfirmar');
+    var err = document.getElementById('auditVaciarError');
+    btn.onclick = function () {
+      if (input.value.trim().toUpperCase() !== 'BORRAR') { err.classList.remove('hidden'); return; }
+      btn.disabled = true;
+      btn.textContent = 'Borrando…';
+      // Ojo: antes se llamaba SA.api, y ese metodo no existe en el conector de
+      // la zona superadmin, por lo que la peticion nunca salia y no se borraba
+      // nada. El que si existe, y admite DELETE con cuerpo, es UN.api.
+      UN.api('/api/auditoria', { method: 'DELETE', body: { confirmar: 'BORRAR' } })
+        .then(function (r) {
+          cerrarModal();
+          avisar('Bitácora vaciada. Se borraron ' + ((r && r.borrados) || 0) + ' registros.', 'emerald');
+          if (typeof window.__bitacoraRefrescar === 'function') window.__bitacoraRefrescar();
+        })
+        .catch(function (e) {
+          btn.disabled = false;
+          btn.textContent = 'Vaciar bitácora';
+          avisar('No se pudo vaciar: ' + (e && e.message ? e.message : 'error desconocido'), 'error');
+        });
+    };
   };
 })();

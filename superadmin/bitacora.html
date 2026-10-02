@@ -188,7 +188,7 @@
         if (!r.items || !r.items.length) tb.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-8">Sin eventos registrados todavía. Las acciones del sistema aparecerán aquí.</td></tr>';
       }
       var ft = document.getElementById('auditFooterCount');
-       if (ft) ft.textContent = 'Mostrando ' + (r.items || []).length + ' de ' + (r.totalFiltered == null ? r.total : r.totalFiltered) + ' registros en bitácora histórica';
+       // El pie lo escribe el modulo de paginacion por dia: antes este texto se ponia aqui y pisaba el de las flechas.
        paintKpis(r.items || [], r.totalFiltered == null ? r.total : r.totalFiltered);
       paintTabs(r.items || []);
       paintNavBadges();
