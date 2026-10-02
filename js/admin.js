@@ -445,15 +445,29 @@
       if (typeof cerrarModalPdfOficial === 'function') { try { cerrarModalPdfOficial(); } catch (e) {} }
       UN.downloadQuote(c);
     };
-    window.eliminarCotizacion = async function (folio) {
-      if (!confirm('¿Eliminar la cotización ' + folio + '? Esta acción no se puede deshacer.')) return;
+    // Borrar para el personal ya no se lleva la cotizacion del cliente: el backend
+// la oculta solo del panel del personal. Por eso el aviso lo dice, para que
+// nadie dude de si el cliente pierde su documento.
+window.eliminarCotizacion = async function (folio) {
+      var c = QUOTES[folio];
+      var ok = await UN.confirmarEnvio({
+        titulo: 'Quitar del panel la cotizacion ' + folio,
+        lineas: [
+          c ? 'Cliente: ' + (c.nombre || '-') : 'Folio: ' + folio,
+          'Deja de aparecer en la bandeja del personal.',
+          'El cliente sigue viendo y descargando su cotizacion.',
+          c && c.ocultaCliente ? 'Ojo: el cliente ya la habia ocultado en su cuenta.' : '',
+        ].filter(Boolean),
+        boton: 'Si, quitar del panel'
+      });
+      if (!ok) return;
       try {
-        await UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE' });
+        await UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE', body: {} });
         delete QUOTES[folio];
         var tr = document.querySelector('tbody tr[data-folio="' + folio + '"]');
         if (tr && tr.parentNode) tr.parentNode.removeChild(tr);
         recount();
-        if (typeof mostrarToast === 'function') mostrarToast('Cotización ' + folio + ' eliminada.', 'emerald');
+        if (typeof mostrarToast === 'function') mostrarToast('Cotizacion ' + folio + ' quitada del panel. El cliente la sigue viendo.', 'emerald');
       } catch (err) { alert(err.message); }
     };
     window.actualizarLista = function () {

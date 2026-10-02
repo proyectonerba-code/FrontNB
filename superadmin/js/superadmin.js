@@ -305,8 +305,10 @@
     setEstado: function (folio, estado) {
       return UN.api('/api/cotizaciones/' + encodeURIComponent(folio) + '/estado', { method: 'PUT', body: { estado: estado } });
     },
-    delQuote: function (folio) {
-      return UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE' });
+    // options.ambito = 'todos' hace el borrado definitivo (solo superadmin).
+    // Sin eso, el backend solo oculta la cotizacion del panel del personal.
+    delQuote: function (folio, options) {
+      return UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE', body: options || {} });
     },
     users: function () { return UN.api('/api/users'); },
     saveUser: function (email, data) {

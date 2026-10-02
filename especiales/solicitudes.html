@@ -783,18 +783,23 @@ window.PEwhatsapp = function (folio) {
       var c = QUOTES[folio];
       if (!c) return;
       var ok = await UN.confirmarEnvio({
-        titulo: 'Eliminar solicitud ' + folio,
-        lineas: ['Cliente: ' + (c.nombre || '-'), 'Folio: ' + folio, 'Esta accion no se puede deshacer.'],
-        boton: 'Si, eliminar'
+        titulo: 'Quitar del panel la solicitud ' + folio,
+        lineas: [
+          'Cliente: ' + (c.nombre || '-'),
+          'Deja de aparecer en la bandeja de Proyectos Especiales.',
+          'El cliente sigue viendo y descargando su cotizacion.',
+          c && c.ocultaCliente ? 'Ojo: el cliente ya la habia ocultado en su cuenta.' : ''
+        ].filter(Boolean),
+        boton: 'Si, quitar del panel'
       });
       if (!ok) return;
       try {
-        await UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE' });
+        await UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE', body: {} });
         delete QUOTES[folio];
-        showToast('Solicitud ' + folio + ' eliminada.');
+        showToast('Solicitud ' + folio + ' quitada del panel. El cliente la sigue viendo.');
         await load();
       } catch (err) {
-        showToast('No se pudo eliminar: ' + err.message);
+        showToast('No se pudo quitar: ' + err.message);
       }
     };
     window.PEopenApprove = function (folio) {

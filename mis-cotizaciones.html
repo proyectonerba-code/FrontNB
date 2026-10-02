@@ -1219,15 +1219,28 @@
       query = search.value.trim();
       apply();
     });
-    // Eliminar mi cotizacion (solo las mias: el backend lo valida)
-    document.addEventListener('click', function (e) {
+    // Eliminar mi cotizacion (solo las mias: el backend lo valida). El borrado es
+    // por lado: desaparece de mi cuenta, pero el personal la conserva y la sigue
+    // viendo para poder darla de alta.
+    document.addEventListener('click', async function (e) {
       var t = e.target;
       var b = (t && t.closest) ? t.closest('[data-del]') : null;
       if (!b || b._unDel) return;
       b._unDel = true;
       var folio = b.getAttribute('data-del');
-      if (!confirm('¿Eliminar tu cotización ' + folio + '? Esta acción no se puede deshacer.')) { b._unDel = false; return; }
-      UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE' }).then(function () {
+      var c = window.__quotes ? window.__quotes[folio] : null;
+      var ok = await UN.confirmarEnvio({
+        titulo: 'Eliminar mi cotizacion ' + folio,
+        lineas: [
+          c ? 'Inmueble: ' + (c.tipoInmueble || '-') : 'Folio: ' + folio,
+          'Dejara de aparecer en tu cuenta.',
+          'Grupo NERBA HIDALGO la conserva y la sigue viendo.',
+          c && c.ocultaStaff ? 'Ojo: el personal ya la habia quitado de su panel.' : ''
+        ].filter(Boolean),
+        boton: 'Si, eliminarla'
+      });
+      if (!ok) { b._unDel = false; return; }
+      UN.api('/api/cotizaciones/' + encodeURIComponent(folio), { method: 'DELETE', body: {} }).then(function () {
         if (window.__quotes) delete window.__quotes[folio];
         var card = b.closest('article');
         if (card && card.parentNode) card.parentNode.removeChild(card);

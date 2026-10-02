@@ -937,7 +937,7 @@
 
 <script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.0"></script>
 <script src="/js/excel.js?v=1.0"></script>
-<script src="js/superadmin.js?v=3.3"></script>
+<script src="js/superadmin.js?v=3.4"></script>
 <script>
   // SuperAdmin real: bandeja centralizada con datos del backend. Diseno intacto.
   (function () {
@@ -984,7 +984,8 @@
         '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg ' + pdfClass + ' text-white font-semibold text-[11px] shadow-xs transition whitespace-nowrap" data-act="pdf" data-role="pdf" data-folio="' + SA.esc(c.folio) + '">' + ICON_PDF + '<span>Descargar PDF</span></button>' +
         '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-[11px] border border-emerald-200 transition whitespace-nowrap" data-act="wa" data-role="whatsapp" data-folio="' + SA.esc(c.folio) + '">' + ICON_WA + '<span>WhatsApp</span></button>' +
         '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] border border-slate-200 transition whitespace-nowrap" data-act="estado" data-role="status" data-folio="' + SA.esc(c.folio) + '">' + ICON_STATUS + '<span>Estatus de la solicitud</span></button>' +
-        '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-[11px] border border-red-200 transition whitespace-nowrap" data-act="del" data-role="eliminar" data-folio="' + SA.esc(c.folio) + '" title="Eliminar cotización">' + ICON_DELETE + '<span>Eliminar</span></button>' +
+        '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-[11px] border border-red-200 transition whitespace-nowrap" data-act="del" data-role="eliminar" data-folio="' + SA.esc(c.folio) + '" title="Eliminar cotización de verdad">' + ICON_DELETE + '<span>Eliminar</span></button>' +
+        (c.ocultaStaff ? '<button class="w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold text-[11px] border border-amber-200 transition whitespace-nowrap" data-act="restaurar" data-role="restaurar" data-folio="' + SA.esc(c.folio) + '" title="Volver a mostrarla en el panel del personal">' + ICON_STATUS + '<span>Restaurar</span></button>' : '') +
         '</div></td></tr>';
     }
     var estadoMenu = null;
@@ -1160,14 +1161,36 @@
           if (action === 'pdf') { UN.viewQuote(c); }
           else if (action === 'wa') { abrirModalRespuesta(c); }
           else if (action === 'estado') { toggleEstadoMenu(b, c); }
-          else if (action === 'del') {
-            if (!confirm('¿Eliminar la cotización ' + c.folio + '? Esta acción no se puede deshacer.')) return;
+else if (action === 'del') {
+            // El superadmin es el unico que puede borrarla de verdad: los demas
+            // roles solo la ocultan de su propio panel, para que el cliente no
+            // pierda su documento.
+            var ok = await UN.confirmarEnvio({
+              titulo: 'Eliminar para siempre la cotizacion ' + c.folio,
+              lineas: [
+                'Cliente: ' + (c.nombre || '-'),
+                'Se borra el registro completo: el cliente tambien deja de verla.',
+                'Si solo quieres quitarla del panel del personal, usa Restaurar.',
+                'Esta accion no se puede deshacer.'
+              ],
+              boton: 'Si, borrar todo'
+            });
+            if (!ok) return;
             try {
-              await SA.delQuote(c.folio);
-              saToast('Cotización ' + c.folio + ' eliminada.', 'emerald');
+              await SA.delQuote(c.folio, { ambito: 'todos' });
+              saToast('Cotizacion ' + c.folio + ' eliminada para siempre.', 'emerald');
               await load();
             } catch (error) {
-              saToast(error.message || 'No se pudo eliminar la cotización.', 'red');
+              saToast(error.message || 'No se pudo eliminar la cotizacion.', 'red');
+            }
+          }
+else if (action === 'restaurar') {
+            try {
+              await UN.api('/api/cotizaciones/' + encodeURIComponent(c.folio) + '/restaurar', { method: 'PUT', body: {} });
+              saToast('Cotizacion ' + c.folio + ' visible otra vez en ambos paneles.', 'emerald');
+              await load();
+            } catch (error) {
+              saToast(error.message || 'No se pudo restaurar.', 'red');
             }
           }
         });
