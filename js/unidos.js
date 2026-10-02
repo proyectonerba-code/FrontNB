@@ -638,8 +638,9 @@
       m.innerHTML =
         '<div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">' +
         '<div class="px-5 py-4 border-b border-slate-100 flex items-center gap-3">' +
-        '<span class="w-10 h-10 rounded-xl bg-red-50 text-red-700 flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[22px]">fact_check</span></span>' +
-        '<div><p class="font-extrabold text-slate-900 text-sm">' + esc(o.titulo || 'Confirmar solicitud') + '</p>' +
+        '<span class="w-10 h-10 rounded-xl bg-red-50 text-red-700 flex items-center justify-center shrink-0">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>' +
+        '<div class="min-w-0"><p class="font-extrabold text-slate-900 text-sm leading-snug">' + esc(o.titulo || 'Confirmar solicitud') + '</p>' +
         '<p class="text-xs text-slate-500">Revisa antes de enviar. Se genera un folio oficial.</p></div></div>' +
         '<div class="px-5 py-4 max-h-[40vh] overflow-y-auto">' +
         (lineas.length
