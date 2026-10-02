@@ -808,12 +808,18 @@
         return;
       }
       if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.innerHTML = btn.dataset.unOld || btn.innerHTML; }
-      originalGenerar();
-      try {
-        var doc = document.getElementById('pdfDocId');
-        if (doc && window.__lastQuote) doc.innerText = window.__lastQuote.folio;
-      } catch (e) { /* visual intacto */ }
       setTimeout(function () { mostrarOk(window.__lastQuote && window.__lastQuote.folio); }, 420);
+      // Limpieza total y redireccion a Mis Cotizaciones: el folio ya quedo
+      // guardado y el PDF se descarga desde alla. No se deja nada lleno para
+      // no duplicar pedidos por accidente.
+      try {
+        ['extraNotes', 'siteAddress', 'siteCity', 'siteRef'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        if (window.Cotiza && Cotiza.clear) Cotiza.clear();
+      } catch (e) {}
+      setTimeout(function () { location.href = '/mis-cotizaciones.html'; }, 2200);
     };
     // El botón "Descargar PDF" del diseño solo alertaba: ahora descarga el oficial.
     Array.prototype.slice.call(document.querySelectorAll('button')).forEach(function (b) {

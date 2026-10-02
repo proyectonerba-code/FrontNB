@@ -1198,50 +1198,32 @@
         alert((err && err.message) || 'No se pudo registrar tu solicitud. Inténtalo de nuevo.');
         return;
       }
-      originalGenerar();
-      // Los datos del cliente salen de la sesión y de la cotización recién
-      // creada, no de campos vacíos del formulario: antes el PDF se quedaba
-      // con los textos de ejemplo fijos que tenía escritos en el HTML.
+      // Limpieza total y redireccion a Mis Cotizaciones: el folio ya quedo
+      // guardado y el PDF se descarga desde alla. No se deja el formulario
+      // lleno para no duplicar solicitudes por accidente.
       try {
-        var q = window.__lastQuote || {};
-        var sesion = (window.UN && UN.getUser && UN.getUser()) || {};
-        var modal = document.getElementById('pdfModal');
-        var txt = function (id, valor) {
+        ['inputRequerimiento', 'inputTelefono', 'inputDireccion', 'inputDistrito', 'inputReferencia', 'inputMedidasDescriptivas'].forEach(function (id) {
           var el = document.getElementById(id);
-          if (el) el.textContent = valor || '';
-        };
-        txt('pdfNombre', sesion.nombre || q.nombre || g('inputNombre'));
-        txt('pdfEmpresaPreview', g('inputEmpresa') || sesion.empresa || '');
-        txt('pdfTelefono', q.telefono || g('inputTelefono') || sesion.telefono || '');
-        txt('pdfEmail', sesion.email || q.email || g('inputEmail'));
-        txt('pdfTipoInmueble', q.tipoInmueble || tipo);
-        txt('pdfDireccion', q.direccion || '');
-        txt('pdfReferencia', q.referencia || '');
-        if (modal) {
-          var html = modal.innerHTML.replace(/COT-\d+-\d+/g, q.folio || 'COT');
-          modal.innerHTML = html;
-        }
-        // Fotos del cliente, en tira y de tamaño fijo para que quepan ordenadas.
-        var fotos = Array.isArray(q.fotos) ? q.fotos : [];
+          if (el) el.value = '';
+        });
+        var t0 = document.querySelector('input[name="tipoInmueble"]');
+        if (t0) t0.checked = true;
+        var esp = document.getElementById('espTipoInfraestructura');
+        if (esp) esp.selectedIndex = 0;
+        var fotos = document.getElementById('pdfFotos');
+        if (fotos) fotos.innerHTML = '';
         var marco = document.getElementById('pdfFotosBloque');
-        var tira = document.getElementById('pdfFotos');
-        if (marco && tira) {
-          tira.innerHTML = '';
-          if (fotos.length) {
-            fotos.slice(0, 3).forEach(function (src) {
-              var img = document.createElement('img');
-              img.src = src;
-              img.alt = 'Fotografía del inmueble';
-              img.style.cssText = 'width:100%;height:112px;object-fit:cover;' +
-                'border:1px solid #e2e8f0;border-radius:6px;display:block';
-              tira.appendChild(img);
-            });
-            marco.classList.remove('hidden');
-          } else {
-            marco.classList.add('hidden');
-          }
-        }
-      } catch (e) { /* visual intacto si algo cambia */ }
+        if (marco) marco.classList.add('hidden');
+        // Slots de fotos subidas: se quitan las imagenes agregadas.
+        try {
+          Array.prototype.slice.call(document.querySelectorAll('#photoGrid [data-foto="true"]')).forEach(function (n) {
+            if (n.parentNode) n.parentNode.removeChild(n);
+          });
+          Array.prototype.slice.call(document.querySelectorAll('#photoGrid input[type="file"]')).forEach(function (inp) { inp.value = ''; });
+        } catch (e) {}
+      } catch (e) {}
+      setTimeout(function () { location.href = '/mis-cotizaciones.html'; }, 600);
+      return;
     };
     window.descargarPDFSimulado = function () {
       if (window.__lastQuote) UN.viewQuote(window.__lastQuote);
