@@ -218,8 +218,11 @@ function avisar(texto, tipo) {
     'box-shadow:0 12px 28px -10px rgba(15,23,42,.32);color:#0b1c30;' +
     'transform:translateY(12px);opacity:0;transition:transform .28s ease,opacity .28s ease';
   t.innerHTML =
-    '<span class="material-symbols-outlined text-lg shrink-0" style="color:' + (malo ? '#b3261e' : '#1a7f4b') + '">' +
-      (malo ? 'error' : 'check_circle') + '</span>' +
+    // Iconos dibujados, no la fuente de Material: asi el aviso se ve igual
+    // aunque esa fuente todavia no haya llegado.
+    (malo
+      ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" class="shrink-0"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>'
+      : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a7f4b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>') +
     '<span class="leading-snug">' + String(texto) + '</span>' +
     '<button type="button" aria-label="Cerrar" style="margin-left:4px;color:#64748b;font-size:16px;line-height:1;cursor:pointer">&#215;</button>';
   document.body.appendChild(t);
@@ -257,7 +260,10 @@ function avisar(texto, tipo) {
       UN.api('/api/auditoria', { method: 'DELETE', body: { confirmar: 'BORRAR' } })
         .then(function (r) {
           cerrarModal();
-          avisar('Bitácora vaciada. Se borraron ' + ((r && r.borrados) || 0) + ' registros.', 'emerald');
+                    var cuantos = (r && r.borrados) || 0;
+          // "Se borraron 1 registros" queda mal: se concorda en singular.
+          avisar(cuantos === 1 ? 'Bitácora vaciada. Se borró 1 registro.'
+            : 'Bitácora vaciada. Se borraron ' + cuantos + ' registros.', 'emerald');
           if (typeof window.__bitacoraRefrescar === 'function') window.__bitacoraRefrescar();
         })
         .catch(function (e) {
