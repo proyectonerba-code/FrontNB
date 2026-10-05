@@ -14,27 +14,29 @@
 (function (global) {
   'use strict';
 
-  // Tarjeta blanca con el estilo de la marca: el toast anterior era un bloque
-  // de color sólido con el icono gigante (el SVG no tenía tamaño limitado y
-  // reventaba la caja). Ahora es una tarjeta compacta: círculo de color solo
-  // en el icono, texto slate y borde sutil.
+  // Ventana emergente centrada (sin fondo que bloquee la página): el aviso
+  // anterior vivía en la esquina y no se notaba. Una sola instancia: si llega
+  // otro aviso, se reemplaza el contenido y se reinicia el tiempo.
   var ESTILOS = [
-    '.aviso-caja{display:flex;gap:10px;align-items:flex-start;box-sizing:border-box;',
-    'max-width:min(92vw,360px);padding:11px 12px;border-radius:14px;background:#fff;color:#0f172a;',
-    'border:1px solid #e2e8f0;font:600 13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
-    'box-shadow:0 12px 32px rgba(2,6,23,.16);opacity:0;transform:translateY(12px);',
-    'transition:opacity .22s ease,transform .22s ease;pointer-events:auto}',
-    '.aviso-caja.visible{opacity:1;transform:translateY(0)}',
-    '.aviso-ico{flex:0 0 auto;width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center}',
-    '.aviso-ico svg{width:16px;height:16px;display:block}',
+    '.aviso-modal{position:fixed;z-index:2147483000;left:50%;top:15%;transform:translate(-50%,-14px) scale(.96);',
+    'width:min(calc(100vw - 32px),400px);background:#fff;color:#0f172a;border:1px solid #e2e8f0;border-radius:18px;',
+    'box-shadow:0 24px 60px rgba(2,6,23,.3);padding:22px 22px 20px;text-align:center;box-sizing:border-box;overflow:hidden;',
+    'font:600 14px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
+    'opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease}',
+    '.aviso-modal.visible{opacity:1;pointer-events:auto;transform:translate(-50%,0) scale(1)}',
+    '.aviso-ico{width:46px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}',
+    '.aviso-ico svg{width:22px;height:22px;display:block}',
     '.aviso-ok .aviso-ico{background:#dcfce7;color:#047857}',
     '.aviso-error .aviso-ico{background:#fee2e2;color:#b91c1c}',
     '.aviso-info .aviso-ico{background:#f1f5f9;color:#475569}',
-    '.aviso-txt{flex:1 1 auto;word-break:break-word;padding-top:5px}',
-    '.aviso-cerrar{flex:0 0 auto;background:transparent;border:0;color:#94a3b8;',
-    'width:22px;height:22px;border-radius:7px;cursor:pointer;font:700 13px/1 system-ui;padding:0}',
+    '.aviso-txt{word-break:break-word;color:#334155}',
+    '.aviso-cerrar{position:absolute;top:10px;right:10px;background:transparent;border:0;color:#94a3b8;',
+    'width:26px;height:26px;border-radius:8px;cursor:pointer;font:700 14px/1 system-ui;padding:0}',
     '.aviso-cerrar:hover{background:#f1f5f9;color:#475569}',
-    'html.dark-mode .aviso-caja,html.dark .aviso-caja{background:#0f172a;color:#f1f5f9;border-color:#334155}',
+    '.aviso-bar{position:absolute;left:0;bottom:0;height:3px;width:100%;transform-origin:left;}',
+    '.aviso-ok .aviso-bar{background:#047857}.aviso-error .aviso-bar{background:#b91c1c}.aviso-info .aviso-bar{background:#64748b}',
+    'html.dark-mode .aviso-modal,html.dark .aviso-modal{background:#0f172a;color:#f1f5f9;border-color:#334155}',
+    'html.dark-mode .aviso-txt,html.dark .aviso-txt{color:#cbd5e1}',
     'html.dark-mode .aviso-cerrar,html.dark .aviso-cerrar{color:#64748b}',
     'html.dark-mode .aviso-cerrar:hover,html.dark .aviso-cerrar:hover{background:#1e293b;color:#cbd5e1}',
     '.aviso-lienzo{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;',
@@ -62,7 +64,7 @@
     '.aviso-btn-cancel{background:#f1f5f9;color:#475569}',
     '.aviso-btn-ok{background:#d91b1b;color:#fff;box-shadow:0 6px 16px rgba(217,27,27,.28)}',
     '.aviso-btn-peligro{background:#b91c1c;color:#fff}',
-    '@media (max-width:480px){.aviso-caja{left:12px;right:12px;bottom:12px;max-width:none}}'
+    '@media (max-width:480px){.aviso-modal{top:12%}}'
   ].join('');
 
   var ICONOS = {
@@ -79,51 +81,60 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
-  function contenedor() {
-    var c = document.getElementById('avisos-nb-pila');
-    if (!c) {
-      c = document.createElement('div');
-      c.id = 'avisos-nb-pila';
-      c.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147483000;display:flex;' +
-        'flex-direction:column;align-items:flex-end;gap:9px;pointer-events:none';
-      document.body.appendChild(c);
-    }
-    return c;
-  }
-
   var OK = /listo|guardad|descarg|enviad|cread|actualiz|eliminad|quitad|asignad|restaurad|restablecid|sincroniz|exportad/i;
   var MAL = /no se pudo|no pudo|error|incorrect|inv[aá]lid|falta|requiere|denegad|excede|demasiad|no est[aá]|no tiene|debe |obligatori|no se puede|aún no|sin permiso/i;
 
   function aviso(mensaje, tipo, ms) {
-    if (!global.document || !document.body) return;
+    if (!global.document || !document.body) return function () {};
     unaVez();
     if (tipo !== 'ok' && tipo !== 'error' && tipo !== 'info') {
       var t = String(mensaje == null ? '' : mensaje);
       tipo = MAL.test(t) ? 'error' : (OK.test(t) ? 'ok' : 'info');
     }
-    var caja = document.createElement('div');
-    caja.className = 'aviso-caja aviso-' + tipo;
-    caja.setAttribute('role', 'status');
-    caja.innerHTML = '<span class="aviso-ico">' + ICONOS[tipo] + '</span>' +
-      '<span class="aviso-txt"></span>' +
-      '<button class="aviso-cerrar" type="button" aria-label="Cerrar">&times;</button>';
-    caja.querySelector('.aviso-txt').textContent = String(mensaje == null ? '' : mensaje);
-    contenedor().appendChild(caja);
-    // Un rAF para que la transicion se vea (si se muestra y oculta en el mismo
-    // tick, el navegador no pinta la animacion).
-    requestAnimationFrame(function () { caja.classList.add('visible'); });
-
-    var vivo = true;
-    function cerrar() {
-      if (!vivo) return;
-      vivo = false;
-      caja.classList.remove('visible');
-      setTimeout(function () { if (caja.parentNode) caja.parentNode.removeChild(caja); }, 260);
+    var caja = document.getElementById('aviso-nb-modal');
+    if (!caja) {
+      caja = document.createElement('div');
+      caja.id = 'aviso-nb-modal';
+      caja.setAttribute('role', 'status');
+      caja.innerHTML = '<span class="aviso-ico" aria-hidden="true"></span>' +
+        '<div class="aviso-txt"></div>' +
+        '<button class="aviso-cerrar" type="button" aria-label="Cerrar">&times;</button>' +
+        '<span class="aviso-bar" aria-hidden="true"></span>';
+      document.body.appendChild(caja);
+      caja.querySelector('.aviso-cerrar').addEventListener('click', function () { cerrarAviso(); });
     }
-    caja.querySelector('.aviso-cerrar').addEventListener('click', cerrar);
-    setTimeout(cerrar, ms || (tipo === 'error' ? 6000 : 3600));
-    return cerrar;
+    caja.className = 'aviso-modal aviso-' + tipo;
+    caja.querySelector('.aviso-ico').innerHTML = ICONOS[tipo];
+    caja.querySelector('.aviso-txt').textContent = String(mensaje == null ? '' : mensaje);
+    var espera = ms || (tipo === 'error' ? 6000 : 3200);
+    var barra = caja.querySelector('.aviso-bar');
+    try {
+      barra.style.transition = 'none';
+      barra.style.transform = 'scaleX(1)';
+      void caja.offsetWidth;
+    } catch (e) {}
+    requestAnimationFrame(function () {
+      caja.classList.add('visible');
+      try {
+        barra.style.transition = 'transform ' + espera + 'ms linear';
+        barra.style.transform = 'scaleX(0)';
+      } catch (e) {}
+    });
+    if (aviso._t) { try { clearTimeout(aviso._t); } catch (e) {} }
+    aviso._t = setTimeout(function () { cerrarAviso(); }, espera);
+    return function () { cerrarAviso(); };
   }
+  function cerrarAviso() {
+    if (aviso._t) { try { clearTimeout(aviso._t); } catch (e) {} aviso._t = null; }
+    var caja = document.getElementById('aviso-nb-modal');
+    if (caja) caja.classList.remove('visible');
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var caja = document.getElementById('aviso-nb-modal');
+      if (caja && caja.classList.contains('visible')) cerrarAviso();
+    }
+  });
 
   function confirmar(opciones) {
     // confirmar('¿Eliminar?') o confirmar({titulo, texto, lineas, boton, tipo})
