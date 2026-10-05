@@ -15,12 +15,23 @@
 
   var DATOS = {
     razon: 'GRUPO EMPRESARIAL NERBA, S.A. DE C.V.',
-    giro: 'Automatización • Seguridad electrónica • Videovigilancia • Control de acceso • Puertas automáticas • Cercos eléctricos',
+    giro: 'Automatización • Seguridad electrónica • Videovigilancia • Control de acceso • Puertas automáticas • Cercos eléctricos • Instalación de minisplits • Calentadores • Monitoreo 24/7 • Y mucho más',
     direccion: 'Los Pinos No. 112-B, Col. El Cerezo, C.P. 43669, Tulancingo de Bravo, Hidalgo, México',
     tulancingo: '775 130 0335',
     pachuca: '771 219 8250',
     correo: 'gruponerba@hotmail.com',
     logo: '/assets/logo.png',
+    // Redes oficiales. Iconos SVG en linea (estilo FontAwesome Brands) para no
+    // depender de que la pagina cargue FontAwesome: el pie se inyecta en todas
+    // las interfaces y no todas traen esa hoja.
+    redes: [
+      { nombre: 'TikTok', url: 'https://www.tiktok.com/@grupoempresarialnerba', vista: '0 0 448 512',
+        trazo: 'M448,209.9a210.1,210.1,0,0,1-122.8-39.3V349.4A162.6,162.6,0,1,1,185,188.3V278.2a74.6,74.6,0,1,0,52.2,71.2V0l88,0a121.2,121.2,0,0,0,1.9,22.2,122.2,122.2,0,0,0,54.7,82.2,118.5,118.5,0,0,0,66.2,20.1Z' },
+      { nombre: 'Instagram', url: 'https://www.instagram.com/grupo_nerba.hgo/', vista: '0 0 448 512',
+        trazo: 'M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z' },
+      { nombre: 'Facebook', url: 'https://www.facebook.com/GRUPO.NERBA.hgo/', vista: '0 0 320 512',
+        trazo: 'M279.14 288l14.22-92.66h-88.91v-60.13c0-25.35 12.42-50.06 52.24-50.06h40.42V6.26S260.43 0 225.36 0c-73.22 0-121.08 44.38-121.08 124.72v70.62H22.89V288h81.39v224h100.17V288z' },
+    ],
   };
 
   function esc(s) {
@@ -51,6 +62,14 @@
       '#un-pie-empresa .un-pe-ciudad{font-weight:400;color:#64748b}' +
       '#un-pie-empresa .un-pe-enlace{color:#b0000b;text-decoration:none;overflow-wrap:anywhere}' +
       '#un-pie-empresa .un-pe-enlace:hover{text-decoration:underline}' +
+      // Redes: columna compacta que no empuja a los bloques de datos.
+      '#un-pie-empresa .un-pe-social{display:flex;flex-direction:column;gap:.55rem;flex:0 0 auto}' +
+      '#un-pie-empresa .un-pe-social-titulo{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#64748b}' +
+      '#un-pie-empresa .un-pe-social-fila{display:flex;gap:.6rem}' +
+      '#un-pie-empresa .un-pe-social-btn{width:38px;height:38px;border-radius:999px;border:1px solid #e2e8f0;background:#fff;' +
+      'display:inline-flex;align-items:center;justify-content:center;color:#475569;text-decoration:none;transition:all .18s ease}' +
+      '#un-pie-empresa .un-pe-social-btn svg{width:17px;height:17px;fill:currentColor;display:block}' +
+      '#un-pie-empresa .un-pe-social-btn:hover{border-color:#b0000b;color:#b0000b;background:#fef2f2;transform:translateY(-1px)}' +
       '#un-pie-legal{padding-top:.4rem;display:flex;flex-wrap:wrap;align-items:center;' +
       'justify-content:space-between;gap:.5rem 1rem;font-size:12.5px;color:#64748b}' +
       '#un-pie-legal nav{display:flex;flex-wrap:wrap;gap:.4rem 1.15rem}' +
@@ -75,6 +94,9 @@
       'html.dark-mode #un-pie-empresa .un-pe-enlace,html.dark #un-pie-empresa .un-pe-enlace,' +
       'html.dark-mode #un-pie-legal a:hover,html.dark #un-pie-legal a:hover{color:#ff8a80}' +
       'html.dark-mode #un-pie-legal,html.dark #un-pie-legal{color:#94a3b8}' +
+      'html.dark-mode #un-pie-empresa .un-pe-social-titulo,html.dark #un-pie-empresa .un-pe-social-titulo{color:#64748b}' +
+      'html.dark-mode #un-pie-empresa .un-pe-social-btn,html.dark #un-pie-empresa .un-pe-social-btn{border-color:#334155;background:#0f172a;color:#cbd5e1}' +
+      'html.dark-mode #un-pie-empresa .un-pe-social-btn:hover,html.dark #un-pie-empresa .un-pe-social-btn:hover{border-color:#ff8a80;color:#ff8a80;background:rgba(255,138,128,.08)}' +
       'html.dark-mode #un-pie-linea,html.dark #un-pie-linea{opacity:.75}' +
       '@media (max-width:640px){#un-pie-empresa{padding:.75rem clamp(.9rem,5vw,1.25rem) 1rem}' +
       '#un-pie-empresa .un-pe-bloque{min-width:100%}#un-pie-empresa .un-pe-logo{height:38px}}' +
@@ -114,6 +136,13 @@
   var caja = document.createElement('div');
   caja.id = 'un-pie-empresa';
   caja.setAttribute('role', 'contentinfo');
+  // Botones de redes: se arman desde DATOS.redes para que los enlaces vivan
+  // en un solo lugar.
+  var redesHtml = DATOS.redes.map(function (r) {
+    return '<a class="un-pe-social-btn" href="' + esc(r.url) + '" target="_blank" rel="noopener"' +
+      ' aria-label="' + esc(r.nombre) + ' de Grupo NERBA HIDALGO">' +
+      '<svg viewBox="' + esc(r.vista) + '" aria-hidden="true"><path d="' + esc(r.trazo) + '"/></svg></a>';
+  }).join('');
   caja.innerHTML =
     '<div class="un-pe-fila">' +
     imgLogo +
@@ -128,6 +157,10 @@
     ' <span class="un-pe-ciudad">Pachuca</span></span></span>' +
     '<span class="un-pe-dato"><i aria-hidden="true">✉</i><a class="un-pe-enlace" href="mailto:' +
     esc(DATOS.correo) + '">' + esc(DATOS.correo) + '</a></span>' +
+    '</div>' +
+    '<div class="un-pe-social">' +
+    '<span class="un-pe-social-titulo">Síguenos</span>' +
+    '<span class="un-pe-social-fila">' + redesHtml + '</span>' +
     '</div></div>' +
     '<div id="un-pie-legal">' +
     '<span>© ' + esc(DATOS.razon) + '</span>' +
