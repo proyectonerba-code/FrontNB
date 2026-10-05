@@ -14,19 +14,29 @@
 (function (global) {
   'use strict';
 
+  // Tarjeta blanca con el estilo de la marca: el toast anterior era un bloque
+  // de color sólido con el icono gigante (el SVG no tenía tamaño limitado y
+  // reventaba la caja). Ahora es una tarjeta compacta: círculo de color solo
+  // en el icono, texto slate y borde sutil.
   var ESTILOS = [
     'aviso-caja{position:fixed;z-index:2147483000;display:flex;gap:10px;align-items:flex-start;',
-    'max-width:min(92vw,380px);padding:12px 15px;border-radius:14px;color:#fff;',
-    'font:600 13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
-    'box-shadow:0 12px 32px rgba(2,6,23,.28);opacity:0;transform:translateY(12px);',
+    'max-width:min(92vw,360px);padding:11px 12px;border-radius:14px;background:#fff;color:#0f172a;',
+    'border:1px solid #e2e8f0;font:600 13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
+    'box-shadow:0 12px 32px rgba(2,6,23,.16);opacity:0;transform:translateY(12px);',
     'transition:opacity .22s ease,transform .22s ease;pointer-events:auto}',
     '.aviso-caja.visible{opacity:1;transform:translateY(0)}',
-    '.aviso-ico{flex:0 0 auto;width:18px;height:18px;margin-top:1px}',
-    '.aviso-txt{flex:1 1 auto;word-break:break-word}',
-    '.aviso-cerrar{flex:0 0 auto;background:rgba(255,255,255,.18);border:0;color:#fff;',
-    'width:20px;height:20px;border-radius:6px;cursor:pointer;font:700 12px/1 system-ui;padding:0}',
-    '.aviso-cerrar:hover{background:rgba(255,255,255,.32)}',
-    '.aviso-ok{background:#047857}.aviso-error{background:#b91c1c}.aviso-info{background:#0f172a}',
+    '.aviso-ico{flex:0 0 auto;width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center}',
+    '.aviso-ico svg{width:16px;height:16px;display:block}',
+    '.aviso-ok .aviso-ico{background:#dcfce7;color:#047857}',
+    '.aviso-error .aviso-ico{background:#fee2e2;color:#b91c1c}',
+    '.aviso-info .aviso-ico{background:#f1f5f9;color:#475569}',
+    '.aviso-txt{flex:1 1 auto;word-break:break-word;padding-top:5px}',
+    '.aviso-cerrar{flex:0 0 auto;background:transparent;border:0;color:#94a3b8;',
+    'width:22px;height:22px;border-radius:7px;cursor:pointer;font:700 13px/1 system-ui;padding:0}',
+    '.aviso-cerrar:hover{background:#f1f5f9;color:#475569}',
+    'html.dark-mode .aviso-caja,html.dark .aviso-caja{background:#0f172a;color:#f1f5f9;border-color:#334155}',
+    'html.dark-mode .aviso-cerrar,html.dark .aviso-cerrar{color:#64748b}',
+    'html.dark-mode .aviso-cerrar:hover,html.dark .aviso-cerrar:hover{background:#1e293b;color:#cbd5e1}',
     '.aviso-lienzo{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;',
     'justify-content:center;padding:18px;background:rgba(2,6,23,.66);backdrop-filter:blur(3px);',
     'opacity:0;transition:opacity .18s ease}',
