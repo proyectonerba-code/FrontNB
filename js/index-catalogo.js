@@ -414,19 +414,28 @@
       var w = document.createElement('div');
       w.innerHTML =
         '<div class="un-modal hidden" id="un-dmodal" style="position:fixed;inset:0;z-index:95;align-items:center;justify-content:center;background:rgba(2,6,23,.65);padding:16px;display:none">' +
-        '<div class="un-card" style="background:#fff;border-radius:16px;max-width:640px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 40px -12px rgba(15,23,42,.35)">' +
+        '<div class="un-card" style="background:#fff;border-radius:16px;max-width:900px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 40px -12px rgba(15,23,42,.35)">' +
         '<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f1f5f9">' +
         '<div><span id="un-dcat" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#d91b1b"></span>' +
         '<h3 id="un-dtitle" style="font-size:19px;font-weight:800;color:#0f172a;margin-top:2px"></h3></div>' +
         '<button type="button" id="un-dx" style="border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:6px 10px;cursor:pointer">✕</button></div>' +
-        '<div style="padding:18px 20px">' +
+        '<div style="padding:16px 18px">' +
         '<div style="position:relative;border-radius:12px;overflow:hidden;background:#0f172a">' +
-        '<img id="un-dimg" alt="" style="width:100%;height:300px;object-fit:cover;display:block">' +
+        // contain y no cover: con cover el marco recortaba la foto de los lados
+        // y se veian cortada. contain muestra la imagen completa.
+        '<img id="un-dimg" alt="" style="width:100%;height:clamp(280px,50vh,460px);object-fit:contain;display:block">' +
         '<button type="button" id="un-dprev" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);border:0;cursor:pointer;font-weight:800">‹</button>' +
         '<button type="button" id="un-dnext" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);border:0;cursor:pointer;font-weight:800">›</button>' +
         '<span id="un-dcount" style="position:absolute;right:10px;bottom:10px;background:rgba(2,6,23,.7);color:#fff;font-size:11px;font-weight:700;border-radius:9999px;padding:2px 10px"></span></div>' +
         '<div id="un-dthumbs" style="display:flex;gap:8px;margin-top:10px"></div>' +
-        '<p id="un-ddesc" style="font-size:14px;color:#475569;line-height:1.65;margin-top:14px"></p>' +
+        // La descripcion con su boton de copiar a un lado. El texto queda solo en
+        // la caja, asi que el boton no se loueve con el ancho del parrafo.
+        '<div style="display:flex;align-items:flex-start;gap:10px;margin-top:14px">' +
+        '<p id="un-ddesc" style="flex:1 1 auto;min-width:0;font-size:14px;color:#475569;line-height:1.65;margin:0"></p>' +
+        '<button type="button" id="un-dcopy" title="Copiar descripcion" aria-label="Copiar descripcion" ' +
+        'style="flex:0 0 auto;width:32px;height:32px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;color:#334155;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,color .15s ease,border-color .15s ease">' +
+        '<svg id="un-dcopyicon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg></button></div>' +
         '<ul id="un-dideal" style="margin:12px 0 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px"></ul>' +
         '</div>' +
         '<div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid #f1f5f9">' +
@@ -440,12 +449,57 @@
       document.getElementById('un-dnext').addEventListener('click', function () { showD((dIdx + 1) % Math.max(1, dImgs.length)); });
       document.getElementById('un-dcotizar').addEventListener('click', function () {
         if (dId) cotizarProducto(dId, this);
-      });    document.getElementById('un-dmodal').addEventListener('click', function (e) {
+      });
+      document.getElementById('un-dcopy').addEventListener('click', function () { copiarDescripcion(this); });    document.getElementById('un-dmodal').addEventListener('click', function (e) {
       if (e.target && e.target.id === 'un-dmodal') closeDetail();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeDetail();
     });
+    }
+    // Copia la descripcion del producto. El boton se pone verde con un palomita
+// para confirmar que si se copio: si no, el visitante no sabe si funciono.
+var COPIAR_SVG = '<rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>';
+var LISTO_SVG = '<path d="M20 6L9 17l-5-5"></path>';
+function copiarDescripcion(btn) {
+      var texto = (document.getElementById('un-ddesc') || {}).textContent || '';
+      if (!texto.trim()) return;
+      var icon = btn.querySelector('#un-dcopyicon');
+      var original = COPIAR_SVG;
+      var ok = function () {
+        btn.style.background = '#dcfce7';
+        btn.style.borderColor = '#86efac';
+        btn.style.color = '#15803d';
+        btn.title = 'Descripcion copiada';
+        if (icon) icon.innerHTML = LISTO_SVG;
+        setTimeout(function () {
+          btn.style.background = '#fff';
+          btn.style.borderColor = '#e2e8f0';
+          btn.style.color = '#334155';
+          btn.title = 'Copiar descripcion';
+          if (icon) icon.innerHTML = original;
+        }, 1600);
+      };
+      // navigator.clipboard pide contexto seguro; si no lo hay, se usa el truco
+      // del textarea oculto, que funciona en cualquier navegador.
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(ok, function () { conTextarea(texto, ok); });
+      } else {
+        conTextarea(texto, ok);
+      }
+    }
+    function conTextarea(texto, listo) {
+      try {
+        var t = document.createElement('textarea');
+        t.value = texto;
+        t.setAttribute('readonly', 'readonly');
+        t.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+        document.body.appendChild(t);
+        t.select();
+        var sal = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(t);
+        if (sal !== false) listo();
+      } catch (e) {}
     }
     function showD(n) {
       dIdx = n;
