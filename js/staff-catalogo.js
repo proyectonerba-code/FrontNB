@@ -224,12 +224,19 @@
   var tmp = document.createElement('div');
   tmp.innerHTML = modalHtml;
   while (tmp.firstChild) document.body.appendChild(tmp.firstChild);
-  // Marcas del catálogo: las que ya tienen publicaciones.
+  // Marcas del catálogo: las que trae /api/marcas (aunque aún no tengan
+  // publicaciones) + las derivadas de los productos. Sin esto, una marca
+  // recién creada no saldría en el desplegable hasta tener su primer producto.
   function brands() {
     var seen = {}, out = [];
-    try { (window.__unBrands || []).forEach(function (b) { seen[b.code] = b.label; out.push(b.label); }); } catch (e) {}
+    function mete(lbl) {
+      var k = brandSlug(lbl || '');
+      if (lbl && !seen[k]) { seen[k] = 1; out.push(lbl); }
+    }
+    try { (window.__unBrands || []).forEach(function (b) { mete(b.label); }); } catch (e) {}
+    try { (window.__unMarcas || []).forEach(function (b) { mete(b.label || b.code); }); } catch (e) {}
     if (!out.length) {
-      try { (window.__unProducts || []).forEach(function (p) { var b = String((p && p.brand) || '').trim(); if (b && !seen[b]) { seen[b] = 1; out.push(b); } }); } catch (e) {}
+      try { (window.__unProducts || []).forEach(function (p) { mete(String((p && p.brand) || '').trim()); }); } catch (e) {}
     }
     return out;
   }
