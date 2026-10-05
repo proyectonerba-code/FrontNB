@@ -1,7 +1,8 @@
 /* Grupo NERBA HIDALGO - Gestión de catálogo integrada (staff autorizado por zona).
    Mismo estilo del index nuevo. El cliente no ve nada de esto.
    Alta/edición con hasta 4 fotos desde la PC, toggle de producto electrónico
-   e imagen por categoría. CRUD contra /api/productos + /api/categorias. */
+   y marcas con logo. Sin tipos: la publicación solo elige marca.
+   CRUD contra /api/productos + /api/marcas. */
 (function () {
   if (!window.UN) return;
   var u = UN.getUser() || {};
@@ -69,7 +70,7 @@
       var bar = document.createElement('div');
       bar.className = 'un-staffbar';
       bar.id = 'un-staffbar';
-      bar.innerHTML = '<button type="button" class="un-btn-ghost" id="un-mgmt"><span class="material-symbols-outlined" style="font-size:18px">category</span><span>Marcas y tipos</span></button>' +
+      bar.innerHTML = '<button type="button" class="un-btn-ghost" id="un-mgmt"><span class="material-symbols-outlined" style="font-size:18px">sell</span><span>Marcas</span></button>' +
         '<button type="button" class="un-btn-red" id="un-add"><span class="material-symbols-outlined" style="font-size:18px">add_circle</span><span>Agregar publicación</span></button>';
       pills.parentNode.insertBefore(bar, pills);
       document.getElementById('un-add').addEventListener('click', function () { UNP.openCreate(); });
@@ -121,10 +122,6 @@
   });
   /* ---- estado de fotos ---- */
   var photoSlots = [null, null, null, null];
-  var catImg = '';
-  var pickedCatImg = '';
-  var brandImg = '';
-  var pickedBrandImg = '';
   function validImageFile(file) {
     if (!file) return false;
     if (file.type && !/^image\/(jpeg|png|webp|gif|avif)$/i.test(file.type)) return false;
@@ -182,40 +179,6 @@
       })(i);
     }
   }
-  function renderCatImg() {
-    var box = document.getElementById('un-catprev');
-    if (!box) return;
-    box.innerHTML = '';
-    if (catImg) {
-      var im = document.createElement('img');
-      im.src = catImg;
-      im.alt = 'Imagen de categoría';
-      var rm = document.createElement('button');
-      rm.type = 'button';
-      rm.className = 'un-btn-ghost';
-      rm.textContent = 'Quitar';
-          rm.addEventListener('click', function () { catImg = ''; pickedCatImg = ''; renderCatImg(); });
-      box.appendChild(im);
-      box.appendChild(rm);
-    }
-  }
-  function renderBrandImg() {
-    var box = document.getElementById('un-brandprev');
-    if (!box) return;
-    box.innerHTML = '';
-    if (brandImg) {
-      var im = document.createElement('img');
-      im.src = brandImg;
-      im.alt = 'Imagen de marca';
-      var rm = document.createElement('button');
-      rm.type = 'button';
-      rm.className = 'un-btn-ghost';
-      rm.textContent = 'Quitar';
-      rm.addEventListener('click', function () { brandImg = ''; pickedBrandImg = ''; renderBrandImg(); });
-      box.appendChild(im);
-      box.appendChild(rm);
-    }
-  }
   var modalHtml =
     '<div class="un-modal hidden" id="un-modal"><div class="un-card">' +
     '<div class="un-chead"><b id="un-mtitle">Nueva publicación</b><button type="button" class="un-btn-ghost" id="un-mx" style="padding:6px 10px">✕</button></div>' +
@@ -223,17 +186,7 @@
     '<input type="hidden" id="unp-id" value="">' +
     '<div><label class="un-lab">Título de la publicación *</label><input type="text" id="unp-title" required maxlength="120"></div>' +
     '<div><label class="un-lab">Marca *</label><select id="unp-brand"></select>' +
-    '<div id="unp-newbrand-wrap" style="display:none"><label class="un-lab">Nombre de la nueva marca *</label>' +
-    '<input type="text" id="unp-newbrand" maxlength="60" placeholder="Ej. HIKVISION"></div>' +
-    '<p style="font-size:11px;color:#64748b;margin:6px 0 0">Es el nivel 1 del catálogo. Al elegir la marca se muestran debajo sus tipos.</p></div>' +
-    '<div><label class="un-lab">Imagen de la marca (opcional, desde tu PC)</label>' +
-    '<div style="display:flex;gap:8px;align-items:center"><button type="button" class="un-btn-ghost" id="un-brandbtn"><span class="material-symbols-outlined" style="font-size:16px">add_a_photo</span><span>Elegir imagen</span></button>' +
-    '<input type="file" id="un-brandfile" accept="image/*" style="display:none"><div class="un-catprev" id="un-brandprev"></div></div></div>' +
-    '<div><label class="un-lab">Tipo de producto *</label><select id="unp-cat"></select></div>' +
-    '<div id="unp-newcat-wrap" style="display:none"><label class="un-lab">Nombre del nuevo tipo *</label><input type="text" id="unp-newcat" maxlength="60" placeholder="Ej. Cámaras"></div>' +
-    '<div><label class="un-lab">Imagen del tipo (opcional, desde tu PC)</label>' +
-    '<div style="display:flex;gap:8px;align-items:center"><button type="button" class="un-btn-ghost" id="un-catbtn"><span class="material-symbols-outlined" style="font-size:16px">add_a_photo</span><span>Elegir imagen</span></button>' +
-    '<input type="file" id="un-catfile" accept="image/*" style="display:none"><div class="un-catprev" id="un-catprev"></div></div></div>' +
+    '<p style="font-size:11px;color:#64748b;margin:6px 0 0">Solo se elige la marca. Si no existe, créala primero en el botón Marcas.</p></div>' +
     '<div><label class="un-lab">Tipo de publicación</label>' +
     '<label style="display:flex;align-items:center;gap:10px;cursor:pointer"><input type="checkbox" id="unp-elec" checked style="display:none">' +
     '<span class="un-sw"><span class="un-knob"></span></span>' +
@@ -251,9 +204,17 @@
     '<div class="un-cbody"><p style="font-size:14px;color:#475569" id="un-deltext"></p></div>' +
     '<div class="un-cfoot"><button type="button" class="un-btn-ghost" id="un-delcancel">Cancelar</button>' +
     '<button type="button" class="un-btn-red" id="un-delok">Sí, eliminar</button></div></div></div>' +
-    '<div class="un-modal hidden" id="un-mgmtmodal"><div class="un-card" style="max-width:520px"><div class="un-chead"><b>Marcas y tipos</b>' +
+    '<div class="un-modal hidden" id="un-mgmtmodal"><div class="un-card" style="max-width:520px"><div class="un-chead"><b>Marcas</b>' +
     '<button type="button" class="un-btn-ghost" id="un-mgmtx" style="padding:6px 10px">✕</button></div>' +
-    '<div class="un-cbody" id="un-mgmtbody"></div>' +
+    '<div class="un-cbody"><div id="un-mgmtadd" style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px">' +
+    '<label class="un-lab">Agregar marca</label>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">' +
+    '<input type="text" id="un-ab-name" maxlength="60" placeholder="Ej. HIKVISION" style="flex:1;min-width:140px">' +
+    '<input type="file" id="un-ab-file" accept="image/*" style="display:none">' +
+    '<button type="button" class="un-btn-ghost" id="un-ab-imgbtn"><span class="material-symbols-outlined" style="font-size:16px">add_a_photo</span><span>Logo</span></button>' +
+    '<button type="button" class="un-btn-red" id="un-absave" style="padding:9px 14px">Guardar marca</button>' +
+    '</div><div class="un-catprev" id="un-ab-prev"></div></div>' +
+    '<div id="un-mgmtbody"></div></div>' +
     '<div class="un-cfoot"><button type="button" class="un-btn-ghost" id="un-mgmtclose">Cerrar</button></div></div></div>' +
     '<div class="un-modal hidden" id="un-quitmodal"><div class="un-card" style="max-width:460px"><div class="un-chead"><b id="un-quittitle">Quitar</b></div>' +
     '<div class="un-cbody"><p style="font-size:14px;color:#475569" id="un-quittext"></p><div id="un-quitbox"></div></div>' +
@@ -263,85 +224,52 @@
   var tmp = document.createElement('div');
   tmp.innerHTML = modalHtml;
   while (tmp.firstChild) document.body.appendChild(tmp.firstChild);
-  function cats() {
-    try { return window.__unCats && window.__unCats.length ? window.__unCats : []; }
-    catch (e) { return []; }
-  }
-  function catMeta(code) {
-    try {
-      var m = window.__unCatMeta || {};
-      return m[code] || null;
-    } catch (e) { return null; }
-  }
-  function fillCats(selCode) {
-    var sel = document.getElementById('unp-cat');
-    if (!sel) return;
-    sel.innerHTML = '';
-    cats().forEach(function (c) {
-      var o = document.createElement('option');
-      o.value = c.code;
-      o.textContent = c.label;
-      if (c.code === selCode) o.selected = true;
-      sel.appendChild(o);
-    });
-    var n = document.createElement('option');
-    n.value = '__new__';
-    n.textContent = '＋ Nuevo tipo…';
-    sel.appendChild(n);
-    if (selCode === '__new__') n.selected = true;
-    var m = selCode && selCode !== '__new__' ? catMeta(selCode) : null;
-    catImg = pickedCatImg || ((m && m.image) || '');
-    renderCatImg();
-    toggleNew();
-  }
-  function toggleNew() {
-    var sel = document.getElementById('unp-cat');
-    var w = document.getElementById('unp-newcat-wrap');
-    if (sel && w) w.style.display = (sel.value === '__new__') ? '' : 'none';
-  }
-  function slug(s) {
-    return String(UN.norm(s || '')).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'general';
-  }
-  // Marcas del catálogo: las que ya tienen publicaciones + "nueva marca".
+  // Marcas del catálogo: las que trae /api/marcas (aunque aún no tengan
+  // publicaciones) + las derivadas de los productos. Sin esto, una marca
+  // recién creada no saldría en el desplegable hasta tener su primer producto.
   function brands() {
     var seen = {}, out = [];
-    try { (window.__unBrands || []).forEach(function (b) { seen[b.code] = b.label; out.push(b.label); }); } catch (e) {}
+    function mete(lbl) {
+      var k = brandSlug(lbl || '');
+      if (lbl && !seen[k]) { seen[k] = 1; out.push(lbl); }
+    }
+    try { (window.__unBrands || []).forEach(function (b) { mete(b.label); }); } catch (e) {}
+    try { (window.__unMarcas || []).forEach(function (b) { mete(b.label || b.code); }); } catch (e) {}
     if (!out.length) {
-      try { (window.__unProducts || []).forEach(function (p) { var b = String((p && p.brand) || '').trim(); if (b && !seen[b]) { seen[b] = 1; out.push(b); } }); } catch (e) {}
+      try { (window.__unProducts || []).forEach(function (p) { mete(String((p && p.brand) || '').trim()); }); } catch (e) {}
     }
     return out;
   }
+  // Solo se elige entre las marcas que ya existen: las nuevas se crean en
+  // el botón Marcas. Si el producto trae una marca que ya no está en la lista,
+  // se conserva como opción para no perder el dato.
   function fillBrands(value) {
     var sel = document.getElementById('unp-brand');
     if (!sel) return;
     sel.innerHTML = '';
-    brands().forEach(function (b) {
+    var lista = brands();
+    if (!lista.length) {
+      var vacia = document.createElement('option');
+      vacia.value = '';
+      vacia.textContent = 'Sin marcas: créala primero en el botón Marcas';
+      sel.appendChild(vacia);
+      return;
+    }
+    lista.forEach(function (b) {
       var o = document.createElement('option');
       o.value = b;
       o.textContent = b;
       if (b === value) o.selected = true;
       sel.appendChild(o);
     });
-    var n = document.createElement('option');
-    n.value = '__new__';
-    n.textContent = '＋ Nueva marca…';
-    if (value === '__new__') n.selected = true;
-    sel.appendChild(n);
-    if (value && value !== '__new__' && !brands().some(function (b) { return b === value; })) {
-      // Marca que existe en el producto pero todavía no en la lista.
+    if (value && !lista.some(function (b) { return b === value; })) {
       var o2 = document.createElement('option');
       o2.value = value;
       o2.textContent = value;
       o2.selected = true;
-      sel.insertBefore(o2, n);
+      sel.appendChild(o2);
     }
-    toggleNewBrand();
-    syncBrandImg();
-  }
-  function toggleNewBrand() {
-    var sel = document.getElementById('unp-brand');
-    var w = document.getElementById('unp-newbrand-wrap');
-    if (sel && w) w.style.display = (sel.value === '__new__') ? '' : 'none';
+    if (!value && sel.options.length) sel.selectedIndex = 0;
   }
   function openModal() {
     document.getElementById('un-modal').classList.remove('hidden');
@@ -355,10 +283,8 @@
   }
   document.getElementById('un-mx').addEventListener('click', closeModal);
   document.getElementById('un-mcancel').addEventListener('click', closeModal);
-  document.getElementById('unp-cat').addEventListener('click', function () { fillCats(document.getElementById('unp-cat').value); });
-  document.getElementById('unp-cat').addEventListener('change', toggleNew);
+  // Al abrir el desplegable se refresca por si se creó una marca en otra pestaña.
   document.getElementById('unp-brand').addEventListener('click', function () { fillBrands(document.getElementById('unp-brand').value); });
-  document.getElementById('unp-brand').addEventListener('change', function () { toggleNewBrand(); syncBrandImg(); });
   for (var fi = 0; fi < 4; fi++) {
     (function (k) {
       var inp = document.getElementById('un-file-' + k);
@@ -373,33 +299,6 @@
       });
     })(fi);
   }
-  var catInp = document.getElementById('un-catfile');
-  if (catInp) catInp.addEventListener('click', function () {});
-  document.getElementById('un-catbtn').addEventListener('click', function () {
-    var inp = document.getElementById('un-catfile');
-    if (inp) inp.click();
-  });
-  if (catInp) catInp.addEventListener('change', function () {
-    var f = catInp.files && catInp.files[0];
-    catInp.value = '';
-    if (!f) return;
-    fileToDataURL(f, 800, function (url) {
-      if (url) { catImg = url; pickedCatImg = url; renderCatImg(); }
-      else aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.');
-    });
-  });
-  var brandFile = document.getElementById('un-brandfile');
-  var brandBtn = document.getElementById('un-brandbtn');
-  if (brandBtn) brandBtn.addEventListener('click', function () { if (brandFile) brandFile.click(); });
-  if (brandFile) brandFile.addEventListener('change', function () {
-    var f = brandFile.files && brandFile.files[0];
-    brandFile.value = '';
-    if (!f) return;
-    fileToDataURL(f, 800, function (url) {
-      if (url) { brandImg = url; pickedBrandImg = url; renderBrandImg(); }
-      else aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.');
-    });
-  });
   document.getElementById('un-delcancel').addEventListener('click', function () {
     document.getElementById('un-delmodal').classList.add('hidden');
   });
@@ -421,60 +320,33 @@
       reload();
     } catch (err) { aviso((err && err.message) || 'No se pudo eliminar'); }
   });
-  async function saveCat(code, label) {
-    if (!catImg) return;
+  // Guarda o actualiza la imagen (logo) de una marca existente.
+  async function saveBrandImage(code, label, dataUrl) {
     try {
-      await UN.api('/api/categorias/' + encodeURIComponent(code), { method: 'PUT', body: { label: label, image: catImg } });
-    } catch (err) { /* la publicación ya se guardó; la imagen se reintentará luego */ }
-  }
-  function brandMeta(label) {
-    try { return (window.__unMarcasMeta || {})[brandSlug(label)] || null; } catch (e) { return null; }
-  }
-  // Al cambiar de marca se muestra su imagen (la que el staff subió).
-  function syncBrandImg() {
-    var sel = document.getElementById('unp-brand');
-    if (!sel) return;
-    var m = sel.value === '__new__' ? null : brandMeta(sel.value);
-    brandImg = (m && m.image) || '';
-    if (!pickedBrandImg) renderBrandImg();
-  }
-  async function saveBrand(label) {
-    if (!pickedBrandImg) return;
-    try {
-      await UN.api('/api/marcas/' + encodeURIComponent(brandSlug(label)), { method: 'PUT', body: { label: label, image: pickedBrandImg } });
-    } catch (err) { /* la publicación ya se guardó */ }
+      await UN.api('/api/marcas/' + encodeURIComponent(code), { method: 'PUT', body: { label: label, image: dataUrl } });
+      return true;
+    } catch (err) {
+      aviso((err && err.message) || 'No se pudo guardar el logo.');
+      return false;
+    }
   }
   document.getElementById('un-mform').addEventListener('submit', async function (e) {
     e.preventDefault();
     function g(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
     var title = g('unp-title');
     var brand = g('unp-brand');
-    var code = g('unp-cat');
-    var label = '';
-    if (brand === '__new__') {
-      brand = g('unp-newbrand');
-      if (!brand) { aviso('Escribe el nombre de la nueva marca.'); return; }
-    }
-    if (code === '__new__') {
-      label = g('unp-newcat');
-      if (!label) { aviso('Escribe el nombre del nuevo tipo.'); return; }
-      code = slug(label);
-    } else {
-      var sel = document.getElementById('unp-cat');
-      label = sel && sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent.trim() : code;
-    }
     if (!title) { aviso('El título es obligatorio.'); return; }
-    if (!brand) { aviso('La marca es obligatoria: es la categoría principal del catálogo.'); return; }
+    // Sin tipos: la publicación solo elige marca. La categoría queda fija en
+    // general para no arrastrar el nivel que ya no existe.
+    if (!brand) { aviso('Elige la marca. Si no existe, créala primero en el botón Marcas.'); return; }
     var ideal = g('unp-ideal').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
     var imgs = photoSlots.filter(Boolean);
     var elec = !!document.getElementById('unp-elec').checked;
-    var body = { title: title, brand: brand, description: g('unp-desc'), categoryCode: code, category: label, idealFor: ideal, images: imgs, electronico: elec };
+    var body = { title: title, brand: brand, description: g('unp-desc'), categoryCode: 'general', category: 'General', idealFor: ideal, images: imgs, electronico: elec };
     var id = g('unp-id');
     try {
       if (id) await UN.api('/api/productos/' + encodeURIComponent(id), { method: 'PUT', body: body });
       else await UN.api('/api/productos', { method: 'POST', body: body });
-      await saveCat(code, label);
-      await saveBrand(brand);
       closeModal();
       reload();
     } catch (err) { aviso((err && err.message) || 'No se pudo guardar'); }
@@ -515,74 +387,80 @@
     row.appendChild(btn);
     return { row: row, hole: hole };
   }
+  // Logo nuevo para el formulario de alta (vive en el modal de Marcas).
+  var addBrandImg = '';
+  function renderAddBrandImg() {
+    var box = document.getElementById('un-ab-prev');
+    if (!box) return;
+    box.innerHTML = '';
+    if (!addBrandImg) return;
+    var im = document.createElement('img');
+    im.src = addBrandImg;
+    im.alt = 'Logo de la marca';
+    var rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'un-btn-ghost';
+    rm.textContent = 'Quitar';
+    rm.addEventListener('click', function () { addBrandImg = ''; renderAddBrandImg(); });
+    box.appendChild(im);
+    box.appendChild(rm);
+  }
   function renderMgmt() {
     var body = document.getElementById('un-mgmtbody');
     if (!body) return;
     body.innerHTML = '';
-    var h1 = document.createElement('div');
-    h1.className = 'un-mh';
-    h1.textContent = 'Marcas';
-    body.appendChild(h1);
     var marcas = [];
     try { marcas = window.__unMarcas || []; } catch (e) {}
     if (!marcas.length) {
       var e0 = document.createElement('p');
-      e0.style.cssText = 'font-size:13px;color:#64748b;margin:0';
-      e0.textContent = 'Todavía no hay marcas.';
+      e0.style.cssText = 'font-size:13px;color:#64748b;margin:0 0 4px';
+      e0.textContent = 'Todavía no hay marcas. Crea la primera arriba.';
       body.appendChild(e0);
     }
     marcas.forEach(function (b) {
       var n = Number(b.total || 0);
-      var f = fila(b.label, n === 1 ? '1 publicación' : n + ' publicaciones', true, function () { askQuit('marca', b, n); });
-      f.row.insertBefore(guard(b.image, b.label), f.hole);
-      body.appendChild(f.row);
-    });
-    var h2 = document.createElement('div');
-    h2.className = 'un-mh';
-    h2.textContent = 'Tipos de producto';
-    body.appendChild(h2);
-    var tipos = [];
-    try { tipos = window.__unCats || []; } catch (e) {}
-    tipos.forEach(function (t) {
-      var n = 0;
-      try { (window.__unProducts || []).forEach(function (p) { if (String(p.categoryCode || '') === t.code) n++; }); } catch (e) {}
-      var meta = null;
-      try { meta = (window.__unCatMeta || {})[t.code] || null; } catch (e) {}
-      var f = fila(t.label, n === 1 ? '1 publicación' : n + ' publicaciones', true, function () { askQuit('tipo', { code: t.code, label: t.label, image: meta && meta.image }, n); });
-      f.row.insertBefore(guard(meta && meta.image, t.label), f.hole);
+      var f = fila(b.label, n === 1 ? '1 publicación' : n + ' publicaciones', true, function () { askQuit(b, n); });
+      var thumb = guard(b.image, b.label);
+      thumb.title = 'Clic para cambiar el logo';
+      thumb.style.cursor = 'pointer';
+      thumb.addEventListener('click', function () { elegirLogoMarca(b.code, b.label); });
+      f.row.insertBefore(thumb, f.hole);
       body.appendChild(f.row);
     });
   }
+  // Cambiar el logo de una marca existente (tocando su miniatura).
+  var logoMarcaCode = null, logoMarcaLabel = '';
+  function elegirLogoMarca(code, label) {
+    logoMarcaCode = code;
+    logoMarcaLabel = label;
+    var inp = document.getElementById('un-ab-file');
+    if (inp) inp.click();
+  }
   var pending = null;
-  // Quitar una marca/tipo nunca se tops a medias: si tiene publicaciones se
-  // ofrece moverlas a otro destino o eliminarlas.
-  function askQuit(kind, item, n) {
-    pending = { kind: kind, code: item.code, label: item.label, n: n };
-    var esMarca = kind === 'marca';
+  // Quitar una marca nunca se hace a medias: si tiene publicaciones se ofrece
+  // moverlas a otra marca o eliminarlas.
+  function askQuit(item, n) {
+    pending = { code: item.code, label: item.label, n: n };
     var t = document.getElementById('un-quittitle');
     var txt = document.getElementById('un-quittext');
     var box = document.getElementById('un-quitbox');
-    t.textContent = esMarca ? 'Quitar marca' : 'Quitar tipo';
+    t.textContent = 'Quitar marca';
     txt.textContent = '"' + item.label + '" tiene ' + n + (n === 1 ? ' publicación' : ' publicaciones') + '. Elige qué hacer con ellas:';
     box.innerHTML = '';
     var sel = document.createElement('select');
     sel.id = 'un-quitdest';
-    var otras = esMarca ? brands().filter(function (b) { return b !== item.label; }) : (function () {
-      var o = [];
-      try { (window.__unCats || []).forEach(function (x) { if (x.code !== item.code) o.push(x); }); } catch (e) {}
-      return o;
-    })();
+    var otras = brands().filter(function (b) { return b !== item.label; });
     otras.forEach(function (b) {
       var o = document.createElement('option');
-      o.value = esMarca ? b : b.code;
-      o.textContent = b.label || b.code;
+      o.value = b;
+      o.textContent = b;
       sel.appendChild(o);
     });
     var wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:8px';
     var lbl = document.createElement('label');
     lbl.className = 'un-lab';
-    lbl.textContent = esMarca ? 'Mover las publicaciones a la marca:' : 'Mover las publicaciones al tipo:';
+    lbl.textContent = 'Mover las publicaciones a la marca:';
     var aviso = document.createElement('p');
     aviso.id = 'un-quitaviso';
     aviso.style.cssText = 'font-size:11px;color:#b91c1c;margin:0';
@@ -596,7 +474,7 @@
     dl.style.display = '';
     mv.disabled = !otras.length;
     if (!otras.length) {
-      aviso.textContent = 'No hay otro destino disponible: primero quita o renombra las publicaciones.';
+      aviso.textContent = 'No hay otra marca disponible: primero quita o renombra las publicaciones.';
     } else {
       aviso.textContent = '';
     }
@@ -612,28 +490,22 @@
   }
   async function quitarDefinitivo() {
     if (!pending) return;
-    var path = pending.kind === 'marca' ? '/api/marcas/' : '/api/categorias/';
     try {
-      await UN.api(path + encodeURIComponent(pending.code), { method: 'DELETE' });
+      await UN.api('/api/marcas/' + encodeURIComponent(pending.code), { method: 'DELETE' });
       pending = null;
       cerrarQuitar();
       reload();
       setTimeout(function () { try { if (window.__unReloadCatalog) window.__unReloadCatalog(); } catch (e) {} renderMgmt(); }, 800);
     } catch (err) { aviso((err && err.message) || 'No se pudo quitar'); }
   }
-  // Mover las publicaciones a otro destino y luego quitar la marca/tipo.
+  // Mover las publicaciones a otra marca y luego quitar esta.
     document.getElementById('un-quitmover').addEventListener('click', async function () {
     if (!pending) return;
     var sel = document.getElementById('un-quitdest');
     var dest = sel ? sel.value : '';
-    if (!dest) { aviso('Elige el destino de las publicaciones.'); return; }
+    if (!dest) { aviso('Elige la marca destino de las publicaciones.'); return; }
     var nombre = pending.label;
-    var body = { desde: pending.kind === 'marca' ? 'marca' : 'tipo', code: pending.code };
-    if (pending.kind === 'marca') body.brand = dest;
-    else {
-      body.categoryCode = dest;
-      body.category = (sel.options[sel.selectedIndex] || {}).textContent || dest;
-    }
+    var body = { desde: 'marca', code: pending.code, brand: dest };
     this.disabled = true;
     try {
       var r = await UN.api('/api/productos/reasignar', { method: 'POST', body: body });
@@ -644,7 +516,7 @@
       aviso((err && err.message) || 'No se pudo mover');
     }
   });
-  // Quitar la marca/tipo junto con sus publicaciones.
+  // Quitar la marca junto con sus publicaciones.
   document.getElementById('un-quitdel').addEventListener('click', async function () {
     if (!pending) return;
     if (!await confirmar({
@@ -656,10 +528,7 @@
     var ids = [];
     try {
       (window.__unProducts || []).forEach(function (p) {
-        var mismo = pending.kind === 'marca'
-          ? brandSlug(p.brand || 'NERBA') === pending.code
-          : String(p.categoryCode || 'general') === pending.code;
-        if (mismo) ids.push(p.id);
+        if (brandSlug(p.brand || 'NERBA') === pending.code) ids.push(p.id);
       });
     } catch (e) {}
     this.disabled = true;
@@ -678,20 +547,64 @@
   document.getElementById('un-mgmtmodal').addEventListener('click', function (e) {
     if (e.target && e.target.id === 'un-mgmtmodal') e.target.classList.add('hidden');
   });
+  // Alta de marca desde el modal de Marcas (nombre + logo opcional).
+  // PUT hace upsert: si el slug ya existe, actualiza etiqueta e imagen.
+  document.getElementById('un-ab-imgbtn').addEventListener('click', function () {
+    var inp = document.getElementById('un-ab-file');
+    if (inp) inp.click();
+  });
+  document.getElementById('un-ab-file').addEventListener('change', function () {
+    var inp = document.getElementById('un-ab-file');
+    var f = inp.files && inp.files[0];
+    inp.value = '';
+    if (!f) return;
+    // Si se abrió desde la miniatura de una marca, el archivo es su logo nuevo.
+    if (logoMarcaCode) {
+      fileToDataURL(f, 800, function (url) {
+        if (!url) { aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.'); logoMarcaCode = null; return; }
+        saveBrandImage(logoMarcaCode, logoMarcaLabel, url).then(function (ok) {
+          logoMarcaCode = null;
+          if (ok) { reload(); setTimeout(renderMgmt, 800); }
+        });
+      });
+      return;
+    }
+    fileToDataURL(f, 800, function (url) {
+      if (!url) { aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.'); return; }
+      addBrandImg = url;
+      renderAddBrandImg();
+    });
+  });
+  document.getElementById('un-absave').addEventListener('click', async function () {
+    var inp = document.getElementById('un-ab-name');
+    var nombre = inp ? inp.value.trim().slice(0, 60) : '';
+    if (!nombre) { aviso('Escribe el nombre de la marca.'); if (inp) inp.focus(); return; }
+    var btn = document.getElementById('un-absave');
+    btn.disabled = true;
+    try {
+      await UN.api('/api/marcas/' + encodeURIComponent(brandSlug(nombre)), {
+        method: 'PUT', body: { label: nombre, image: addBrandImg || '' },
+      });
+      if (inp) inp.value = '';
+      addBrandImg = '';
+      renderAddBrandImg();
+      reload();
+      setTimeout(renderMgmt, 800);
+      aviso('Marca "' + nombre + '" guardada.');
+    } catch (err) {
+      aviso((err && err.message) || 'No se pudo guardar la marca.');
+    }
+    btn.disabled = false;
+  });
   window.UNP = {
     openCreate: function () {
       document.getElementById('unp-id').value = '';
       document.getElementById('unp-title').value = '';
       document.getElementById('unp-desc').value = '';
       document.getElementById('unp-ideal').value = '';
-      document.getElementById('unp-newcat').value = '';
-      document.getElementById('unp-newbrand').value = '';
-      pickedBrandImg = '';
       fillBrands('');
       photoSlots = [null, null, null, null];
-      pickedCatImg = '';
       renderSlots();
-      fillCats('');
       var ec = document.getElementById('unp-elec');
       if (ec) ec.checked = true;
       document.getElementById('un-mtitle').textContent = 'Nueva publicación';
@@ -707,16 +620,12 @@
       document.getElementById('unp-title').value = p.title || '';
       document.getElementById('unp-desc').value = p.description || '';
       document.getElementById('unp-ideal').value = (p.idealFor || []).join('\n');
-      document.getElementById('unp-newcat').value = '';
-      document.getElementById('unp-newbrand').value = '';
       fillBrands(String((p && p.brand) || '').trim());
       photoSlots = (p.images || []).slice(0, 4);
       while (photoSlots.length < 4) photoSlots.push(null);
-      pickedCatImg = '';
       renderSlots();
       var ec = document.getElementById('unp-elec');
       if (ec) ec.checked = p.electronico !== false;
-      fillCats(p.categoryCode);
       document.getElementById('un-mtitle').textContent = 'Editar publicación';
       openModal();
     },

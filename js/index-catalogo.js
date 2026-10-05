@@ -43,7 +43,6 @@
     var catMetaAll = {};
     var marcasMetaAll = {};
     var activeBrand = null;
-    var curGroups = {}, curOrder = [], curType = null;
     var hierCss = false;
   try {
     var __u0 = (window.UN && UN.getUser()) || {};
@@ -82,6 +81,26 @@
       if (desc) desc.textContent = p.description;
       var box = el.querySelector('.bg-neutral-50');
       if (box) paintIdeal(box, p.idealFor);
+      // Tarjeta compacta: la foto manda y el texto se resume; el detalle
+      // completo (ideal para, más fotos) vive en Saber más.
+      try {
+        var media = el.querySelector('div.relative.overflow-hidden');
+        if (media) { media.style.height = '230px'; media.style.background = '#ffffff'; }
+        if (img) { img.style.objectFit = 'contain'; img.style.background = '#ffffff'; }
+        if (h3) { h3.style.fontSize = '17px'; h3.style.marginBottom = '6px'; }
+        if (desc) {
+          desc.style.display = '-webkit-box';
+          desc.style.webkitBoxOrient = 'vertical';
+          desc.style.webkitLineClamp = '2';
+          desc.style.overflow = 'hidden';
+          desc.style.marginBottom = '0';
+        }
+        if (box) box.style.display = 'none';
+        var cuerpo = el.querySelector('div.p-6, div.p-8');
+        if (cuerpo) cuerpo.style.padding = '14px 16px';
+        var pie = el.querySelector('div.px-6, div.px-8');
+        if (pie) { pie.style.paddingLeft = '16px'; pie.style.paddingRight = '16px'; pie.style.paddingBottom = '14px'; }
+      } catch (e) {}
       var price = el.querySelector('.absolute.bottom-4.right-4');
       if (price && price.parentNode) price.parentNode.removeChild(price);
       // Limpieza pedida: fuera el chip de esquina (IOT CORE y así).
@@ -105,8 +124,6 @@
       return el;
     }
     function brandOf(p) { return String((p && p.brand) || '').trim() || DEFAULT_BRAND; }
-    function typeOf(p) { return String((p && p.category) || '').trim() || 'General'; }
-    function typeCodeOf(p) { return String((p && p.categoryCode) || '').trim() || 'general'; }
     function brandSlug(s) {
       return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'nerba';
@@ -139,8 +156,12 @@
         '.un-type-name{font-size:15px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#0f172a}' +
         '.un-type-count{font-size:11px;font-weight:800;color:#b91c1c;background:#fef2f2;border:1px solid #fee2e2;border-radius:9999px;padding:3px 9px;white-space:nowrap}' +
         'html.dark-mode .un-type-name,html.dark .un-type-name{color:#eaf1ff}' +
-        '.un-type-grid{display:grid;grid-template-columns:1fr;gap:24px}' +
-        '@media (min-width:768px){.un-type-grid{grid-template-columns:repeat(2,1fr)}}' +
+        // Cuadrícula compacta: 1 en móvil, 2 en sm, 3 en lg y 4 en xl para
+        // que quepan más publicaciones por línea sin hacerlas gigantes.
+        '.un-type-grid{display:grid;grid-template-columns:1fr;gap:20px}' +
+        '@media (min-width:640px){.un-type-grid{grid-template-columns:repeat(2,1fr)}}' +
+        '@media (min-width:1024px){.un-type-grid{grid-template-columns:repeat(3,1fr)}}' +
+        '@media (min-width:1400px){.un-type-grid{grid-template-columns:repeat(4,1fr)}}' +
         '.un-type-grid .component-card{display:flex!important;animation:unTypeIn .28s ease}' +
         // Solo desplazamiento: la animación nunca oculta las tarjetas.
         '@keyframes unTypeIn{from{transform:translateY(8px)}to{transform:none}}' +
@@ -148,23 +169,21 @@
         '.un-type-empty{font-size:13px;color:#64748b;padding:18px 2px;margin:0}';
       document.head.appendChild(st);
     }
-    // Agrupa la lista de productos por marca y, dentro de cada marca, por tipo.
-    // La imagen es la que el staff subió para esa marca, no la de un producto.
+    // Agrupa la lista de productos por marca. Sin niveles: los tipos ya no
+    // existen, cada marca muestra sus publicaciones directo.
     function computeBrands(list, marcasMeta) {
       var map = {}, out = [];
       (list || []).forEach(function (p) {
         var name = brandOf(p), code = brandSlug(name);
         if (!map[code]) {
           var meta = (marcasMeta || {})[code] || null;
-          map[code] = { code: code, label: name, types: {}, n: 0, image: (meta && meta.image) || '' };
+          map[code] = { code: code, label: name, n: 0, image: (meta && meta.image) || '' };
           out.push(map[code]);
         }
-        map[code].types[typeCodeOf(p)] = true;
         map[code].n++;
       });
       out.forEach(function (b) {
-        var t = Object.keys(b.types).length;
-        b.sub = t + (t === 1 ? ' tipo · ' : ' tipos · ') + b.n + (b.n === 1 ? ' producto' : ' productos');
+        b.sub = b.n + (b.n === 1 ? ' producto' : ' productos');
       });
       return out;
     }
@@ -221,68 +240,31 @@
       if (!d || !activeBrand) return;
       d.style.maxHeight = Math.max(2000, d.scrollHeight + 80) + 'px';
     }
-    // Dentro de la marca activa: un acordeón por tipo, con los productos debajo.
-    // Dentro de la marca activa: cuadritos de tipo y, abajo, los productos
-    // del tipo que se elija.
+    // Dentro de la marca activa: sus publicaciones directo en la cuadrícula,
+    // sin niveles intermedios (los tipos ya no existen).
     function renderGroups(brandCode) {
       var list = [];
       try { list = window.__unProducts || []; } catch (e) {}
       ensureHierCss();
       grid.classList.add('un-hier');
-      var groups = {}, order = [];
-      list.forEach(function (p) {
-        if (brandSlug(brandOf(p)) !== brandCode) return;
-        var c = typeCodeOf(p);
-        if (!groups[c]) { groups[c] = { code: c, label: typeOf(p), items: [], image: '' }; order.push(c); }
-        groups[c].items.push(p);
-      });
-      curGroups = groups; curOrder = order;
+      var items = list.filter(function (p) { return brandSlug(brandOf(p)) === brandCode; });
       grid.innerHTML = '';
-      if (!order.length) {
+      if (!items.length) {
         var e0 = document.createElement('p');
         e0.className = 'un-type-empty';
         e0.textContent = 'Esta marca todavía no tiene publicaciones.';
         grid.appendChild(e0);
         return;
       }
-      var nav = document.createElement('div');
-      nav.className = 'un-types-nav';
-      grid.appendChild(nav);
       var box = document.createElement('div');
       box.id = 'un-type-prods';
       box.innerHTML = '<div class="un-type-top"><span class="un-type-dot"></span>' +
-        '<span class="un-type-name" id="un-type-name"></span>' +
-        '<span class="un-type-count" id="un-type-count"></span></div>' +
+        '<span class="un-type-name" id="un-type-name">' + esc(brandLabel(brandCode)) + '</span>' +
+        '<span class="un-type-count" id="un-type-count">' + items.length + (items.length === 1 ? ' producto' : ' productos') + '</span></div>' +
         '<div class="un-type-grid" id="un-type-grid"></div>';
       grid.appendChild(box);
-      order.forEach(function (c) {
-        var g = groups[c];
-        g.image = (catMetaAll[c] && catMetaAll[c].image) || '';
-        var n = g.items.length;
-        var el = buildCard('data-type', c, g.label, n + (n === 1 ? ' producto' : ' productos'), g.image, 'openType');
-        el.classList.add('un-type-card');
-        nav.appendChild(el);
-      });
-      // El tipo elegido se mantiene al recargar; si ya no existe, el primero.
-      var keep = (curOrder.indexOf(curType) >= 0) ? curType : order[0];
-      openType(keep, nav.querySelector('[data-type="' + String(keep).replace(/"/g, '\\"') + '"]'));
-    }
-    function openType(code, btn) {
-      var g = (curGroups || {})[code];
-      if (!g) return;
-      curType = code;
-      Array.prototype.slice.call(grid.querySelectorAll('[data-type]')).forEach(function (c) {
-        c.classList.remove('is-active');
-      });
-      if (btn) btn.classList.add('is-active');
-      var name = document.getElementById('un-type-name');
-      if (name) name.textContent = g.label;
-      var cnt = document.getElementById('un-type-count');
-      if (cnt) cnt.textContent = g.items.length + (g.items.length === 1 ? ' producto' : ' productos');
       var inner = document.getElementById('un-type-grid');
-      if (!inner) return;
-      inner.innerHTML = '';
-      g.items.forEach(function (p) {
+      items.forEach(function (p) {
         var el = cardFor(p);
         if (el) inner.appendChild(el);
       });
@@ -335,10 +317,9 @@
       if (d) { d.style.maxHeight = '0px'; d.style.opacity = '0'; }
     }
     // El diseño trae toggleCategory/closeCatalogDrawer del catálogo por
-    // categorías; aquí se sustituyen por la navegación marca -> tipo -> producto.
+    // categorías; aquí se sustituyen por la navegación marca -> producto.
     function installOverrides() {
       window.openBrand = function (code, btn) { openBrand(String(code || ''), btn); };
-      window.openType = function (code, btn) { openType(String(code || ''), btn); };
       window.toggleCategory = window.openBrand;
       window.closeCatalogDrawer = function () { closeDrawer(); };
     }
@@ -492,7 +473,7 @@
       ensureDetail();
       dImgs = (p.images || []).filter(Boolean).slice(0, 4);
       dId = p.id || null;
-      document.getElementById('un-dcat').textContent = p.category || '';
+      document.getElementById('un-dcat').textContent = brandOf(p) || '';
       document.getElementById('un-dtitle').textContent = p.title || '';
       document.getElementById('un-ddesc').textContent = p.description || '';
       var ul = document.getElementById('un-dideal');
