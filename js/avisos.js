@@ -19,7 +19,7 @@
   // reventaba la caja). Ahora es una tarjeta compacta: círculo de color solo
   // en el icono, texto slate y borde sutil.
   var ESTILOS = [
-    'aviso-caja{position:fixed;z-index:2147483000;display:flex;gap:10px;align-items:flex-start;',
+    '.aviso-caja{display:flex;gap:10px;align-items:flex-start;box-sizing:border-box;',
     'max-width:min(92vw,360px);padding:11px 12px;border-radius:14px;background:#fff;color:#0f172a;',
     'border:1px solid #e2e8f0;font:600 13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;',
     'box-shadow:0 12px 32px rgba(2,6,23,.16);opacity:0;transform:translateY(12px);',
