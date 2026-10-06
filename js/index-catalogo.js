@@ -85,8 +85,16 @@
       // completo (ideal para, más fotos) vive en Saber más.
       try {
         var media = el.querySelector('div.relative.overflow-hidden');
-        if (media) { media.style.height = '230px'; media.style.background = '#ffffff'; }
-        if (img) { img.style.objectFit = 'contain'; img.style.background = '#ffffff'; }
+        if (media) { media.style.height = '230px'; media.style.background = '#e9edf3'; }
+        if (img) {
+          img.style.objectFit = 'contain';
+          img.style.background = '#e9edf3';
+          // La plantilla trae contrast-125: en fotos blancas quema los tonos
+          // claros y el producto se pierde. Sin filtro se ve el color real.
+          img.style.filter = 'none';
+          img.style.padding = '8px';
+          img.style.boxSizing = 'border-box';
+        }
         if (h3) { h3.style.fontSize = '17px'; h3.style.marginBottom = '6px'; }
         if (desc) {
           desc.style.display = '-webkit-box';
