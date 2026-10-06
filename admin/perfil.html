@@ -479,38 +479,31 @@ body.reduce-motion-enabled *::after {
       });
     }
 
-    // Funci�n para cambiar foto de perfil
+    // Foto de perfil: se achica a 256px y se guarda en este navegador Y en el
+    // servidor, para que se vea igual en todas las computadoras.
     function cambiarFotoPerfil(input) {
       if (!input || !input.files || input.files.length === 0) return;
-      
       const file = input.files[0];
-      if (!file.type.startsWith('image/')) {
-        aviso('Solo se permiten archivos de imagen (JPG, PNG, WebP)');
+      input.value = '';
+      if (!window.UN || !UN.prepareProfilePhoto) {
+        aviso('No se pudo procesar la imagen. Recarga la página e intenta de nuevo.');
         return;
       }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        aviso('El archivo es muy grande. M�ximo 5MB.');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
+      UN.prepareProfilePhoto(file).then(function (dataUrl) {
+        if (!dataUrl) {
+          aviso('Solo se permiten archivos de imagen (JPG, PNG, WebP) de máximo 5MB.');
+          return;
+        }
         const photoImg = document.getElementById('profile-photo');
         if (photoImg) {
-          photoImg.src = e.target.result;
+          photoImg.src = dataUrl;
         }
-        // guardar en localStorage para persistencia
-        const user = UN.getUser();
-        if (user && user.email) {
-          UN.setProfilePhoto(e.target.result);
-        }
-        // Mostrar bot�n de eliminar
-        if (btnDeletePhoto) btnDeletePhoto.classList.remove('hidden');
-        showToast('Foto de perfil actualizada correctamente.', 'Fotograf�a de perfil');
-      };
-      reader.readAsDataURL(file);
-      input.value = '';
+        // Local + servidor (la segunda no bloquea la pantalla).
+        UN.saveProfilePhoto(dataUrl);
+        // Mostrar botón de eliminar
+        if (typeof btnDeletePhoto !== 'undefined' && btnDeletePhoto) btnDeletePhoto.classList.remove('hidden');
+        showToast('Foto de perfil actualizada correctamente.', 'Fotografía de perfil');
+      });
     }
 
     // Cargar foto guardada al iniciar
@@ -539,7 +532,7 @@ body.reduce-motion-enabled *::after {
       btnDeletePhoto.addEventListener('click', () => {
         const user = UN.getUser();
         if (user && user.email) {
-          UN.clearProfilePhoto();
+          if (window.UN && UN.deleteProfilePhoto) { UN.deleteProfilePhoto(); } else if (window.UN) { UN.clearProfilePhoto(); }
         }
         const photoImg = document.getElementById('profile-photo');
         if (photoImg) {
@@ -602,7 +595,7 @@ body.reduce-motion-enabled *::after {
 
 
 
-<script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.2"></script><script src="/js/correo-prueba.js?v=1.0"></script>
+<script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.3"></script><script src="/js/correo-prueba.js?v=1.0"></script>
 
 <script src="/js/admin.js?v=3.8"></script>
 
