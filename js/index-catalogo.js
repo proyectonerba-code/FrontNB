@@ -63,7 +63,63 @@
         ul.appendChild(li);
       });
     }
-    function cardFor(p) {
+    // Las fotos de producto se piden solo cuando la tarjeta ya esta en pantalla.
+//
+// Antes la lista entera llegaba con las fotos: /api/productos pesa 20.8 MB y
+// tardaba 34 segundos, así que el catálogo se quedaba esperando antes de poder
+// contar y dibujar las categorías. Ahora la lista llega liviana (solo el número
+// de fotos) y la imagen se carga al aparecer la tarjeta, en grupos, para no
+// hacer 262 peticiones sueltas.
+var PORTADAS = {};    // id -> data url de la primera foto
+var ESPERANDO = {};   // id -> [elementos img] que la esperan
+var OBSERVADOR = null;
+
+function pedirPortadas(ids) {
+      var faltan = [];
+      for (var k = 0; k < ids.length; k++) {
+        var id = ids[k];
+        if (!id || PORTADAS[id]) continue;
+        if (faltan.indexOf(id) < 0) faltan.push(id);
+      }
+      if (!faltan.length) return;
+      var LOTE = 24;
+      for (var i = 0; i < faltan.length; i += LOTE) {
+        (function (grupo) {
+          UN.api('/api/productos/portada?ids=' + encodeURIComponent(grupo.join(','))).then(function (mapa) {
+            for (var id in (mapa || {})) {
+              PORTADAS[id] = mapa[id];
+              var els = ESPERANDO[id] || [];
+              delete ESPERANDO[id];
+              for (var j = 0; j < els.length; j++) if (els[j] && !els[j].src) els[j].src = mapa[id];
+            }
+          }).catch(function () { /* la tarjeta se queda con su fondo */ });
+        })(faltan.slice(i, i + LOTE));
+      }
+    }
+
+function observarFoto(img, id) {
+      if (!img || !id) return;
+      if (PORTADAS[id]) { img.src = PORTADAS[id]; return; }
+      if (!ESPERANDO[id]) ESPERANDO[id] = [];
+      ESPERANDO[id].push(img);
+      if (typeof IntersectionObserver === 'undefined') { pedirPortadas([id]); return; }
+      if (!OBSERVADOR) {
+        OBSERVADOR = new IntersectionObserver(function (entradas) {
+          var ids = [];
+          for (var i = 0; i < entradas.length; i++) {
+            var el = entradas[i].target;
+            if (!entradas[i].isIntersecting) continue;
+            var pid = el.getAttribute('data-pid');
+            if (pid) ids.push(pid);
+            OBSERVADOR.unobserve(el);
+          }
+          pedirPortadas(ids);
+        }, { rootMargin: '300px' });
+      }
+      if (!img._unObs) { img._unObs = true; img.setAttribute('data-pid', id); OBSERVADOR.observe(img); }
+    }
+
+function cardFor(p) {
       var tpl = cardTpl || grid.querySelector('.component-card');
       if (!tpl) return null;
       var el = tpl.cloneNode(true);
@@ -72,7 +128,12 @@
       el.setAttribute('data-category', p.categoryCode || 'general');
       el.setAttribute('data-brand', brandSlug(brandOf(p)));
       var img = el.querySelector('img');
-      if (img && p.images && p.images[0]) { img.src = p.images[0]; img.alt = p.title; }
+      if (img) {
+        img.alt = p.title || '';
+        // La lista llega sin fotos: se piden cuando la tarjeta ya se ve.
+        if (p.images && p.images[0]) img.src = p.images[0];
+        else if (Number(p.fotosN) > 0 && p.id) observarFoto(img, p.id);
+      }
       var chip = el.querySelector('.absolute.top-4 span');
       if (chip) chip.textContent = (p.category || '').toUpperCase();
       var h3 = el.querySelector('h3');
@@ -390,7 +451,7 @@
       var list = null, meta = {}, marcas = {};
       try {
         var res = await Promise.all([
-          UN.api('/api/productos').catch(function () { return null; }),
+          UN.api('/api/productos?lite=1').catch(function () { return null; }),
           UN.api('/api/categorias').catch(function () { return []; }),
           UN.api('/api/marcas').catch(function () { return []; }),
         ]);
@@ -572,11 +633,21 @@ function copiarDescripcion(btn) {
     document.body.style.overflow = 'hidden';
   }
     function openDetail(id) {
-      var list = [];
-      try { list = window.__unProducts || []; } catch (e) {}
+      var lista = [];
+      try { lista = window.__unProducts || []; } catch (e) {}
       var p = null;
-      list.forEach(function (x) { if (x.id === id) p = x; });
-      if (p) openDetailData(p);
+      lista.forEach(function (x) { if (x.id === id) p = x; });
+      if (!p) return;
+      if (Array.isArray(p.images) && p.images.length) { openDetailData(p); return; }
+      // La lista llega sin fotos: se piden las de este producto y se pinta el
+      // detalle. Antes se veia el modal vacio mientras bajaban los 20 MB.
+      try { openDetailData(p); } catch (e) {}
+      UN.api('/api/productos/' + encodeURIComponent(id)).then(function (full) {
+        if (!full) return;
+        for (var i = 0; i < lista.length; i++) if (lista[i] && lista[i].id === id) lista[i] = full;
+        try { window.__unProducts = lista; } catch (e) {}
+        if (document.getElementById('un-dmodal')) openDetailData(full);
+      }).catch(function () { /* se queda con lo que hay */ });
     }
     window.__unDetail = openDetail;
     /* ---- Cotizar: suma a la lista y se queda en el catálogo ---- */
@@ -797,7 +868,7 @@ function copiarDescripcion(btn) {
           pid: p.id || p.title,
           title: p.title,
           desc: p.description,
-          img: (p.images || [])[0] || '',
+          img: (p.images || [])[0] || PORTADAS[p.id] || '',
           code: (p.categoryCode || 'cat').toUpperCase(),
         });
       }

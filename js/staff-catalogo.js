@@ -616,18 +616,27 @@
       var p = null;
       list.forEach(function (x) { if (x.id === id) p = x; });
       if (!p) return;
-      document.getElementById('unp-id').value = p.id;
-      document.getElementById('unp-title').value = p.title || '';
-      document.getElementById('unp-desc').value = p.description || '';
-      document.getElementById('unp-ideal').value = (p.idealFor || []).join('\n');
-      fillBrands(String((p && p.brand) || '').trim());
-      photoSlots = (p.images || []).slice(0, 4);
-      while (photoSlots.length < 4) photoSlots.push(null);
-      renderSlots();
-      var ec = document.getElementById('unp-elec');
-      if (ec) ec.checked = p.electronico !== false;
-      document.getElementById('un-mtitle').textContent = 'Editar publicación';
-      openModal();
+      function llenar(full) {
+        full = full || p;
+        document.getElementById('unp-id').value = full.id;
+        document.getElementById('unp-title').value = full.title || '';
+        document.getElementById('unp-desc').value = full.description || '';
+        document.getElementById('unp-ideal').value = (full.idealFor || []).join('\n');
+        fillBrands(String((full && full.brand) || '').trim());
+        photoSlots = (full.images || []).slice(0, 4);
+        while (photoSlots.length < 4) photoSlots.push(null);
+        renderSlots();
+        var ec = document.getElementById('unp-elec');
+        if (ec) ec.checked = full.electronico !== false;
+        document.getElementById('un-mtitle').textContent = 'Editar publicación';
+        openModal();
+      }
+      if (Array.isArray(p.images) && p.images.length) { llenar(p); return; }
+      // El catalogo se dibuja con la lista liviana (sin fotos), asi que las de
+      // este producto se piden ANTES de abrir el editor. Si se abriera vacio y
+      // el personal guardara, las fotos del producto se quedarian borradas.
+      try { document.getElementById('un-mtitle').textContent = 'Cargando publicación...'; } catch (e) {}
+      UN.api('/api/productos/' + encodeURIComponent(id)).then(llenar).catch(function () { llenar(p); });
     },
     askDelete: function (id) {
       var list = [];
