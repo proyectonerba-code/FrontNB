@@ -227,6 +227,68 @@
     if (key) { try { localStorage.removeItem(key); } catch (e) {} }
     paintProfileAvatars();
   }
+  // Achica la foto a 256px JPEG antes de guardarla: la foto original de celular
+  // (varios MB) no cabe en el localStorage (tope ~5MB por origen) y mucho menos
+  // viaja bien al servidor. A 256px pesa 15-40KB y se ve igual en un avatar.
+  function prepareProfilePhoto(file) {
+    return new Promise(function (res) {
+      if (!file || !file.type || file.type.indexOf('image/') !== 0) return res(null);
+      if (file.size > 5 * 1024 * 1024) return res(null);
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var lado = Math.max(img.width, img.height) || 1;
+          var s = Math.min(1, 256 / lado);
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * s));
+          c.height = Math.max(1, Math.round(img.height * s));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(url);
+          res(c.toDataURL('image/jpeg', 0.82));
+        } catch (e) { try { URL.revokeObjectURL(url); } catch (e2) {} res(null); }
+      };
+      img.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} res(null); };
+      img.src = url;
+    });
+  }
+  // Guarda la foto en este navegador Y en el servidor, para que se vea igual
+  // en todas las computadoras. El servidor manda (no bloquea la pantalla).
+  function saveProfilePhoto(dataUrl) {
+    if (!setProfilePhoto(dataUrl)) return Promise.resolve(false);
+    try {
+      return api('/api/me', { method: 'PUT', body: { foto: dataUrl } }).then(function () { return true; })
+        .catch(function () { return true; });
+    } catch (e) { return Promise.resolve(true); }
+  }
+  function deleteProfilePhoto() {
+    clearProfilePhoto();
+    try {
+      return api('/api/me', { method: 'PUT', body: { foto: '' } }).catch(function () {});
+    } catch (e) {}
+    return Promise.resolve(true);
+  }
+  // Baja la foto del servidor si es distinta a la de este navegador. El
+  // servidor manda: si se borró en otra computadora, aquí también se borra.
+  function syncProfilePhoto(serverUser) {
+    try {
+      var srv = (serverUser && typeof serverUser.foto === 'string') ? serverUser.foto : null;
+      if (srv === null) return;
+      var key = profilePhotoKey();
+      var local = '';
+      try { local = key ? (localStorage.getItem(key) || '') : ''; } catch (e) {}
+      if (srv !== local) {
+        if (srv) { try { localStorage.setItem(key, srv); } catch (e) {} }
+        else if (key) { try { localStorage.removeItem(key); } catch (e) {} }
+        paintProfileAvatars();
+        var img = document.getElementById('profile-photo');
+        if (img) {
+          var u = getUser() || {};
+          img.src = srv || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(profileInitials(u)) + '&background=b0000b&color=fff&bold=true');
+        }
+      }
+    } catch (e) {}
+  }
   function clearLocalSession() {
     try {
       localStorage.removeItem('unidos_token');
@@ -2266,7 +2328,7 @@
       if (location.pathname !== '/index.html') location.replace('/index.html');
     }
   });
-  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, zonaDeRol: zonaDeRol, ensureMenuRol: ensureMenuRol, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
+  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, prepareProfilePhoto: prepareProfilePhoto, saveProfilePhoto: saveProfilePhoto, deleteProfilePhoto: deleteProfilePhoto, syncProfilePhoto: syncProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, zonaDeRol: zonaDeRol, ensureMenuRol: ensureMenuRol, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
   // NOTA: cada diseno conserva su comportamiento original; el conector solo
   // reescribe enlaces, refleja sesion y sincroniza tema/accesibilidad global.
   wrapTextApis();
@@ -2293,7 +2355,11 @@
     var token = localStorage.getItem('unidos_token');
     if (!token) return;
     api('/api/me').then(function (me) {
-      if (localStorage.getItem('unidos_token') === token) setSession(token, me);
+      if (localStorage.getItem('unidos_token') === token) {
+        setSession(token, me);
+        // La foto pudo cambiar en otra computadora: se baja y se pinta.
+        try { syncProfilePhoto(me); } catch (e) {}
+      }
     }).catch(function (e) {
       if (e && (e.status === 401 || e.status === 403) && localStorage.getItem('unidos_token') === token) {
         localStorage.removeItem('unidos_token');
