@@ -644,7 +644,7 @@ function closeCatalogDrawer() {
 }
 </script>
 
-<script src="js/api-config.js?v=1.0"></script><script defer src="js/unidos.js?v=6.2"></script>
+<script src="js/api-config.js?v=1.0"></script><script defer src="js/unidos.js?v=6.3"></script>
 <script defer src="js/menu-unico.js?v=3.1"></script>
 <script>
   // Index nuevo: CTAs cableados + morph identico a variante sesion-activa. Diseno intacto.
@@ -681,7 +681,7 @@ function closeCatalogDrawer() {
     // Sin sesion: se conserva el header nativo del diseno, identico.
     try {
       var __u = UN.getUser() || {};
-      if (localStorage.getItem('unidos_token') && __u.nombre && UN.ensureMenu) UN.ensureMenu('cliente');
+      if (UN.ensureMenuRol) UN.ensureMenuRol();
     } catch (e) {}
     }
     if (window.UN && UN.ensureMenu) arrancar();

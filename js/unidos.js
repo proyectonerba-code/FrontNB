@@ -1213,23 +1213,12 @@
       else if (t.indexOf('cumplimiento normativo') >= 0 || t === 'cumplimiento') a.href = '/terminos.html';
       else if (t === 'portal de proveedores') a.href = catalogoHref;
     });
-    // Entrada a Mantenimientos: solo visible para ADMIN/SUPERADMIN fuera de /admin/,
-    // con el estilo del nav existente. Dentro de admin ya existe su navegacion.
-    try {
-      var __u = getUser();
-      if (__u && (__u.rol === 'ADMIN' || __u.rol === 'SUPERADMIN') && !isAdminPage && !isEspecialesPage && !isSuperPage && !isElecPage) {
-        var __nav = document.querySelector('header nav');
-        if (__nav && !document.getElementById('nav-staff-link')) {
-          var __ref = __nav.querySelector('a');
-          var __a = document.createElement('a');
-          __a.id = 'nav-staff-link';
-          __a.href = '/admin/mantenimiento.html';
-          __a.textContent = 'Mantenimientos';
-          if (__ref) __a.className = __ref.className;
-          __nav.appendChild(__a);
-        }
-      }
-    } catch (e) { /* sin sesion: nada */ }
+    // Antes aqui se agregaba a mano una entrada "Mantenimientos" para
+    // ADMIN/SUPERADMIN fuera de /admin/, porque las paginas publicas ponian la
+    // barra de cliente y ahi no estaba. Ahora la barra se arma por rol
+    // (ensureMenuRol -> zhHTML), asi que esta entrada sobra: al admin le
+    // duplicaba el enlace y al superadmin lo mandaba a /admin/, que no es su
+    // zona y lo rebotaba al login.
   // "Olvidaste tu contrasena": pide el correo y el backend manda el enlace.
   // Antes era un alert con el telefono de la empresa. Guarda de idempotencia
   // porque rewriteLinks() se llama mas de una vez por pagina.
@@ -1829,6 +1818,29 @@
   function zhNavLink(href, icon, label, extra) {
     return '<a href="' + href + '"' + (extra || '') + '>' + zhIcon(icon) + '<span>' + label + '</span></a>';
   }
+  // Que barra va en la pagina depende del ROL, no de la pagina.
+  //
+  // Antes las paginas publicas (inicio, cotizador, nosotros, electronica) fijaban
+  // la zona 'cliente' a fuerza y el cableado compartido hacia lo mismo. Un admin
+  // que abria el inicio veia "Mis Cotizaciones" y sus herramientas nada mas: las
+  // interfaces de todos los roles quedaban mezcladas. Cada rol entra con lo suyo.
+  function zonaDeRol(rol) {
+    switch (String(rol || '').toUpperCase()) {
+      case 'ADMIN': return 'admin';
+      case 'SUPERADMIN': return 'superadmin';
+      case 'PRODUCTOS_ELECTRONICOS': return 'electronica';
+      case 'PROYECTOS_ESPECIALES': return 'especiales';
+      default: return 'cliente';
+    }
+  }
+  // Barra que corresponde a quien esta conectado en esta pagina. Sin sesion,
+  // la de visitante.
+  function ensureMenuRol() {
+    var u = getUser() || {};
+    var conSesion = false;
+    try { conSesion = !!localStorage.getItem('unidos_token'); } catch (e) {}
+    ensureMenu(conSesion && u.nombre ? zonaDeRol(u.rol) : 'out');
+  }
   function zhHTML(zone) {
     var brandHome = zone === 'admin' ? '/admin/catalogo.html'
       : (zone === 'superadmin' ? '/superadmin/catalogo.html'
@@ -2254,7 +2266,7 @@
       if (location.pathname !== '/index.html') location.replace('/index.html');
     }
   });
-  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
+  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, zonaDeRol: zonaDeRol, ensureMenuRol: ensureMenuRol, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
   // NOTA: cada diseno conserva su comportamiento original; el conector solo
   // reescribe enlaces, refleja sesion y sincroniza tema/accesibilidad global.
   wrapTextApis();

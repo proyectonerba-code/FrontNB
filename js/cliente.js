@@ -67,10 +67,10 @@
     wireNavLabels: wireNavLabels,
     ensure: function () {
       // Header único global (mismo estilo en todos los roles) + links del cuerpo.
+      // La barra se elige por ROL: antes se ponía la de cliente siempre, y un
+      // admin o un encargado que abría el catálogo veía "Mis Cotizaciones".
       try {
-        var u = UN.getUser() || {};
-        var logged = !!localStorage.getItem('unidos_token') && !!u.nombre;
-        if (window.UN && UN.ensureMenu) UN.ensureMenu(logged ? 'cliente' : 'out');
+        if (window.UN && UN.ensureMenuRol) UN.ensureMenuRol();
       } catch (e) {}
       try { wireAcct(document); } catch (e) {}
       try { wireFooter(); } catch (e) {}

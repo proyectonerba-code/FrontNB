@@ -511,7 +511,7 @@
 
 
 
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=6.2"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=6.3"></script>
 <script src="js/menu-unico.js?v=3.1"></script>
 <script src="js/cliente.js?v=3.3"></script>
 <script>
@@ -528,7 +528,7 @@
     if (typeof updateTotals === 'function') updateTotals();
     UN.rewriteLinks();
     // Header unico global: misma barra en todos los roles (cada zona conserva sus links).
-    try { if (UN.ensureMenu) UN.ensureMenu('cliente'); } catch (e) {}
+    try { if (UN.ensureMenuRol) UN.ensureMenuRol(); } catch (e) {}
     try { if (window.UNCliente) UNCliente.ensure(); } catch (e) {}
     window.__lastQuote = null;
     function items() {
