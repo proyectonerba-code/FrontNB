@@ -1796,6 +1796,35 @@
     document.head.appendChild(st);
   }
 
+  // Barra de desplazamiento de la pagina, SIEMPRE visible.
+  //
+  // El sitio traia una regla global '::-webkit-scrollbar{display:none}' en
+  // varias paginas: la barra no aparecia y no habia forma de bajar rapido
+  // arrastrando. Quitarla no alcanza en todos los equipos: cuando Windows o el
+  // navegador usan barras flotantes (overlay), la barra solo sale mientras te
+  // mueves y luego se desaparece. Al definirla aqui a mano se vuelve una barra
+  // fija que se ve siempre, en cualquier computadora y en cualquier modo.
+  function injectScrollbarCSS() {
+    if (document.getElementById('un-scrollbar')) return;
+    var st = document.createElement('style');
+    st.id = 'un-scrollbar';
+    st.textContent =
+      'html{scrollbar-width:thin;scrollbar-color:#cbd5e1 #f1f5f9;}' +
+      'html::-webkit-scrollbar{width:14px;height:14px;}' +
+      'html::-webkit-scrollbar-track{background:#f1f5f9;border-left:1px solid #e5e7eb;}' +
+      'html::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px;' +
+        'border:3px solid #f1f5f9;background-clip:padding-box;}' +
+      'html::-webkit-scrollbar-thumb:hover{background:#d91b1b;background-clip:padding-box;}' +
+      'html.dark,html[data-theme="dark"]{scrollbar-color:#475569 #0f172a;}' +
+      'html.dark::-webkit-scrollbar-track,html[data-theme="dark"]::-webkit-scrollbar-track' +
+        '{background:#0f172a;border-left-color:#1e293b;}' +
+      'html.dark::-webkit-scrollbar-thumb,html[data-theme="dark"]::-webkit-scrollbar-thumb' +
+        '{background:#475569;border-color:#0f172a;background-clip:padding-box;}' +
+      'html.dark::-webkit-scrollbar-thumb:hover,html[data-theme="dark"]::-webkit-scrollbar-thumb:hover' +
+        '{background:#d91b1b;background-clip:padding-box;}';
+    document.head.appendChild(st);
+  }
+
   // CSS del header único de zonas staff (admin / proyectos especiales).
   // Solo pinta header.unZh (inyectado por zona); al resto no lo toca.
   function injectZoneHeadCSS() {
@@ -2337,6 +2366,7 @@
   rewriteLinks();
   injectMobileNav();
   injectZoneHeadCSS();
+injectScrollbarCSS();
   injectCatalogoDark();
   injectRazerCSS();
   injectA11yAssets();
