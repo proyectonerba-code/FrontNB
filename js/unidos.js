@@ -1903,6 +1903,7 @@
   var ZH_PERSON = '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>';
   var ZH_FILE = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>';
   var ZH_OUT = '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>';
+  var ZH_BELL = '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>';
   function secureLogoutMarkup() {
     return '<span class="un-secure-logout-icon">' + zhIcon(ZH_OUT) + '</span><span class="un-secure-logout-copy"><strong>Cerrar sesión</strong><small>Sesión segura</small></span>';
   }
@@ -1971,7 +1972,11 @@
       right = '<div class="unZh-auth"><a class="unZh-login" href="/login.html">Iniciar Sesión</a>' +
         '<a class="unZh-reg" href="/registro.html">Registrarse</a></div>';
     } else {
-      right = '<div class="unZh-chipwrap"><button type="button" class="unZh-chip" id="unZh-chip">' +
+      right = '<div class="unZh-bellwrap"><button type="button" class="unZh-bell" id="unZh-bell" aria-label="Notificaciones">' +
+        zhIcon(ZH_BELL).replace('<svg', '<svg class="unZh-bellsvg"') +
+        '<i class="unZh-belldot" id="unZh-belldot"></i></button>' +
+        '<div class="unZh-belldrop hidden" id="unZh-belldrop"></div></div>' +
+        '<div class="unZh-chipwrap"><button type="button" class="unZh-chip" id="unZh-chip">' +
         '<span class="unZh-av"><img id="unZh-avatar" src="https://ui-avatars.com/api/?name=UN&background=b0000b&color=fff&bold=true" alt="perfil"><i class="unZh-dot"></i></span>' +
         '<span class="unZh-who"><b id="unZh-name">Usuario</b><span class="unZh-role" id="unZh-role">ROL</span></span>' +
         zhIcon(ZH_CHEV).replace('<svg', '<svg class="unZh-chev"') +
@@ -2022,6 +2027,60 @@
       if (e.key === 'Escape') drop.classList.add('hidden');
     });
   }
+  function zhBell(header) {
+    var bell = header.querySelector('#unZh-bell');
+    var belldrop = header.querySelector('#unZh-belldrop');
+    var belldot = header.querySelector('#unZh-belldot');
+    if (!bell || !belldrop) return;
+    var STORAGE_KEY = 'unidos_notificaciones';
+    function getNotis() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; }
+    }
+    function saveNotis(list) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+    function renderNotis(list) {
+      var unread = list.filter(function (n) { return !n.leida; }).length;
+      if (belldot) belldot.style.display = unread > 0 ? 'block' : 'none';
+      if (!list.length) {
+        belldrop.innerHTML = '<div class="unZh-bellempty">Sin notificaciones</div>';
+        return;
+      }
+      belldrop.innerHTML = list.map(function (n) {
+        var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '">' +
+          '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
+          '<span class="unZh-belltime">' + time + '</span></a>';
+      }).join('');
+    }
+    function loadNotis() {
+      var list = getNotis();
+      renderNotis(list);
+    }
+    bell.addEventListener('click', function (e) {
+      e.stopPropagation();
+      belldrop.classList.toggle('hidden');
+      if (!belldrop.classList.contains('hidden')) loadNotis();
+    });
+    document.addEventListener('click', function (e) {
+      if (!belldrop.classList.contains('hidden') && !bell.contains(e.target)) belldrop.classList.add('hidden');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') belldrop.classList.add('hidden');
+    });
+    belldrop.addEventListener('click', function (e) {
+      var item = e.target.closest('.unZh-bellitem');
+      if (!item) return;
+      var id = item.getAttribute('data-id');
+      if (id) {
+        var list = getNotis();
+        list.forEach(function (n) { if (n.id === id) n.leida = true; });
+        saveNotis(list);
+        renderNotis(list);
+      }
+    });
+    loadNotis();
+  }
   function zhActive(header) {
     try {
       var page = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -2062,6 +2121,7 @@
     syncMobileNavVisibility();
     zhPaint(header);
     zhDrop(header, zone);
+    zhBell(header);
     zhActive(header);
     if (wasFixed) {
       var m = document.querySelector('main');
