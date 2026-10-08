@@ -454,9 +454,26 @@
       e0.textContent = 'Todavía no hay marcas. Crea la primera arriba.';
       body.appendChild(e0);
     }
-    marcas.forEach(function (b) {
+    marcas.forEach(function (b, i) {
       var n = Number(b.total || 0);
       var f = fila(b.label, n === 1 ? '1 publicación' : n + ' publicaciones', true, function () { askQuit(b, n); });
+      // Flechas para ordenar (igual que en Servicios): sube/baja una posición
+      // y se guarda el orden completo. Desactivadas en los extremos.
+      var flecha = function (dir, titulo, off, simbolo) {
+        var fl = document.createElement('button');
+        fl.type = 'button';
+        fl.title = titulo;
+        fl.disabled = !!off;
+        fl.style.cssText = 'width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;cursor:' + (off ? 'not-allowed' : 'pointer') + ';opacity:' + (off ? '.35' : '1') + ';border:1px solid #e2e8f0;border-radius:8px;background:#fff';
+        fl.innerHTML = simbolo;
+        if (!off) fl.addEventListener('click', function () { moverMarca(b.code, dir); });
+        return fl;
+      };
+      var flBox = document.createElement('div');
+      flBox.style.cssText = 'display:flex;gap:4px;align-items:center';
+      flBox.appendChild(flecha(-1, 'Subir', i === 0, '&#9650;'));
+      flBox.appendChild(flecha(1, 'Bajar', i === marcas.length - 1, '&#9660;'));
+      f.row.insertBefore(flBox, f.row.lastChild);
       var thumb = guard(b.image, b.label);
       thumb.title = 'Clic para cambiar el logo';
       thumb.style.cursor = 'pointer';
@@ -464,6 +481,30 @@
       f.row.insertBefore(thumb, f.hole);
       body.appendChild(f.row);
     });
+  }
+  // Mueve una marca una posición y guarda el orden completo (igual que en
+  // Servicios): se manda la lista entera de codes en el orden nuevo. Si falla,
+  // se deshace el intercambio para no dejar la lista mintiendo.
+  async function moverMarca(code, delta) {
+    var marcas = [];
+    try { marcas = window.__unMarcas || []; } catch (e) {}
+    var i = -1;
+    for (var k = 0; k < marcas.length; k++) { if (marcas[k].code === code) { i = k; break; } }
+    var j = i + delta;
+    if (i < 0 || j < 0 || j >= marcas.length) return;
+    var tmp = marcas[i];
+    marcas[i] = marcas[j];
+    marcas[j] = tmp;
+    var orden = marcas.map(function (x) { return x.code; });
+    try {
+      await UN.api('/api/marcas/ordenar', { method: 'POST', body: { orden: orden } });
+      renderMgmt();
+      reload();
+    } catch (err) {
+      marcas[j] = marcas[i];
+      marcas[i] = tmp;
+      aviso('No se pudo cambiar el orden: ' + ((err && err.message) || ''));
+    }
   }
   // Cambiar el logo de una marca existente (tocando su miniatura).
   var logoMarcaCode = null, logoMarcaLabel = '';

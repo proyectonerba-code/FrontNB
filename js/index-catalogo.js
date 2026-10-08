@@ -263,10 +263,16 @@
         var name = brandOf(p), code = brandSlug(name);
         if (!map[code]) {
           var meta = (marcasMeta || {})[code] || null;
-          map[code] = { code: code, label: name, n: 0, image: (meta && meta.image) || '' };
+          map[code] = { code: code, label: name, n: 0, image: (meta && meta.image) || '', orden: Number(meta && meta.orden) || 0 };
           out.push(map[code]);
         }
         map[code].n++;
+      });
+      // Orden manual del admin (flechas del modal Marcas) primero; el resto al final.
+      out.sort(function (a, b) {
+        var oa = a.orden || 999999, ob = b.orden || 999999;
+        if (oa !== ob) return oa - ob;
+        return String(a.label || '').localeCompare(String(b.label || ''));
       });
       out.forEach(function (b) {
         b.sub = b.n + (b.n === 1 ? ' producto' : ' productos');
