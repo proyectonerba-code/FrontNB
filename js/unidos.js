@@ -2032,35 +2032,64 @@
     var belldrop = header.querySelector('#unZh-belldrop');
     var belldot = header.querySelector('#unZh-belldot');
     if (!bell || !belldrop) return;
-    var STORAGE_KEY = 'unidos_notificaciones';
-    function getNotis() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; }
+    var notis = [];
+    var known = {};
+    var pollTimer = null;
+    try {
+      var saved = JSON.parse(localStorage.getItem('unidos_notis_visto') || '{}');
+      known = saved;
+    } catch (e) {}
+    function getNotis() { return notis; }
+    function saveKnown() {
+      try { localStorage.setItem('unidos_notis_visto', JSON.stringify(known)); } catch (e) {}
     }
-    function saveNotis(list) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
-    }
-    function renderNotis(list) {
-      var unread = list.filter(function (n) { return !n.leida; }).length;
+    function renderNotis() {
+      var unread = notis.filter(function (n) { return !n.leida; }).length;
       if (belldot) belldot.style.display = unread > 0 ? 'block' : 'none';
-      if (!list.length) {
+      if (!notis.length) {
         belldrop.innerHTML = '<div class="unZh-bellempty">Sin notificaciones</div>';
         return;
       }
-      belldrop.innerHTML = list.map(function (n) {
+      belldrop.innerHTML = notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
         return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '">' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
           '<span class="unZh-belltime">' + time + '</span></a>';
       }).join('');
     }
-    function loadNotis() {
-      var list = getNotis();
-      renderNotis(list);
+    function addNoti(n) {
+      var key = n.tipo + '|' + n.ref;
+      if (known[key]) return;
+      known[key] = true;
+      notis.unshift(n);
+      if (notis.length > 30) notis = notis.slice(0, 30);
+      saveKnown();
+      renderNotis();
+    }
+    async function pollQuotes() {
+      try {
+        var isStaff = ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'].indexOf((getUser() || {}).rol || '') >= 0;
+        var data = await api('/api/cotizaciones');
+        var list = Array.isArray(data) ? data : (data.cotizaciones || data.items || []);
+        var zone = header._unZhZone || '';
+        list.forEach(function (c) {
+          var folio = c.folio || c.id;
+          if (!folio) return;
+          var estado = String(c.estado || 'PENDIENTE').toUpperCase();
+          var cliente = (c.cliente && (c.cliente.nombre || c.cliente.email)) || c.clienteNombre || c.usuario || 'Cliente';
+          if (estado === 'PENDIENTE') {
+            addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || new Date().toISOString(), link: (zone === 'admin' || zone === 'superadmin' || zone === 'electronica' || zone === 'especiales') ? null : '/mis-cotizaciones.html', leida: false });
+          } else if (estado === 'APROBADA' || estado === 'APROBADO') {
+            addNoti({ id: 'aprob-' + folio, tipo: 'aprobada', ref: folio, titulo: 'Cotización aprobada', mensaje: folio + ' de ' + cliente, fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+          } else if (estado === 'RECHAZADA' || estado === 'RECHAZADO') {
+            addNoti({ id: 'rech-' + folio, tipo: 'rechazada', ref: folio, titulo: 'Cotización rechazada', mensaje: folio + ' de ' + cliente, fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+          }
+        });
+      } catch (e) {}
     }
     bell.addEventListener('click', function (e) {
       e.stopPropagation();
       belldrop.classList.toggle('hidden');
-      if (!belldrop.classList.contains('hidden')) loadNotis();
     });
     document.addEventListener('click', function (e) {
       if (!belldrop.classList.contains('hidden') && !bell.contains(e.target)) belldrop.classList.add('hidden');
@@ -2073,13 +2102,13 @@
       if (!item) return;
       var id = item.getAttribute('data-id');
       if (id) {
-        var list = getNotis();
-        list.forEach(function (n) { if (n.id === id) n.leida = true; });
-        saveNotis(list);
-        renderNotis(list);
+        notis.forEach(function (n) { if (n.id === id) n.leida = true; });
+        renderNotis();
       }
     });
-    loadNotis();
+    pollQuotes();
+    pollTimer = setInterval(pollQuotes, 30000);
+    header._zhBellCleanup = function () { if (pollTimer) clearInterval(pollTimer); };
   }
   function zhActive(header) {
     try {
