@@ -2068,7 +2068,9 @@
     }
     async function pollQuotes() {
       try {
-        var isStaff = ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'].indexOf((getUser() || {}).rol || '') >= 0;
+        var u = getUser() || {};
+        var rol = String(u.rol || '').toUpperCase();
+        var isStaff = ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'].indexOf(rol) >= 0;
         var data = await api('/api/cotizaciones');
         var list = Array.isArray(data) ? data : (data.cotizaciones || data.items || []);
         var zone = header._unZhZone || '';
@@ -2077,12 +2079,24 @@
           if (!folio) return;
           var estado = String(c.estado || 'PENDIENTE').toUpperCase();
           var cliente = (c.cliente && (c.cliente.nombre || c.cliente.email)) || c.clienteNombre || c.usuario || 'Cliente';
-          if (estado === 'PENDIENTE') {
-            addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || new Date().toISOString(), link: (zone === 'admin' || zone === 'superadmin' || zone === 'electronica' || zone === 'especiales') ? null : '/mis-cotizaciones.html', leida: false });
-          } else if (estado === 'APROBADA' || estado === 'APROBADO') {
-            addNoti({ id: 'aprob-' + folio, tipo: 'aprobada', ref: folio, titulo: 'Cotización aprobada', mensaje: folio + ' de ' + cliente, fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
-          } else if (estado === 'RECHAZADA' || estado === 'RECHAZADO') {
-            addNoti({ id: 'rech-' + folio, tipo: 'rechazada', ref: folio, titulo: 'Cotización rechazada', mensaje: folio + ' de ' + cliente, fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+          var linkStaff = zone === 'admin' ? '/admin/cotizaciones.html'
+            : zone === 'superadmin' ? '/superadmin/cotizaciones.html'
+            : zone === 'electronica' ? '/electronica/cotizaciones.html'
+            : zone === 'especiales' ? '/especiales/solicitudes.html'
+            : '/mis-cotizaciones.html';
+          if (isStaff) {
+            if (estado === 'PENDIENTE') {
+              addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || new Date().toISOString(), link: linkStaff, leida: false });
+            }
+          } else {
+            var userId = u.id || u._id || u.email || '';
+            var cotCliente = c.clienteId || c.cliente_id || c.usuarioId || c.usuario_id || (c.cliente && (c.cliente.id || c.cliente._id || c.cliente.email)) || '';
+            if (userId && cotCliente && String(userId) !== String(cotCliente)) return;
+            if (estado === 'APROBADA' || estado === 'APROBADO') {
+              addNoti({ id: 'aprob-' + folio, tipo: 'aprobada', ref: folio, titulo: 'Cotización aprobada', mensaje: folio + ' ha sido aprobada', fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+            } else if (estado === 'RECHAZADA' || estado === 'RECHAZADO') {
+              addNoti({ id: 'rech-' + folio, tipo: 'rechazada', ref: folio, titulo: 'Cotización rechazada', mensaje: folio + ' ha sido rechazada', fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+            }
           }
         });
       } catch (e) {}
