@@ -2058,22 +2058,25 @@
     var belldrop = header.querySelector('#unZh-belldrop');
     var belldot = header.querySelector('#unZh-belldot');
     if (!bell || !belldrop) return;
+    // Clave NUEVA: las versiones viejas guardaban "visto" con otro formato y
+    // marcaban todo como leido, por eso no salia nada. Se empieza de cero.
+    var SEEN_KEY = 'nerba_notis_vistas_v1';
     var notis = [];
-    var known = {};
+    var seen = {};
+    var fallo = false;
     var pollTimer = null;
     try {
-      var saved = JSON.parse(localStorage.getItem('unidos_notis_visto') || '{}');
-      known = saved;
+      var saved = JSON.parse(localStorage.getItem(SEEN_KEY) || '{}');
+      if (saved && typeof saved === 'object') seen = saved;
     } catch (e) {}
-    function getNotis() { return notis; }
-    function saveKnown() {
-      try { localStorage.setItem('unidos_notis_visto', JSON.stringify(known)); } catch (e) {}
+    function saveSeen() {
+      try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
     }
     function renderNotis() {
       var unread = notis.filter(function (n) { return !n.leida; }).length;
       if (belldot) belldot.style.display = unread > 0 ? 'block' : 'none';
       if (!notis.length) {
-        belldrop.innerHTML = '<div class="unZh-bellempty">Sin notificaciones</div>';
+        belldrop.innerHTML = '<div class="unZh-bellempty">' + (fallo ? 'No se pudieron cargar las notificaciones' : 'Sin notificaciones') + '</div>';
         return;
       }
       belldrop.innerHTML = notis.map(function (n) {
@@ -2085,12 +2088,28 @@
     }
     function addNoti(n) {
       var key = n.tipo + '|' + n.ref;
-      if (known[key]) return;
-      known[key] = true;
-      notis.unshift(n);
+      var yaVista = !!seen[key];
+      n.leida = yaVista;
+      n.key = key;
+      var existe = null;
+      for (var i = 0; i < notis.length; i++) { if (notis[i].key === key) { existe = i; break; } }
+      if (existe !== null) notis[existe] = n; else notis.unshift(n);
       if (notis.length > 30) notis = notis.slice(0, 30);
-      saveKnown();
       renderNotis();
+    }
+    function marcarLeida(key) {
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      saveSeen();
+      notis.forEach(function (n) { if (n.key === key) n.leida = true; });
+      renderNotis();
+    }
+    function tomarLista(data) {
+      if (Array.isArray(data)) return data;
+      if (data && typeof data === 'object') {
+        return data.cotizaciones || data.items || data.data || data.rows || data.lista || data.results || [];
+      }
+      return [];
     }
     async function pollQuotes() {
       try {
@@ -2098,13 +2117,15 @@
         var rol = String(u.rol || '').toUpperCase();
         var isStaff = ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'].indexOf(rol) >= 0;
         var data = await api('/api/cotizaciones');
-        var list = Array.isArray(data) ? data : (data.cotizaciones || data.items || []);
+        var list = tomarLista(data);
         var zone = header._unZhZone || '';
+        fallo = false;
         list.forEach(function (c) {
+          if (!c) return;
           var folio = c.folio || c.id;
           if (!folio) return;
           var estado = String(c.estado || 'PENDIENTE').toUpperCase();
-          var cliente = (c.cliente && (c.cliente.nombre || c.cliente.email)) || c.clienteNombre || c.usuario || 'Cliente';
+          var cliente = (c.cliente && (c.cliente.nombre || c.cliente.email)) || c.clienteNombre || c.usuario || c.nombre || 'Cliente';
           var linkStaff = zone === 'admin' ? '/admin/cotizaciones.html'
             : zone === 'superadmin' ? '/superadmin/cotizaciones.html'
             : zone === 'electronica' ? '/electronica/cotizaciones.html'
@@ -2112,24 +2133,28 @@
             : '/mis-cotizaciones.html';
           if (isStaff) {
             if (estado === 'PENDIENTE') {
-              addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || new Date().toISOString(), link: linkStaff, leida: false });
+              addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || c.creado || new Date().toISOString(), link: linkStaff, leida: false });
             }
           } else {
             var userId = u.id || u._id || u.email || '';
             var cotCliente = c.clienteId || c.cliente_id || c.usuarioId || c.usuario_id || (c.cliente && (c.cliente.id || c.cliente._id || c.cliente.email)) || '';
             if (userId && cotCliente && String(userId) !== String(cotCliente)) return;
             if (estado === 'APROBADA' || estado === 'APROBADO') {
-              addNoti({ id: 'aprob-' + folio, tipo: 'aprobada', ref: folio, titulo: 'Cotización aprobada', mensaje: folio + ' ha sido aprobada', fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+              addNoti({ id: 'aprob-' + folio, tipo: 'aprobada', ref: folio, titulo: 'Cotización aprobada', mensaje: folio + ' ha sido aprobada', fecha: c.fecha || c.createdAt || new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
             } else if (estado === 'RECHAZADA' || estado === 'RECHAZADO') {
-              addNoti({ id: 'rech-' + folio, tipo: 'rechazada', ref: folio, titulo: 'Cotización rechazada', mensaje: folio + ' ha sido rechazada', fecha: new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
+              addNoti({ id: 'rech-' + folio, tipo: 'rechazada', ref: folio, titulo: 'Cotización rechazada', mensaje: folio + ' ha sido rechazada', fecha: c.fecha || c.createdAt || new Date().toISOString(), link: '/mis-cotizaciones.html', leida: false });
             }
           }
         });
-      } catch (e) {}
+      } catch (e) {
+        fallo = true;
+        renderNotis();
+      }
     }
     bell.addEventListener('click', function (e) {
       e.stopPropagation();
       belldrop.classList.toggle('hidden');
+      if (!belldrop.classList.contains('hidden')) pollQuotes();
     });
     document.addEventListener('click', function (e) {
       if (!belldrop.classList.contains('hidden') && !bell.contains(e.target)) belldrop.classList.add('hidden');
@@ -2141,10 +2166,9 @@
       var item = e.target.closest('.unZh-bellitem');
       if (!item) return;
       var id = item.getAttribute('data-id');
-      if (id) {
-        notis.forEach(function (n) { if (n.id === id) n.leida = true; });
-        renderNotis();
-      }
+      notis.forEach(function (n) {
+        if (n.id === id) marcarLeida(n.key);
+      });
     });
     pollQuotes();
     pollTimer = setInterval(pollQuotes, 30000);
