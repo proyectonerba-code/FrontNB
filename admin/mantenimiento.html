@@ -63,65 +63,7 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased text-slate-800">
 <!-- BEGIN: MainHeader -->
-<header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm" data-purpose="admin-navbar">
-<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-<!-- Brand & Corporate Logo -->
-<div class="flex items-center gap-3">
-<!-- Logo Emblem -->
-<div class="flex items-center gap-2">
-<img alt="Grupo NERBA HIDALGO Logo" class="w-8 h-8 object-contain" src="/assets/logo.png">
-<div class="flex flex-col">
-<span class="text-lg font-black tracking-tight leading-none text-slate-900 uppercase font-sans">Grupo NERBA HIDALGO</span>
-<span class="text-[10px] tracking-wider uppercase font-semibold text-brand-600 mt-0.5">Grupo empresarial Nerba s.a de c.v</span>
-</div>
-</div>
-</div>
-<!-- Navigation Tabs -->
-<nav aria-label="Navegación Administrativa" class="hidden md:flex items-center gap-2">
-<!-- Cotizaciones Recibidas -->
-<a data-path="admin-cotizaciones" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" href="#">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span class="">Cotizaciones Recibidas</span>
-<span class="bg-red-100 text-red-700 text-xs font-bold px-1.5 py-0.5 rounded-full">4</span>
-</a>
-<!-- Catálogo -->
-<a data-path="admin-catalogo" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors" href="#">
-<svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span class="">Catálogo</span>
-</a>
-<!-- Mantenimientos (Active Tab) -->
-<a aria-current="page" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-bold bg-brand-50 text-brand-600 border border-brand-200/70 shadow-sm transition-all" href="#">
-<svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-<span class="">Mantenimientos</span>
-<span class="bg-brand-600 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full">24</span>
-</a>
-<!-- Nosotros: esta vista ES la seccion -->
-</nav>
-<!-- Admin Profile Header -->
-<div class="flex items-center gap-3">
-<div class="relative">
-<img alt="Carlos Mendoza Avatar" class="w-10 h-10 rounded-full object-cover border-2 border-slate-200" src="https://ui-avatars.com/api/?name=CM&background=b0000b&color=fff&bold=true">
-<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
-</div>
-<div class="hidden sm:flex flex-col text-left">
-<span class="text-sm font-bold text-slate-900 leading-tight">Carlos Mendoza</span>
-<span class="text-[11px] font-extrabold text-brand-600 tracking-wider uppercase">Administrador</span>
-</div>
-<button aria-label="Opciones de perfil" class="text-slate-400 hover:text-slate-600 p-1" type="button">
-<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
-</svg>
-</button>
-</div>
-</div>
-</header>
+<header class="unZh"></header>
 <!-- END: MainHeader -->
 <!-- BEGIN: MainContent -->
 <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8" data-purpose="maintenance-dashboard">
