@@ -616,6 +616,25 @@
       var p = null;
       list.forEach(function (x) { if (x.id === id) p = x; });
       if (!p) return;
+      // La lista ya no trae fotos: se piden antes de abrir, porque guardar
+      // con los slots vacíos borraría las imágenes de la publicación.
+      // (_traido evita pedir dos veces lo que ya se trajo, tenga fotos o no.)
+      if ((!p.images || !p.images.length) && !p._traido) {
+        UN.api('/api/productos/' + encodeURIComponent(id)).then(function (full) {
+          if (full && full.id) {
+            full._traido = true;
+            try {
+              (window.__unProducts || []).forEach(function (x, i, arr) {
+                if (x && x.id === id) arr[i] = Object.assign({}, x, full);
+              });
+            } catch (e) {}
+            window.UNP.openEdit(id);
+          } else {
+            aviso('No se pudo cargar la publicación. Intenta de nuevo.');
+          }
+        }).catch(function () { aviso('No se pudo cargar la publicación. Intenta de nuevo.'); });
+        return;
+      }
       document.getElementById('unp-id').value = p.id;
       document.getElementById('unp-title').value = p.title || '';
       document.getElementById('unp-desc').value = p.description || '';

@@ -63,6 +63,28 @@
         ul.appendChild(li);
       });
     }
+    // Detalle con fotos de una publicación. La lista ya no trae imágenes
+    // (pesa decenas de MB); se piden por producto y se cachean en memoria.
+    // Misma promesa si varios la piden a la vez: un solo fetch por id.
+    var detalleCache = {}, detalleVuelo = {};
+    function detalleProducto(id) {
+      if (!id) return Promise.resolve(null);
+      if (detalleCache[id]) return Promise.resolve(detalleCache[id]);
+      if (detalleVuelo[id]) return detalleVuelo[id];
+      detalleVuelo[id] = UN.api('/api/productos/' + encodeURIComponent(id)).then(function (p) {
+        delete detalleVuelo[id];
+        if (p && p.id) {
+          detalleCache[id] = p;
+          try {
+            (window.__unProducts || []).forEach(function (x, i, arr) {
+              if (x && x.id === id) arr[i] = Object.assign({}, x, p);
+            });
+          } catch (e) {}
+        }
+        return p || null;
+      }).catch(function () { delete detalleVuelo[id]; return null; });
+      return detalleVuelo[id];
+    }
     function cardFor(p) {
       var tpl = cardTpl || grid.querySelector('.component-card');
       if (!tpl) return null;
@@ -73,6 +95,24 @@
       el.setAttribute('data-brand', brandSlug(brandOf(p)));
       var img = el.querySelector('img');
       if (img && p.images && p.images[0]) { img.src = p.images[0]; img.alt = p.title; }
+      else if (img && p.id) {
+        // La lista viene sin fotos: se piden al pintar la tarjeta.
+        (function (celda, pid, titulo) {
+          detalleProducto(pid).then(function (full) {
+            if (!full || !full.images || !full.images[0]) return;
+            try {
+              var im = celda.querySelector('img');
+              if (im) {
+                im.src = full.images[0];
+                im.alt = titulo || '';
+                im.style.objectFit = 'contain';
+                im.style.background = '#e9edf3';
+                im.style.filter = 'none';
+              }
+            } catch (e) {}
+          });
+        })(el, p.id, p.title);
+      }
       var chip = el.querySelector('.absolute.top-4 span');
       if (chip) chip.textContent = (p.category || '').toUpperCase();
       var h3 = el.querySelector('h3');
@@ -576,6 +616,11 @@ function copiarDescripcion(btn) {
       try { list = window.__unProducts || []; } catch (e) {}
       var p = null;
       list.forEach(function (x) { if (x.id === id) p = x; });
+      // Si la entrada es de la lista (sin fotos), se completa antes de abrir.
+      if (p && (!p.images || !p.images.length)) {
+        detalleProducto(id).then(function (full) { if (full) openDetailData(full); else if (p) openDetailData(p); });
+        return;
+      }
       if (p) openDetailData(p);
     }
     window.__unDetail = openDetail;
