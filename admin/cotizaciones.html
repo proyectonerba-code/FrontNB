@@ -963,7 +963,9 @@
 <script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.4"></script>
 
 <script src="/js/admin.js?v=3.8"></script>
-<script>try { if (window.UN && UN.ensureMenu) UN.ensureMenu('admin'); } catch (e) {}</script>
+<script>
+(function(){var n=0;var t=setInterval(function(){if(window.UN&&UN.ensureMenu){try{UN.ensureMenu('admin');}catch(e){}}if(++n>=10||document.querySelector('header.unZh'))clearInterval(t);},200);})();
+</script>
 
 <script src="/js/excel.js?v=1.0"></script>
 <script src="/js/transicion.js?v=1.0"></script>
