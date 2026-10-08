@@ -1882,7 +1882,33 @@
       '.unZh-reg{background:#d91b1b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:10px 18px;border-radius:8px;font-family:\'Plus Jakarta Sans\',Inter,system-ui,sans-serif}' +
       '.unZh-reg:hover{background:#b0000b}' +
       '@media(max-width:900px){.unZh-who{display:none}.unZh-in{gap:10px}}' +
-      '@media(max-width:720px){.unZh-in{flex-wrap:wrap;height:auto;padding:10px 12px;row-gap:8px}.unZh-nav{order:3;flex-basis:100%;margin:0}.unZh-chip{margin-left:auto}}';
+      '@media(max-width:720px){.unZh-in{flex-wrap:wrap;height:auto;padding:10px 12px;row-gap:8px}.unZh-nav{order:3;flex-basis:100%;margin:0}.unZh-chip{margin-left:auto}}' +
+      // Campana de notificaciones: va aquí (y no solo en css/menu-unico.css)
+      // porque unidos.js se carga en TODAS las páginas; menu-unico.js no.
+      '.unZh-bellwrap{position:relative;display:flex;align-items:center;flex-shrink:0}' +
+      '.unZh-bell{position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;padding:0;border:1px solid #e5e7eb;border-radius:10px;background:#fff;color:#6b7280;cursor:pointer;transition:background .18s ease,color .18s ease,border-color .18s ease}' +
+      '.unZh-bell:hover{background:#f9fafb;color:#b0000b;border-color:rgba(176,0,11,.25)}' +
+      '.unZh-bell:active{transform:scale(.96)}' +
+      '.unZh-bellsvg{width:18px;height:18px;flex-shrink:0}' +
+      '.unZh-belldot{display:none;position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#d91b1b;border:2px solid #fff;box-shadow:0 0 0 1px rgba(217,27,27,.25)}' +
+      '.unZh-belldrop{position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:calc(100vw - 24px);max-height:420px;overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.14);z-index:9999;text-align:left}' +
+      '.unZh-belldrop.hidden{display:none}' +
+      '.unZh-bellempty{padding:24px 16px;text-align:center;font-size:13px;color:#9ca3af}' +
+      '.unZh-bellitem{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;text-decoration:none;border-bottom:1px solid #f3f4f6;transition:background .15s ease}' +
+      '.unZh-bellitem:last-child{border-bottom:0}' +
+      '.unZh-bellitem:hover{background:#f9fafb}' +
+      '.unZh-bellitem.unZh-bellunread{background:#fef2f2}' +
+      '.unZh-bellitem.unZh-bellunread:hover{background:#fee2e2}' +
+      '.unZh-belltxt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}' +
+      '.unZh-belltxt b{font-size:13px;font-weight:700;color:#111827;line-height:1.3;font-family:Inter,system-ui,sans-serif}' +
+      '.unZh-belltxt small{font-size:12px;color:#6b7280;line-height:1.35;font-family:Inter,system-ui,sans-serif}' +
+      '.unZh-belltime{font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0;margin-top:2px}' +
+      'html.dark-mode .unZh-bell,html.dark .unZh-bell{background:#1e293b;border-color:#334155;color:#cbd5e1}' +
+      'html.dark-mode .unZh-bell:hover,html.dark .unZh-bell:hover{background:#334155;color:#fff}' +
+      'html.dark-mode .unZh-belldrop,html.dark .unZh-belldrop{background:#0f172a;border-color:#334155}' +
+      'html.dark-mode .unZh-belltxt b,html.dark .unZh-belltxt b{color:#f1f5f9}' +
+      'html.dark-mode .unZh-belltxt small,html.dark .unZh-belltxt small{color:#94a3b8}' +
+      '@media(max-width:640px){.unZh-belldrop{width:calc(100vw - 24px);right:-8px}.unZh-bell{width:36px;height:36px}}';
     document.head.appendChild(st);
   }
   // Header único para TODAS las zonas y roles (mismo estilo del index nuevo:
