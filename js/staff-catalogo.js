@@ -321,15 +321,27 @@
     } catch (err) { aviso((err && err.message) || 'No se pudo eliminar'); }
   });
   // Sube una data URL a R2 y devuelve la URL pública. Lo que ya es URL se
-  // deja igual. Si el almacén no está configurado, falla con mensaje claro
-  // (mejor no guardar que volver a meter base64 a la base).
+  // deja igual. Sin R2 configurado (503) se devuelve la base64 tal cual para
+  // no frenar al staff: el backend la acepta si es chica y la base no pasa
+  // de 150MB; si no, rechaza con mensaje claro.
+  var r2Ausente = false;
   async function subirFotoR2(dataUrl) {
     var s = String(dataUrl || '');
     if (!s) return '';
     if (/^https?:\/\//.test(s)) return s;
-    var r = await UN.api('/api/fotos', { method: 'POST', body: { imagen: s } });
-    if (!r || !r.url) throw new Error('El almacén no devolvió URL');
-    return r.url;
+    try {
+      var r = await UN.api('/api/fotos', { method: 'POST', body: { imagen: s } });
+      if (!r || !r.url) throw new Error('El almacén no devolvió URL');
+      return r.url;
+    } catch (err) {
+      if (err && err.status === 503) { r2Ausente = true; return s; }
+      throw err;
+    }
+  }
+  function avisaBase64SiToca() {
+    if (!r2Ausente) return;
+    r2Ausente = false;
+    aviso('Guardado sin R2: las fotos quedaron en la base (temporal). Configura R2 para no llenarla.');
   }
   // Guarda o actualiza la imagen (logo) de una marca existente.
   async function saveBrandImage(code, label, dataUrl) {
@@ -354,6 +366,8 @@
     var ideal = g('unp-ideal').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
     var elec = !!document.getElementById('unp-elec').checked;
     // Las fotos nuevas se suben a R2 primero: a la base solo llegan URLs.
+    // Sin R2, subirFotoR2 devuelve la base64 y el backend decide (la acepta
+    // chica con base vigilada, o la rechaza si la base pasa de 150MB).
     var imgs = [];
     try {
       var crudas = photoSlots.filter(Boolean);
@@ -371,6 +385,7 @@
       else await UN.api('/api/productos', { method: 'POST', body: body });
       closeModal();
       reload();
+      avisaBase64SiToca();
     } catch (err) { aviso((err && err.message) || 'No se pudo guardar'); }
   });
   /* ---- quitar marcas y tipos ---- */
@@ -586,7 +601,7 @@
         if (!url) { aviso('No se pudo leer esa imagen. Prueba con JPG o PNG.'); logoMarcaCode = null; return; }
         saveBrandImage(logoMarcaCode, logoMarcaLabel, url).then(function (ok) {
           logoMarcaCode = null;
-          if (ok) { reload(); setTimeout(renderMgmt, 800); }
+          if (ok) { reload(); setTimeout(renderMgmt, 800); avisaBase64SiToca(); }
         });
       });
       return;
@@ -616,6 +631,7 @@
       reload();
       setTimeout(renderMgmt, 800);
       aviso('Marca "' + nombre + '" guardada.');
+      avisaBase64SiToca();
     } catch (err) {
       aviso((err && err.message) || 'No se pudo guardar la marca.');
     }
