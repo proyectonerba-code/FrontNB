@@ -320,10 +320,22 @@
       reload();
     } catch (err) { aviso((err && err.message) || 'No se pudo eliminar'); }
   });
+  // Sube una data URL a R2 y devuelve la URL pública. Lo que ya es URL se
+  // deja igual. Si el almacén no está configurado, falla con mensaje claro
+  // (mejor no guardar que volver a meter base64 a la base).
+  async function subirFotoR2(dataUrl) {
+    var s = String(dataUrl || '');
+    if (!s) return '';
+    if (/^https?:\/\//.test(s)) return s;
+    var r = await UN.api('/api/fotos', { method: 'POST', body: { imagen: s } });
+    if (!r || !r.url) throw new Error('El almacén no devolvió URL');
+    return r.url;
+  }
   // Guarda o actualiza la imagen (logo) de una marca existente.
   async function saveBrandImage(code, label, dataUrl) {
     try {
-      await UN.api('/api/marcas/' + encodeURIComponent(code), { method: 'PUT', body: { label: label, image: dataUrl } });
+      var url = await subirFotoR2(dataUrl);
+      await UN.api('/api/marcas/' + encodeURIComponent(code), { method: 'PUT', body: { label: label, image: url } });
       return true;
     } catch (err) {
       aviso((err && err.message) || 'No se pudo guardar el logo.');
@@ -340,8 +352,18 @@
     // general para no arrastrar el nivel que ya no existe.
     if (!brand) { aviso('Elige la marca. Si no existe, créala primero en el botón Marcas.'); return; }
     var ideal = g('unp-ideal').split(/[\n;]+/).map(function (x) { return x.trim(); }).filter(Boolean);
-    var imgs = photoSlots.filter(Boolean);
     var elec = !!document.getElementById('unp-elec').checked;
+    // Las fotos nuevas se suben a R2 primero: a la base solo llegan URLs.
+    var imgs = [];
+    try {
+      var crudas = photoSlots.filter(Boolean);
+      for (var fi = 0; fi < crudas.length; fi++) {
+        imgs.push(await subirFotoR2(crudas[fi]));
+      }
+    } catch (err) {
+      aviso((err && err.message) || 'No se pudieron subir las fotos. No se guardó nada.');
+      return;
+    }
     var body = { title: title, brand: brand, description: g('unp-desc'), categoryCode: 'general', category: 'General', idealFor: ideal, images: imgs, electronico: elec };
     var id = g('unp-id');
     try {
@@ -582,8 +604,11 @@
     var btn = document.getElementById('un-absave');
     btn.disabled = true;
     try {
+      // El logo se sube a R2 primero: a la base solo llega la URL.
+      var logoUrl = '';
+      if (addBrandImg) logoUrl = await subirFotoR2(addBrandImg);
       await UN.api('/api/marcas/' + encodeURIComponent(brandSlug(nombre)), {
-        method: 'PUT', body: { label: nombre, image: addBrandImg || '' },
+        method: 'PUT', body: { label: nombre, image: logoUrl },
       });
       if (inp) inp.value = '';
       addBrandImg = '';
