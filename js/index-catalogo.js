@@ -44,6 +44,44 @@
     var marcasMetaAll = {};
     var activeBrand = null;
     var hierCss = false;
+    // Buscador por coincidencia (ej. "camara" -> todas las cámaras).
+    var searchQuery = '';
+    function normSearch(s) {
+      return String(s == null ? '' : s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    }
+    function productMatches(p, q) {
+      if (!q) return true;
+      var hay = normSearch([p.title, p.description, p.category, p.categoryCode, p.brand, (p.idealFor || []).join(' ')].join(' '));
+      return q.split(/\s+/).filter(Boolean).every(function (tok) { return hay.indexOf(tok) >= 0; });
+    }
+    function applySearchFilter(list) {
+      if (!searchQuery) return list;
+      return (list || []).filter(function (p) { return productMatches(p, searchQuery); });
+    }
+    function paintSearchCount(n, total) {
+      try {
+        var el = document.getElementById('catalog-search-count');
+        if (el) el.textContent = searchQuery ? (n + ' de ' + total + (n === 1 ? ' resultado' : ' resultados')) : '';
+      } catch (e) {}
+    }
+    function ensureSearchBox() {
+      var input = document.getElementById('catalog-search');
+      if (!input || input._unSearch) return;
+      input._unSearch = true;
+      input.addEventListener('input', function () {
+        searchQuery = normSearch(input.value);
+        rerenderWithSearch();
+      });
+    }
+    function rerenderWithSearch() {
+      var all = [];
+      try { all = window.__unProductsAll || window.__unProducts || []; } catch (e) {}
+      var mine = applySearchFilter(all);
+      paintSearchCount(mine.length, all.length);
+      var meta = {}, marcas = {};
+      try { meta = window.__unCatMeta || {}; marcas = window.__unMarcasMeta || {}; } catch (e) {}
+      renderAll(mine, meta, marcas);
+    }
   try {
     var __u0 = (window.UN && UN.getUser()) || {};
     var __r0 = String(__u0.rol || '').toUpperCase();
@@ -447,10 +485,14 @@
         return;
       }
       var mine = list.filter(function (p) { return OLD_CATS.indexOf(p.categoryCode) < 0; });
+      try { window.__unProductsAll = mine.slice(); } catch (e) {}
+      ensureSearchBox();
+      mine = applySearchFilter(mine);
+      paintSearchCount(mine.length, (window.__unProductsAll || []).length);
       if (!mine.length) {
         window.__unProducts = [];
         window.__unCats = [];
-        grid.innerHTML = '';
+        grid.innerHTML = searchQuery ? '<p class="un-type-empty">Sin resultados para esa búsqueda.</p>' : '';
         return;
       }
       if (renderAll(mine, meta, marcas)) writeCache(mine, meta);
@@ -890,6 +932,7 @@ function copiarDescripcion(btn) {
     }
     wireStatic();
     installOverrides();
+    ensureSearchBox();
     // Si ya había productos cotizados, se muestra el contador al entrar.
     try { if (canQuote && window.Cotiza && Cotiza.count() > 0) { ensureCartUi(); paintPill(Cotiza.list()); } } catch (e) {}
     load();
