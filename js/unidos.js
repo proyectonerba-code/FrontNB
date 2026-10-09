@@ -2094,7 +2094,15 @@
       if (saved && typeof saved === 'object') seen = saved;
     } catch (e) {}
     function saveSeen() {
-      try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+      try {
+        var sks = Object.keys(seen);
+        if (sks.length > 500) {
+          var srec = {};
+          sks.slice(-500).forEach(function (k) { srec[k] = seen[k]; });
+          seen = srec;
+        }
+        localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+      } catch (e) {}
     }
     // Avisos descartados con la ✕ de la campana: solo se esconden en ESTA
     // cuenta (no se borran del servidor). Por usuario y con tope para que la
@@ -2143,7 +2151,12 @@
       // mandando. Si cambia de estado (pendiente→aprobada) la clave cambia y
       // esa sí aparece como nueva.
       if (dismissed[key]) return;
-      if (typeof n.leida !== 'boolean') n.leida = !!seen[key];
+      n.key = key;
+      // Lo ya leído NO se desmarca solo: cada polling (30s) recrea el objeto
+      // con leida:false explícito, así que el seen manda. Sin esto, marcar
+      // como leída duraba hasta el siguiente refresh.
+      if (seen[key]) n.leida = true;
+      else if (typeof n.leida !== 'boolean') n.leida = false;
       n.key = key;
       var existe = null;
       for (var i = 0; i < notis.length; i++) { if (notis[i].key === key) { existe = i; break; } }
