@@ -548,7 +548,7 @@
 <div class="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-secondary font-body-sm text-body-sm">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-base">info</span>
-<span class="" id="showingCountText">Mostrando 0 usuarios gestionables</span>
+<span class="" id="showingCountText">Mostrando 0 usuarios</span>
 </div>
 <div id="users-pagination" class="flex items-center gap-2"></div>
 </div>
@@ -876,8 +876,9 @@
     var search = document.getElementById('userSearchInput');
     var sort = document.getElementById('userSortSelect');
     var count = document.getElementById('showingCountText');
-    var ALL = []; // solo roles gestionables (nunca CLIENTE)
-    var NCLI = 0; // contador de clientes (solo se muestra, no se lista)
+    var ALL = []; // todos los roles: staff gestionable + CLIENTE (antes los
+    // clientes solo se contaban y no se podían buscar ni eliminar)
+    var NCLI = 0; // contador de clientes (tarjeta KPI + pestaña Clientes)
     var filter = 'all';
     var userPage = 1;
 
@@ -933,8 +934,9 @@
         '</div></td></tr>';
     }
     function paintKpisTabs() {
-      // KPIs: gestionables por rol + tarjeta de clientes como SOLO contador.
-      var c = { SUPERADMIN: 0, ADMIN: 0, PROYECTOS_ESPECIALES: 0, off: 0 };
+      // KPIs por rol + tarjeta de clientes. La pestaña Clientes lista las
+      // cuentas para buscarlas, editarlas o eliminarlas como cualquier otra.
+      var c = { SUPERADMIN: 0, ADMIN: 0, PROYECTOS_ESPECIALES: 0, PRODUCTOS_ELECTRONICOS: 0, CLIENTE: 0, off: 0 };
       ALL.forEach(function (u) {
         var r = String(u.rol || '').toUpperCase();
         if (c[r] == null) c[r] = 0;
@@ -947,33 +949,35 @@
         if (cards[idx]) cards[idx].textContent = val;
       }
       setKpi(0, total); setKpi(1, c.SUPERADMIN || 0); setKpi(2, c.ADMIN || 0); setKpi(3, NCLI);
-      // Nota bajo el total: aclara que los clientes solo se cuentan.
+      // Nota bajo el total: activos vs suspendidos.
       try {
         var cards = document.querySelectorAll('.grid.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-4 > div');
         if (cards[0]) {
           var sub = cards[0].querySelector('.font-body-sm');
-          if (sub) sub.textContent = (total - c.off) + ' activos / ' + c.off + ' suspendidos · ' + NCLI + ' clientes (solo contador)';
+          if (sub) sub.textContent = (total - c.off) + ' activos / ' + c.off + ' suspendidos';
         }
         if (cards[2]) {
           var s2 = cards[2].querySelector('.font-body-sm');
           if (s2) s2.textContent = 'Operaciones, cotizaciones y WhatsApp · ' + (c.PROYECTOS_ESPECIALES || 0) + ' en Proyectos Especiales';
         }
       } catch (e) {}
-      // Tabs sin Clientes: Todos, Super Admin, Administradores,
-      // Proyectos Especiales y Suspendidos (de roles gestionables).
+      // Tabs: Todos, Super Admin, Administradores, Proyectos Especiales,
+      // Electrónica, Clientes y Suspendidos.
       var tabs = document.querySelectorAll('.role-filter-tab');
-      var vals = ['all', 'SUPER ADMIN', 'ADMINISTRADOR', 'PROYECTOS', 'ELECTRÓNICA Y REFACCIONES', 'INACTIVO'];
-      var nums = [total, c.SUPERADMIN || 0, c.ADMIN || 0, c.PROYECTOS_ESPECIALES || 0, c.PRODUCTOS_ELECTRONICOS || 0, c.off];
-      var names = ['Todos', 'Super Admin', 'Administradores', 'Proyectos Especiales', 'Electrónica y refacciones', 'Suspendidos / Inactivos'];
-      var tabs = document.querySelectorAll('.role-filter-tab');
-      // Sexta pestaña para electrónicos (el diseño trae 5).
-      if (tabs.length === 5) {
+      var vals = ['all', 'SUPER ADMIN', 'ADMINISTRADOR', 'PROYECTOS', 'ELECTRÓNICA Y REFACCIONES', 'CLIENTE', 'INACTIVO'];
+      var nums = [total, c.SUPERADMIN || 0, c.ADMIN || 0, c.PROYECTOS_ESPECIALES || 0, c.PRODUCTOS_ELECTRONICOS || 0, c.CLIENTE || 0, c.off];
+      var names = ['Todos', 'Super Admin', 'Administradores', 'Proyectos Especiales', 'Electrónica y refacciones', 'Clientes', 'Suspendidos / Inactivos'];
+      tabs = document.querySelectorAll('.role-filter-tab');
+      // Pestañas faltantes (el diseño trae 5): se clonan hasta completar.
+      while (tabs.length < vals.length) {
         var extra = tabs[0].cloneNode(true);
         tabs[0].parentNode.appendChild(extra);
-        extra.addEventListener('click', function () {
-          filter = extra.getAttribute('data-role') || 'all';
-          applyAll();
-        });
+        (function (el) {
+          el.addEventListener('click', function () {
+            filter = el.getAttribute('data-role') || 'all';
+            applyAll();
+          });
+        })(extra);
         tabs = document.querySelectorAll('.role-filter-tab');
       }
       tabs.forEach(function (t, i) { if (vals[i] !== undefined) { t.setAttribute('data-role', vals[i]); t.textContent = names[i] + ' (' + nums[i] + ')'; } });
@@ -1008,7 +1012,7 @@
       var start = (userPage - 1) * pageSize;
       rows.forEach(function (row) { row.style.display = 'none'; });
       matches.slice(start, start + pageSize).forEach(function (row) { row.style.display = ''; });
-      if (count) count.textContent = 'Mostrando ' + matches.length + ' usuarios gestionables · ' + NCLI + ' clientes registrados (solo contador)';
+      if (count) count.textContent = 'Mostrando ' + matches.length + ' usuarios';
       var pager = document.getElementById('users-pagination');
       if (pager) {
         pager.innerHTML = '';
@@ -1038,21 +1042,9 @@
         });
       } catch (e) {}
     SA.tableToCards('usersTable');
-    // Los clientes no se listan: se ocultan las filas demo de clientes de
-    // inmediato (el contador real llega con el backend en load()).
-    try {
-      TB.querySelectorAll('.user-row').forEach(function (row) {
-        if ((row.getAttribute('data-role') || '').toUpperCase() === 'CLIENTE') row.style.display = 'none';
-      });
-    } catch (e) {}
-    // Modal de rol: el SuperAdmin no crea clientes (solo los cuenta).
-    // Se oculta la opción CLIENTE y se agregan PROYECTOS y ELECTRÓNICOS.
+    // Radios de rol del modal: se agregan PROYECTOS y ELECTRÓNICA. La opción
+    // CLIENTE se conserva para dar de alta clientes desde aquí.
     (function () {
-      var cli = document.querySelector('input[name="modalRole"][value="CLIENTE"]');
-      if (cli) {
-        var lab = cli.closest('label');
-        if (lab) lab.style.display = 'none';
-      }
       function addRadio(value, from, toA, toB) {
         if (document.querySelector('input[name="modalRole"][value="' + value + '"]')) return;
         var adm = document.querySelector('input[name="modalRole"][value="ADMINISTRADOR"]');
@@ -1072,7 +1064,7 @@
       try {
         var raw = await SA.users();
         NCLI = raw.filter(function (u) { return String(u.rol || '').toUpperCase() === 'CLIENTE'; }).length;
-        ALL = raw.filter(function (u) { return String(u.rol || '').toUpperCase() !== 'CLIENTE'; });
+        ALL = raw.slice();
       } catch (e) {
         SA.toast('Sin conexión al backend: se muestra el diseño de referencia.', 'Aviso');
         return;
