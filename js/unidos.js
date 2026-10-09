@@ -1926,7 +1926,11 @@
       'html.dark-mode .unZh-belltxt small,html.dark .unZh-belltxt small{color:#94a3b8}' +
       'html.dark-mode .unZh-bellhead,html.dark .unZh-bellhead{background:#0f172a;border-color:#334155}' +
       'html.dark-mode .unZh-bellhead b,html.dark .unZh-bellhead b{color:#f1f5f9}' +
-      '@media(max-width:640px){.unZh-belldrop{width:calc(100vw - 24px);right:-8px}.unZh-bell{width:36px;height:36px}}';
+      '@media(max-width:640px){.unZh-belldrop{width:calc(100vw - 24px);right:-8px}.unZh-bell{width:36px;height:36px}}' +
+      // iOS hace zoom solo al enfocar un input con fuente menor de 16px. Las
+      // clases de Tailwind (text-sm/text-xs) ganan en especificidad al selector
+      // de elemento, por eso va con !important y solo en movil.
+      '@media(max-width:767px){input,select,textarea{font-size:16px!important}}';
     document.head.appendChild(st);
   }
   // Header único para TODAS las zonas y roles (mismo estilo del index nuevo:
@@ -2146,10 +2150,14 @@
         (unread ? '<button type="button" data-leer-todas>Marcar leídas</button>' : '') + '</div>' +
         notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + (n.tipo === 'abandonada' ? ' unZh-bellaviso' : '') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
+        // El link viene del servidor (/api/avisos) y el id se arma con el folio:
+        // si no se escapan, una comilla rompe el atributo y un "javascript:"
+        // ejecuta al hacer clic.
+        var link = /^(https?:|mailto:|tel:|\/|#|\.\/|\.\.\/)/i.test(String(n.link || '')) ? String(n.link) : '#';
+        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + (n.tipo === 'abandonada' ? ' unZh-bellaviso' : '') + '" href="' + esc(link) + '" data-id="' + esc(n.id) + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
           '<span class="unZh-belltime">' + time + '</span>' +
-          '<button type="button" class="unZh-bellx" data-x="' + n.id + '" title="Eliminar" aria-label="Eliminar notificación">×</button></a>';
+          '<button type="button" class="unZh-bellx" data-x="' + esc(n.id) + '" title="Eliminar" aria-label="Eliminar notificación">×</button></a>';
       }).join('');
     }
     function addNoti(n) {
