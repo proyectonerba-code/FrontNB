@@ -280,10 +280,73 @@
     }, 170);
     persist(false);
   }
+  // Confirmación con el estilo del chat (en vez del confirm() nativo del
+  // navegador, que se ve ajeno al diseño).
+  var confirmCb = null;
+  function ensureConfirmModal() {
+    if (document.getElementById('nb-confirm')) return;
+    if (!document.getElementById('nb-confirm-css')) {
+      var st = document.createElement('style');
+      st.id = 'nb-confirm-css';
+      st.textContent =
+        '#nb-confirm{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;background:rgba(11,28,48,.55);padding:16px}' +
+        '#nb-confirm.on{display:flex}' +
+        '#nb-confirm-card{background:#fff;border-radius:16px;max-width:340px;width:100%;padding:24px 20px 20px;text-align:center;position:relative;' +
+        'box-shadow:0 24px 60px -12px rgba(2,6,23,.45);font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;' +
+        'animation:nb-in .22s cubic-bezier(.16,1,.3,1)}' +
+        '#nb-confirm-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;color:#64748b;cursor:pointer;font-size:14px;line-height:1;padding:0}' +
+        '#nb-confirm-x:hover{border-color:#d91b1b;color:#d91b1b}' +
+        '.nb-confirm-ico{width:52px;height:52px;border-radius:50%;background:#fef2f2;color:#d91b1b;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}' +
+        '.nb-confirm-ico svg{width:24px;height:24px;fill:currentColor}' +
+        '#nb-confirm-card h3{font-size:16px;font-weight:800;color:#0b1c30;margin:0 0 8px}' +
+        '#nb-confirm-card p{font-size:13px;color:#475569;line-height:1.6;margin:0 0 18px}' +
+        '.nb-confirm-row{display:flex;gap:8px}' +
+        '.nb-confirm-btn{flex:1;padding:11px 8px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;cursor:pointer}' +
+        '.nb-confirm-go{background:#d91b1b;color:#fff;border:0}' +
+        '.nb-confirm-go:hover{background:#b0000b}' +
+        '.nb-confirm-no{background:#fff;color:#334155;border:1px solid #e2e8f0}' +
+        '.nb-confirm-no:hover{border-color:#d91b1b;color:#d91b1b}';
+      document.head.appendChild(st);
+    }
+    var w = document.createElement('div');
+    w.innerHTML =
+      '<div id="nb-confirm" role="dialog" aria-label="Confirmar nueva conversación">' +
+      '<div id="nb-confirm-card">' +
+      '<button type="button" id="nb-confirm-x" aria-label="Cerrar">✕</button>' +
+      '<div class="nb-confirm-ico">' + ICON_NEW + '</div>' +
+      '<h3>¿Empezar de nuevo?</h3>' +
+      '<p>Se borrará el historial de este chat y empezarás una conversación fresca.</p>' +
+      '<div class="nb-confirm-row">' +
+      '<button type="button" class="nb-confirm-btn nb-confirm-no" id="nb-confirm-no">Cancelar</button>' +
+      '<button type="button" class="nb-confirm-btn nb-confirm-go" id="nb-confirm-go">Empezar de nuevo</button>' +
+      '</div></div></div>';
+    while (w.firstChild) document.body.appendChild(w.firstChild);
+    var modal = document.getElementById('nb-confirm');
+    document.getElementById('nb-confirm-x').addEventListener('click', closeConfirmModal);
+    document.getElementById('nb-confirm-no').addEventListener('click', closeConfirmModal);
+    document.getElementById('nb-confirm-go').addEventListener('click', function () {
+      var cb = confirmCb;
+      closeConfirmModal();
+      if (cb) cb();
+    });
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeConfirmModal(); });
+  }
+  function openConfirmModal(cb) {
+    ensureConfirmModal();
+    confirmCb = cb || null;
+    document.getElementById('nb-confirm').classList.add('on');
+  }
+  function closeConfirmModal() {
+    var m = document.getElementById('nb-confirm');
+    if (m) m.classList.remove('on');
+    confirmCb = null;
+  }
   // Borra la conversación actual en el servidor y empieza de cero. El
   // servidor topa los reinicios por día para que no lo usen en bucle.
   async function nuevaConversacion() {
-    if (!confirm('¿Empezar una conversación nueva? Se borrará el historial de este chat.')) return;
+    openConfirmModal(ejecutarReseteo);
+  }
+  async function ejecutarReseteo() {
     typing(true);
     try {
       var r = await UN.api('/api/chatbot/reset', {
@@ -309,7 +372,10 @@
   panel.querySelector('#nb-min').addEventListener('click', closeAll);
   panel.querySelector('#nb-close').addEventListener('click', closeAll);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !panel.classList.contains('nb-hidden')) closeAll();
+    if (e.key !== 'Escape') return;
+    var cm = document.getElementById('nb-confirm');
+    if (cm && cm.classList.contains('on')) { closeConfirmModal(); return; }
+    if (!panel.classList.contains('nb-hidden')) closeAll();
   });
   fab.addEventListener('click', openFull);
 
