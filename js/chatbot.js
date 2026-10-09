@@ -151,9 +151,13 @@
     body.scrollTop = body.scrollHeight;
   }
 
+  // Candado de doble envío: sin esto, doble-clic o Enter repetido mandaba el
+  // mismo mensaje varias veces (cada uno gastaba IA o devolvía un 429 ruidoso).
+  var enviando = false;
   async function sendMessage(message) {
     var text = String(message || '').trim();
-    if (!text) return;
+    if (!text || enviando) return;
+    enviando = true;
     addMsg('user', text);
     typing(true);
     try {
@@ -166,6 +170,7 @@
         try { localStorage.setItem(sessionKey, sessionId); } catch (e) {}
       }
       typing(false);
+      enviando = false;
       addMsg('bot', result.reply || 'No pude generar una respuesta en este momento.', {
         messageId: result.message_id,
         whatsapp: result.whatsapp
@@ -173,6 +178,7 @@
       renderSuggestions(result.suggestions);
     } catch (e) {
       typing(false);
+      enviando = false;
       addMsg('bot', e && e.status === 401
         ? 'Tu sesión ya no está activa. Inicia sesión nuevamente para continuar.'
         : e && e.status === 403
@@ -184,8 +190,11 @@
   }
 
   function renderSuggestions(items) {
+    // Sin sugerencias de la IA se restauran los atajos por defecto: antes el
+    // reseteo los borraba para siempre hasta recargar la página.
+    var lista = (Array.isArray(items) && items.length ? items : QUICK).slice(0, 4);
     quick.innerHTML = '';
-    (Array.isArray(items) ? items : []).slice(0, 4).forEach(function (label) {
+    lista.forEach(function (label) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
@@ -324,10 +333,20 @@
     var modal = document.getElementById('nb-confirm');
     document.getElementById('nb-confirm-x').addEventListener('click', closeConfirmModal);
     document.getElementById('nb-confirm-no').addEventListener('click', closeConfirmModal);
+    // Candado: doble-clic en "Empezar" mandaba dos resets (quemaba 2 de los 10
+    // reinicios diarios y el segundo borraba la sesión fresca).
+    var reseteando = false;
     document.getElementById('nb-confirm-go').addEventListener('click', function () {
+      if (reseteando) return;
       var cb = confirmCb;
       closeConfirmModal();
-      if (cb) cb();
+      if (!cb) return;
+      reseteando = true;
+      try {
+        var r = cb();
+        if (r && r.then) r.then(function () { reseteando = false; }, function () { reseteando = false; });
+        else reseteando = false;
+      } catch (e) { reseteando = false; }
     });
     modal.addEventListener('click', function (e) { if (e.target === modal) closeConfirmModal(); });
   }
