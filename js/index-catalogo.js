@@ -311,7 +311,15 @@
       });
       putImage(el, label, image);
       var h3 = el.querySelector('h3');
-      if (h3) h3.textContent = label;
+      if (h3) {
+        h3.textContent = label;
+        // Títulos largos ("Videograbadoras Móviles") empujaban la flecha fuera
+        // de la tarjeta y el overflow-hidden la recortaba. Con min-w-0 el texto
+        // se queda en su carril y break-words parte palabras larguísimas.
+        if (h3.classList) h3.classList.add('break-words');
+        var tbox = h3.parentNode;
+        if (tbox && tbox.classList) { tbox.classList.add('min-w-0'); tbox.classList.add('flex-1'); }
+      }
       var p = el.querySelector('p');
       if (p) p.textContent = sub;
       var ar = el.querySelector('.category-arrow span');
