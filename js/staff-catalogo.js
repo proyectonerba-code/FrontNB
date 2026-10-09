@@ -71,10 +71,13 @@
       bar.className = 'un-staffbar';
       bar.id = 'un-staffbar';
       bar.innerHTML = '<button type="button" class="un-btn-ghost" id="un-mgmt"><span class="material-symbols-outlined" style="font-size:18px">sell</span><span>Marcas</span></button>' +
+        (rol === 'ADMIN' || rol === 'SUPERADMIN' ? '<button type="button" class="un-btn-ghost" id="un-aviso" style="margin-right:8px"><span class="material-symbols-outlined" style="font-size:18px">campaign</span><span>Aviso</span></button>' : '') +
         '<button type="button" class="un-btn-red" id="un-add"><span class="material-symbols-outlined" style="font-size:18px">add_circle</span><span>Agregar publicación</span></button>';
       pills.parentNode.insertBefore(bar, pills);
       document.getElementById('un-add').addEventListener('click', function () { UNP.openCreate(); });
       document.getElementById('un-mgmt').addEventListener('click', function () { UNP.openManage(); });
+      var ba = document.getElementById('un-aviso');
+      if (ba && window.AVISOS) ba.addEventListener('click', function () { window.AVISOS.abrirCrear(); });
     }
   } catch (e) {}
   function wireCards() {

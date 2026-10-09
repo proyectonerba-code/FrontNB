@@ -2081,15 +2081,14 @@
       }
       belldrop.innerHTML = notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '">' +
+        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
           '<span class="unZh-belltime">' + time + '</span></a>';
       }).join('');
     }
     function addNoti(n) {
       var key = n.tipo + '|' + n.ref;
-      var yaVista = !!seen[key];
-      n.leida = yaVista;
+      if (typeof n.leida !== 'boolean') n.leida = !!seen[key];
       n.key = key;
       var existe = null;
       for (var i = 0; i < notis.length; i++) { if (notis[i].key === key) { existe = i; break; } }
@@ -2146,6 +2145,18 @@
             }
           }
         });
+        try {
+          if (window.AVISOS && window.AVISOS.para) {
+            window.AVISOS.para(u).forEach(function (a) {
+              addNoti({
+                id: 'aviso-' + a.id, tipo: 'aviso', ref: a.id,
+                titulo: 'Aviso: ' + (a.titulo || ''), mensaje: a.texto || '',
+                fecha: a.fecha || new Date().toISOString(), link: '#',
+                leida: !!a.leida, avisoId: a.id
+              });
+            });
+          }
+        } catch (eAv) {}
       } catch (e) {
         fallo = true;
         renderNotis();
@@ -2165,6 +2176,15 @@
     belldrop.addEventListener('click', function (e) {
       var item = e.target.closest('.unZh-bellitem');
       if (!item) return;
+      if (item.hasAttribute('data-aviso')) {
+        e.preventDefault();
+        e.stopPropagation();
+        var aid = item.getAttribute('data-aviso');
+        notis.forEach(function (n) { if (n.avisoId === aid) marcarLeida(n.key); });
+        try { if (window.AVISOS && window.AVISOS.abrirVer) window.AVISOS.abrirVer(aid); } catch (e2) {}
+        belldrop.classList.add('hidden');
+        return;
+      }
       var id = item.getAttribute('data-id');
       notis.forEach(function (n) {
         if (n.id === id) marcarLeida(n.key);
