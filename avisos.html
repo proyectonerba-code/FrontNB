@@ -1,0 +1,300 @@
+<!DOCTYPE html><html class="h-full" lang="es"><head>
+<script src="/js/tema-oscuro.js?v=3.8"></script>
+<link rel="stylesheet" href="/css/tema-oscuro-razor.css?v=3.0" data-razor-dark="1">
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Avisos · GRUPO NERBA HIDALGO</title><link rel="icon" type="image/png" href="/assets/logo.png">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fff1f1',
+              100: '#ffe1e1',
+              500: '#ef2323',
+              600: '#d91b1b',
+              700: '#b91313',
+              900: '#750b0b',
+            },
+          }
+        }
+      }
+    }
+</script>
+<style>
+  body { background-color: #f8f9ff; color: #1e293b; font-feature-settings: "cv02", "cv03", "cv04", "cv11"; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 2px rgba(2,6,23,.05); }
+  .lbl { display: block; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+  .inp { width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 14px; color: #0f172a; background: #fff; }
+  .inp:focus { outline: none; border-color: #d91b1b; box-shadow: 0 0 0 3px rgba(217,27,27,.12); }
+  .dest-opt { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; cursor: pointer; }
+  .dest-opt input { margin-top: 3px; accent-color: #d91b1b; }
+  .role-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #e2e8f0; border-radius: 9999px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #334155; cursor: pointer; }
+  .role-chip input { accent-color: #d91b1b; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 800; border-radius: 9999px; padding: 2px 10px; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased text-slate-800">
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm"></header>
+
+<main class="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-black tracking-tight text-slate-900 uppercase">Avisos a usuarios</h1>
+    <p class="text-sm text-slate-500 mt-1 max-w-2xl">Publica avisos que aparecen en la campana de notificaciones. Viven en el servidor, así que llegan a cualquier computadora o celular, no solo a este navegador.</p>
+  </div>
+
+  <section class="card p-5 sm:p-6 mb-6">
+    <h2 id="form-titulo" class="text-sm font-black uppercase tracking-wide text-slate-900 mb-4">Nuevo aviso</h2>
+    <form id="form-aviso" class="space-y-4">
+      <div>
+        <label class="lbl" for="f-titulo">Título *</label>
+        <input class="inp" id="f-titulo" maxlength="120" placeholder="Ej. Mantenimiento programado este sábado" required>
+      </div>
+      <div>
+        <label class="lbl" for="f-mensaje">Mensaje * <span id="c-mensaje" class="normal-case font-semibold text-slate-400">0/500</span></label>
+        <textarea class="inp" id="f-mensaje" rows="3" maxlength="500" placeholder="Ej. El portal estará en mantenimiento de 8:00 a 12:00. Tus cotizaciones están a salvo." required></textarea>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="lbl" for="f-link">Enlace al tocar (opcional)</label>
+          <input class="inp" id="f-link" maxlength="200" placeholder="/cotizador.html">
+          <p class="text-[11px] text-slate-400 mt-1">Solo rutas internas, p. ej. /cotizador.html o /mis-cotizaciones.html</p>
+        </div>
+        <div>
+          <label class="lbl" for="f-expira">Se oculta después del (opcional)</label>
+          <input class="inp" id="f-expira" type="date">
+        </div>
+      </div>
+      <div>
+        <span class="lbl">¿A quién le llega? *</span>
+        <div class="grid sm:grid-cols-3 gap-2 mb-3">
+          <label class="dest-opt"><input type="radio" name="dest-tipo" value="todos" checked><span class="text-sm"><b>Todos</b><br><span class="text-slate-500 text-xs">Cada cuenta con sesión</span></span></label>
+          <label class="dest-opt"><input type="radio" name="dest-tipo" value="roles"><span class="text-sm"><b>Por rol</b><br><span class="text-slate-500 text-xs">Elige uno o varios roles</span></span></label>
+          <label class="dest-opt"><input type="radio" name="dest-tipo" value="emails"><span class="text-sm"><b>Correos</b><br><span class="text-slate-500 text-xs">Cuentas específicas</span></span></label>
+        </div>
+        <div id="box-roles" class="hidden flex-wrap gap-2">
+          <label class="role-chip"><input type="checkbox" value="CLIENTE" checked> Clientes</label>
+          <label class="role-chip"><input type="checkbox" value="ADMIN"> Administradores</label>
+          <label class="role-chip"><input type="checkbox" value="SUPERADMIN"> Super Admin</label>
+          <label class="role-chip"><input type="checkbox" value="PROYECTOS_ESPECIALES"> Proyectos Especiales</label>
+          <label class="role-chip"><input type="checkbox" value="PRODUCTOS_ELECTRONICOS"> Electrónica</label>
+        </div>
+        <div id="box-emails" class="hidden">
+          <textarea class="inp" id="f-emails" rows="2" placeholder="cliente1@correo.com, cliente2@correo.com (separados por coma o salto de línea)"></textarea>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 pt-1">
+        <button type="submit" id="btn-guardar" class="px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold transition-colors">Publicar aviso</button>
+        <button type="button" id="btn-cancelar" class="hidden px-5 py-2.5 rounded-lg border border-slate-300 text-slate-600 text-sm font-bold hover:bg-slate-50">Cancelar edición</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card p-5 sm:p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-black uppercase tracking-wide text-slate-900">Publicados</h2>
+      <button id="btn-recargar" type="button" class="text-xs font-bold text-brand-600 hover:text-brand-700">Recargar</button>
+    </div>
+    <div id="lista" class="space-y-3">
+      <p class="text-sm text-slate-400">Cargando…</p>
+    </div>
+  </section>
+</main>
+
+<script src="/js/api-config.js?v=1.0"></script><script src="/js/unidos.js?v=6.6"></script>
+<script>
+(function () {
+  var ROLES_OK = ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'];
+  function guard() {
+    if (!localStorage.getItem('unidos_token')) { location.href = '/login.html?next=' + encodeURIComponent('/avisos.html'); return false; }
+    var u = null;
+    try { u = window.UN && UN.getUser ? UN.getUser() : JSON.parse(localStorage.getItem('unidos_user') || 'null'); } catch (e) {}
+    if (!u || ROLES_OK.indexOf(String(u.rol || '').toUpperCase()) === -1) { location.href = '/index.html'; return false; }
+    return true;
+  }
+  if (!guard()) return;
+  try { if (window.UN && UN.ensureMenuRol) UN.ensureMenuRol(); } catch (e) {}
+  (function(){var n=0;var t=setInterval(function(){if(window.UN&&UN.ensureMenuRol){try{UN.ensureMenuRol();}catch(e){}}if(++n>=10||document.querySelector('header.unZh'))clearInterval(t);},200);})();
+
+  var editId = null;
+  var form = document.getElementById('form-aviso');
+  var lista = document.getElementById('lista');
+  var btnGuardar = document.getElementById('btn-guardar');
+  var btnCancelar = document.getElementById('btn-cancelar');
+  var formTitulo = document.getElementById('form-titulo');
+  var msg = document.getElementById('f-mensaje');
+  var msgCount = document.getElementById('c-mensaje');
+  msg.addEventListener('input', function () { msgCount.textContent = msg.value.length + '/500'; });
+
+  function tipoSel() {
+    var r = document.querySelector('input[name="dest-tipo"]:checked');
+    return r ? r.value : 'todos';
+  }
+  function pintaDestino() {
+    var t = tipoSel();
+    document.getElementById('box-roles').classList.toggle('hidden', t !== 'roles');
+    document.getElementById('box-roles').classList.toggle('flex', t === 'roles');
+    document.getElementById('box-emails').classList.toggle('hidden', t !== 'emails');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="dest-tipo"]'), function (r) {
+    r.addEventListener('change', pintaDestino);
+  });
+  pintaDestino();
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function destinoTxt(a) {
+    var d = a.destino || { tipo: 'todos' };
+    if (!d || d.tipo === 'todos') return 'Todos';
+    if (d.tipo === 'roles') return 'Roles: ' + (d.roles || []).join(', ');
+    if (d.tipo === 'emails') {
+      var n = (d.emails || []).length;
+      return n + (n === 1 ? ' correo' : ' correos') + ': ' + (d.emails || []).slice(0, 3).join(', ') + (n > 3 ? '…' : '');
+    }
+    return 'Todos';
+  }
+  function estadoPill(a) {
+    var ahora = new Date().toISOString();
+    if (a.activa === false) return '<span class="pill bg-slate-100 text-slate-500">Desactivado</span>';
+    if (a.expira && String(a.expira) < ahora) return '<span class="pill bg-amber-100 text-amber-700">Vencido</span>';
+    return '<span class="pill bg-emerald-100 text-emerald-700">Visible</span>';
+  }
+
+  async function cargar() {
+    lista.innerHTML = '<p class="text-sm text-slate-400">Cargando…</p>';
+    try {
+      var data = await UN.api('/api/avisos');
+      var arr = Array.isArray(data) ? data : [];
+      if (!arr.length) { lista.innerHTML = '<p class="text-sm text-slate-400">Aún no hay avisos. Publica el primero arriba.</p>'; return; }
+      lista.innerHTML = arr.map(function (a) {
+        var f = '';
+        try { f = a.creada ? new Date(a.creada).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''; } catch (e) {}
+        return '<div class="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">' +
+          '<div class="min-w-0 flex-1">' +
+            '<div class="flex flex-wrap items-center gap-2 mb-1"><b class="text-sm text-slate-900">' + esc(a.titulo) + '</b>' + estadoPill(a) + '</div>' +
+            '<p class="text-sm text-slate-600">' + esc(a.mensaje) + '</p>' +
+            '<p class="text-[11px] text-slate-400 mt-1">Para: ' + esc(destinoTxt(a)) + ' · ' + esc((a.creadaPor && a.creadaPor.nombre) || '') + ' · ' + esc(f) +
+            (a.expira ? ' · se oculta: ' + esc(String(a.expira).slice(0, 10)) : '') + '</p>' +
+          '</div>' +
+          '<div class="flex sm:flex-col gap-2 shrink-0">' +
+            '<button type="button" data-editar="' + esc(a.id) + '" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">Editar</button>' +
+            '<button type="button" data-activa="' + esc(a.id) + '" data-v="' + (a.activa === false ? '1' : '0') + '" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-600 hover:bg-slate-50">' + (a.activa === false ? 'Activar' : 'Ocultar') + '</button>' +
+            '<button type="button" data-borrar="' + esc(a.id) + '" class="px-3 py-1.5 rounded-lg border border-red-200 text-xs font-bold text-brand-600 hover:bg-red-50">Borrar</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      lista.innerHTML = '<p class="text-sm text-red-600">No se pudo cargar: ' + esc(e.message || e) + '</p>';
+    }
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var payload = {
+      titulo: document.getElementById('f-titulo').value.trim(),
+      mensaje: msg.value.trim(),
+      link: document.getElementById('f-link').value.trim(),
+      expira: document.getElementById('f-expira').value || undefined,
+      destino: { tipo: tipoSel() },
+    };
+    if (payload.destino.tipo === 'roles') {
+      payload.destino.roles = Array.prototype.map.call(
+        document.querySelectorAll('#box-roles input[type="checkbox"]:checked'), function (c) { return c.value; });
+    }
+    if (payload.destino.tipo === 'emails') {
+      payload.destino.emails = document.getElementById('f-emails').value;
+    }
+    btnGuardar.disabled = true;
+    try {
+      if (editId) await UN.api('/api/avisos/' + encodeURIComponent(editId), { method: 'PUT', body: payload });
+      else await UN.api('/api/avisos', { method: 'POST', body: payload });
+      aviso(editId ? 'Aviso actualizado.' : 'Aviso publicado. Llegará a la campana en unos segundos.');
+      salirEdicion();
+      form.reset();
+      document.querySelector('input[name="dest-tipo"][value="todos"]').checked = true;
+      pintaDestino();
+      msgCount.textContent = '0/500';
+      cargar();
+    } catch (err) {
+      aviso((err && err.message) || 'No se pudo guardar.');
+    }
+    btnGuardar.disabled = false;
+  });
+
+  function salirEdicion() {
+    editId = null;
+    formTitulo.textContent = 'Nuevo aviso';
+    btnGuardar.textContent = 'Publicar aviso';
+    btnCancelar.classList.add('hidden');
+  }
+  btnCancelar.addEventListener('click', function () {
+    salirEdicion();
+    form.reset();
+    document.querySelector('input[name="dest-tipo"][value="todos"]').checked = true;
+    pintaDestino();
+    msgCount.textContent = '0/500';
+  });
+
+  lista.addEventListener('click', async function (e) {
+    var bEdit = e.target.closest('[data-editar]');
+    var bAct = e.target.closest('[data-activa]');
+    var bDel = e.target.closest('[data-borrar]');
+    try {
+      if (bEdit) {
+        var data = await UN.api('/api/avisos');
+        var arr = Array.isArray(data) ? data : [];
+        var a = null;
+        for (var i = 0; i < arr.length; i++) if (arr[i].id === bEdit.getAttribute('data-editar')) a = arr[i];
+        if (!a) return;
+        editId = a.id;
+        document.getElementById('f-titulo').value = a.titulo || '';
+        msg.value = a.mensaje || '';
+        msgCount.textContent = msg.value.length + '/500';
+        document.getElementById('f-link').value = a.link === '#' ? '' : (a.link || '');
+        document.getElementById('f-expira').value = a.expira ? String(a.expira).slice(0, 10) : '';
+        var t = (a.destino && a.destino.tipo) || 'todos';
+        document.querySelector('input[name="dest-tipo"][value="' + t + '"]').checked = true;
+        pintaDestino();
+        if (t === 'roles') {
+          var rs = (a.destino.roles || []).map(String);
+          Array.prototype.forEach.call(document.querySelectorAll('#box-roles input[type="checkbox"]'), function (c) {
+            c.checked = rs.indexOf(c.value) !== -1;
+          });
+        }
+        if (t === 'emails') document.getElementById('f-emails').value = (a.destino.emails || []).join(', ');
+        formTitulo.textContent = 'Editar aviso';
+        btnGuardar.textContent = 'Guardar cambios';
+        btnCancelar.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (bAct) {
+        await UN.api('/api/avisos/' + encodeURIComponent(bAct.getAttribute('data-activa')), {
+          method: 'PUT', body: { activa: bAct.getAttribute('data-v') === '1' },
+        });
+        cargar();
+      } else if (bDel) {
+        if (!confirm('¿Borrar este aviso? Desaparecerá de todas las campanas.')) return;
+        await UN.api('/api/avisos/' + encodeURIComponent(bDel.getAttribute('data-borrar')), { method: 'DELETE' });
+        aviso('Aviso borrado.');
+        cargar();
+      }
+    } catch (err) {
+      aviso((err && err.message) || 'No se pudo completar la acción.');
+    }
+  });
+
+  document.getElementById('btn-recargar').addEventListener('click', cargar);
+  cargar();
+})();
+</script>
+
+<script src="/js/avisos.js?v=1.3"></script>
+</body></html>

@@ -1978,20 +1978,24 @@
       nav = zhNavLink('/admin/cotizaciones.html', ZH_DOC, 'Cotizaciones Recibidas')
         + zhNavLink('/admin/historial.html', ZH_CLOCK, 'Historial general')
         + zhNavLink('/admin/catalogo.html', ZH_GRID, 'Catálogo')
-        + zhNavLink('/admin/mantenimiento.html', ZH_GEAR, 'Mantenimientos');
+        + zhNavLink('/admin/mantenimiento.html', ZH_GEAR, 'Mantenimientos')
+        + zhNavLink('/avisos.html', ZH_BELL, 'Avisos');
     } else if (zone === 'electronica') {
       nav = zhNavLink('/electronica/cotizaciones.html', ZH_DOC, 'Cotizaciones Recibidas')
         + zhNavLink('/electronica/catalogo.html', ZH_GRID, 'Catálogo')
-        + zhNavLink('/electronica/historial.html', ZH_CLOCK, 'Historial');
+        + zhNavLink('/electronica/historial.html', ZH_CLOCK, 'Historial')
+        + zhNavLink('/avisos.html', ZH_BELL, 'Avisos');
     } else if (zone === 'superadmin') {
       nav = zhNavLink('/superadmin/cotizaciones.html', ZH_DOC, 'Cotizaciones Recibidas')
         + zhNavLink('/superadmin/catalogo.html', ZH_GRID, 'Catálogo')
         + zhNavLink('/superadmin/usuarios.html', ZH_USERS, 'Usuarios')
-        + zhNavLink('/superadmin/bitacora.html', ZH_CLIP, 'Bitácora');
+        + zhNavLink('/superadmin/bitacora.html', ZH_CLIP, 'Bitácora')
+        + zhNavLink('/avisos.html', ZH_BELL, 'Avisos');
     } else if (zone === 'especiales') {
       nav = zhNavLink('/especiales/gestion.html', ZH_LAYERS, 'Proyectos Especiales')
         + zhNavLink('/especiales/solicitudes.html', ZH_INBOX, 'Proyectos Recibidos')
-        + zhNavLink('/especiales/historial.html', ZH_CLOCK, 'Historial');
+        + zhNavLink('/especiales/historial.html', ZH_CLOCK, 'Historial')
+        + zhNavLink('/avisos.html', ZH_BELL, 'Avisos');
     }
     var right = '';
     if (zone === 'out') {
@@ -2060,7 +2064,13 @@
     if (!bell || !belldrop) return;
     // Clave NUEVA: las versiones viejas guardaban "visto" con otro formato y
     // marcaban todo como leido, por eso no salia nada. Se empieza de cero.
+    // Además es POR USUARIO: en una PC compartida lo que vio una cuenta no se
+    // lo esconde a la siguiente.
     var SEEN_KEY = 'nerba_notis_vistas_v1';
+    try {
+      var ku0 = getUser() || {};
+      if (ku0.email) SEEN_KEY += '::' + String(ku0.email).toLowerCase();
+    } catch (e0) {}
     var notis = [];
     var seen = {};
     var fallo = false;
@@ -2162,6 +2172,26 @@
         renderNotis();
       }
     }
+    // Avisos personalizados del staff: viven en el servidor (/api/avisos), así
+    // que llegan a cualquier PC o celular. Se mezclan con las de cotizaciones.
+    // Se cachean para que la ventanita (AVISOS.abrirVer) los abra sin pedirlos
+    // de nuevo; el clic de la campana los abre por avisoId.
+    async function pollAvisos() {
+      try {
+        var data = await api('/api/avisos');
+        var list = Array.isArray(data) ? data : (data.avisos || data.items || []);
+        var ahora = new Date().toISOString();
+        try { window.__avisosSrv = list; } catch (eCache) {}
+        list.forEach(function (a) {
+          if (!a || !a.id) return;
+          // En la campana solo vigentes: los vencidos o desactivados se
+          // gestionan en /avisos.html, aquí no estorban.
+          if (a.activa === false) return;
+          if (a.expira && String(a.expira) < ahora) return;
+          addNoti({ id: 'aviso-' + a.id, tipo: 'aviso', ref: String(a.id), titulo: a.titulo || 'Aviso', mensaje: a.mensaje || a.texto || '', fecha: a.creada || a.fecha || ahora, link: a.link || '#', leida: false, avisoId: String(a.id) });
+        });
+      } catch (e) {}
+    }
     bell.addEventListener('click', function (e) {
       e.stopPropagation();
       belldrop.classList.toggle('hidden');
@@ -2191,7 +2221,8 @@
       });
     });
     pollQuotes();
-    pollTimer = setInterval(pollQuotes, 30000);
+    pollAvisos();
+    pollTimer = setInterval(function () { pollQuotes(); pollAvisos(); }, 30000);
     header._zhBellCleanup = function () { if (pollTimer) clearInterval(pollTimer); };
   }
   function zhActive(header) {
@@ -2271,23 +2302,23 @@
       L = [
         ['Cotizaciones', '/superadmin/cotizaciones.html'], ['Catálogo', '/superadmin/catalogo.html'],
         ['Usuarios', '/superadmin/usuarios.html'], ['Bitácora', '/superadmin/bitacora.html'],
-        ['Mi Perfil', '/superadmin/perfil.html'],
+        ['Avisos', '/avisos.html'], ['Mi Perfil', '/superadmin/perfil.html'],
       ];
     } else if (isStaffR()) {
       L = [
         ['Catálogo', '/admin/catalogo.html'], ['Cotizaciones', '/admin/cotizaciones.html'],
-        ['Mantenimientos', '/admin/mantenimiento.html'], ['Mi Perfil', '/admin/perfil.html'],
+        ['Mantenimientos', '/admin/mantenimiento.html'], ['Avisos', '/avisos.html'], ['Mi Perfil', '/admin/perfil.html'],
       ];
       if (rol === 'ADMIN') L.splice(2, 0, ['Historial general', '/admin/historial.html']);
     } else if (rol === 'PROYECTOS_ESPECIALES') {
       L = [
         ['Solicitudes', '/especiales/solicitudes.html'], ['Gestión', '/especiales/gestion.html'],
-        ['Historial', '/especiales/historial.html'], ['Mi Perfil', '/especiales/perfil.html'],
+        ['Historial', '/especiales/historial.html'], ['Avisos', '/avisos.html'], ['Mi Perfil', '/especiales/perfil.html'],
       ];
     } else if (rol === 'PRODUCTOS_ELECTRONICOS') {
       L = [
         ['Cotizaciones', '/electronica/cotizaciones.html'], ['Catálogo', '/electronica/catalogo.html'],
-        ['Historial', '/electronica/historial.html'], ['Mi Perfil', '/electronica/perfil.html'],
+        ['Historial', '/electronica/historial.html'], ['Avisos', '/avisos.html'], ['Mi Perfil', '/electronica/perfil.html'],
       ];
     } else {
       L = [

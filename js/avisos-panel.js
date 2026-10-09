@@ -31,6 +31,20 @@
     for (var i = 0; i < ROLES.length; i++) { if (ROLES[i][0] === v) return ROLES[i][1]; }
     return v;
   }
+  function etiquetaDestinoServidor(a) {
+    var d = (a && a.destino) || { tipo: 'todos' };
+    if (!d || d.tipo === 'todos') return 'Todos los usuarios';
+    if (d.tipo === 'roles') return 'Roles: ' + ((d.roles || []).join(', ') || '—');
+    if (d.tipo === 'emails') return 'Correos: ' + ((d.emails || []).slice(0, 3).join(', ') || '—') + (((d.emails || []).length > 3) ? '…' : '');
+    return 'Todos los usuarios';
+  }
+  // "Dirigido a" del modal -> destino del servidor.
+  function destinoParaServidor(para) {
+    var p = String(para || 'TODOS').toUpperCase();
+    if (p === 'TODOS') return { tipo: 'todos' };
+    if (p === 'STAFF') return { tipo: 'roles', roles: ['ADMIN', 'SUPERADMIN', 'PRODUCTOS_ELECTRONICOS', 'PROYECTOS_ESPECIALES'] };
+    return { tipo: 'roles', roles: [p] };
+  }
   function coincide(a, u) {
     var r = String(u && u.rol ? u.rol : '').toUpperCase();
     if (a.para === 'TODOS') return true;
@@ -176,44 +190,73 @@
       var para = document.getElementById('unAv-para').value;
       if (!tit) { try { aviso('Escribe un titulo para el aviso.', 'error'); } catch (e) {} return; }
       if (!txt) { try { aviso('Escribe el contenido del aviso.', 'error'); } catch (e) {} return; }
-      var a = {
-        id: nuevoId(), titulo: tit, texto: txt, img: imgActual, para: para,
-        por: String((UN.getUser() || {}).nombre || ''), fecha: ahoraISO(), leidoPor: []
-      };
-      var l = leer();
-      l.unshift(a);
-      if (l.length > 60) l = l.slice(0, 60);
-      guardar(l);
-      UN.api('/api/avisos', { method: 'POST', body: { aviso: a } }).catch(function () {});
-      document.getElementById('unAv-tit').value = '';
-      document.getElementById('unAv-txt').value = '';
-      imgActual = '';
-      file.value = '';
-      prev.removeAttribute('src');
-      prev.style.display = 'none';
-      rm.style.display = 'none';
-      pintarLista();
-      try { aviso('Aviso publicado.', 'ok'); } catch (e) {}
-      try { if (UN.checkCatalog) UN.checkCatalog(); } catch (e) {}
+      // El aviso vive en el SERVIDOR para que llegue a cualquier PC o celular.
+      // Antes se guardaba solo en localStorage de este navegador y nadie más
+      // lo veía: ese era el fallo.
+      var btn = document.getElementById('unAv-enviar');
+      if (btn) btn.disabled = true;
+      UN.api('/api/avisos', {
+        method: 'POST',
+        body: {
+          titulo: tit, mensaje: txt, imagen: imgActual || undefined,
+          link: '#', destino: destinoParaServidor(para),
+        },
+      }).then(function () {
+        document.getElementById('unAv-tit').value = '';
+        document.getElementById('unAv-txt').value = '';
+        imgActual = '';
+        file.value = '';
+        prev.removeAttribute('src');
+        prev.style.display = 'none';
+        rm.style.display = 'none';
+        pintarLista();
+        try { aviso('Aviso publicado. Llegará a la campana en unos segundos.', 'ok'); } catch (e) {}
+        try { if (UN.checkCatalog) UN.checkCatalog(); } catch (e2) {}
+      }).catch(function (err) {
+        try { aviso('No se pudo publicar: ' + ((err && err.message) || 'error de red'), 'error'); } catch (e) {}
+      }).then(function () {
+        if (btn) btn.disabled = false;
+      });
     }
+    // La lista del modal sale del servidor (lo que YO publiqué); si el
+    // servidor no responde, se muestra el historial local anterior.
     function pintarLista() {
       var box = document.getElementById('unAv-lista');
       if (!box) return;
-      var l = leer();
-      if (!l.length) { box.innerHTML = '<div class="unAv-vacio">Todavia no has creado avisos.</div>'; return; }
-      box.innerHTML = l.map(function (a) {
-        var f = '';
-        try { f = new Date(a.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
-        return '<div class="unAv-item">' + (a.img ? '<img src="' + esc(a.img) + '" alt="">' : '') +
-          '<div><b>' + esc(a.titulo) + '</b><small>' + esc(etiquetaRol(a.para)) + ' &middot; ' + esc(f) + '</small></div>' +
-          '<button type="button" class="unAv-ghost" data-borrar="' + esc(a.id) + '">Borrar</button></div>';
-      }).join('');
-      Array.prototype.slice.call(box.querySelectorAll('[data-borrar]')).forEach(function (b) {
-        b.addEventListener('click', function () {
-          var id = b.getAttribute('data-borrar');
-          guardar(leer().filter(function (x) { return x.id !== id; }));
-          pintarLista();
+      var yo = yoEmail();
+      function pinta(arr, titulo) {
+        if (!arr.length) { box.innerHTML = '<div class="unAv-vacio">Todavia no has creado avisos.</div>'; return; }
+        box.innerHTML = (titulo ? '<div class="unAv-vacio">' + esc(titulo) + '</div>' : '') + arr.map(function (a) {
+          var f = '';
+          try { f = new Date(a.fecha || a.creada).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) {}
+          var img = a.img || a.imagen;
+          var dest = a.destino ? etiquetaDestinoServidor(a) : etiquetaRol(a.para);
+          return '<div class="unAv-item">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') +
+            '<div><b>' + esc(a.titulo) + '</b><small>' + esc(dest) + ' &middot; ' + esc(f) + '</small></div>' +
+            '<button type="button" class="unAv-ghost" data-borrar="' + esc(a.id) + '">Borrar</button></div>';
+        }).join('');
+        Array.prototype.slice.call(box.querySelectorAll('[data-borrar]')).forEach(function (b) {
+          b.addEventListener('click', function () {
+            var id = b.getAttribute('data-borrar');
+            UN.api('/api/avisos/' + encodeURIComponent(id), { method: 'DELETE' }).then(function () {
+              pintarLista();
+            }).catch(function () {
+              // No estaba en el servidor (aviso viejo solo-local): se quita local.
+              guardar(leer().filter(function (x) { return x.id !== id; }));
+              pintarLista();
+            });
+          });
         });
+      }
+      UN.api('/api/avisos').then(function (data) {
+        var arr = Array.isArray(data) ? data : [];
+        var mios = arr.filter(function (a) {
+          var em = a.creadaPor && a.creadaPor.email;
+          return em && yo && String(em).toLowerCase() === yo;
+        });
+        pinta(mios);
+      }).catch(function () {
+        pinta(leer());
       });
     }
   }
@@ -226,10 +269,28 @@
     var a = null;
     var l = leer();
     for (var i = 0; i < l.length; i++) { if (l[i].id === id) { a = l[i]; break; } }
+    // Si no está en local, viene del servidor (campana en otra PC): se busca
+    // en el caché del último polling y se adapta a la ventanita.
+    if (!a) {
+      try {
+        var srv = window.__avisosSrv || [];
+        for (var j = 0; j < srv.length; j++) {
+          if (String(srv[j].id) === String(id)) {
+            var s = srv[j];
+            a = {
+              id: s.id, titulo: s.titulo, texto: s.mensaje || s.texto,
+              img: s.imagen || s.img, fecha: s.creada || s.fecha,
+              para: null, destino: s.destino, remoto: true,
+            };
+            break;
+          }
+        }
+      } catch (eSrv) {}
+    }
     if (!a) return;
     montar();
     document.getElementById('unAv-ver-tit').textContent = a.titulo || 'Aviso';
-    var meta = etiquetaRol(a.para);
+    var meta = a.destino ? etiquetaDestinoServidor(a) : etiquetaRol(a.para);
     var f = '';
     try { f = new Date(a.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) {}
     document.getElementById('unAv-ver-meta').textContent = (meta + (f ? ' · ' + f : ''));
@@ -259,10 +320,10 @@
     },
     marcarLeido: function (id) { abrirVer(id); }
   };
+  // Sin sincronización destructiva: la lista local es el historial del modal y
+  // la campana lee del servidor vía pollAvisos (unidos.js). Sobrescribir local
+  // con lo del servidor corrompía ambos formatos.
   try {
-    UN.api('/api/avisos').then(function (data) {
-      var l = Array.isArray(data) ? data : (data && (data.avisos || data.items)) || [];
-      if (l && l.length) { guardar(l); }
-    }).catch(function () {});
+    if (window.UN && UN.ensureMenuRol) { /* el header lo pinta unidos.js */ }
   } catch (e) {}
 })();
