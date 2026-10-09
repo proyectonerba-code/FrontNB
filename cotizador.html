@@ -477,7 +477,7 @@
 </main>
 <!-- MODAL: CARRUSEL DE GUÍAS TÉCNICAS ILUSTRADAS -->
 <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-sm hidden" id="guiaModal">
-<div class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[95vh] animate-in fade-in zoom-in duration-200">
+<div class="bg-white w-full max-w-7xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[95vh] animate-in fade-in zoom-in duration-200">
 <!-- BARRA SUPERIOR -->
 <div class="bg-slate-900 px-5 sm:px-6 py-4 flex items-center justify-between text-white flex-shrink-0">
 <div class="flex items-center gap-3">
@@ -494,6 +494,9 @@
 </div>
 <button class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors" onclick="cerrarGuiaModal()" type="button">
 <i class="fa-solid fa-xmark text-lg"></i>
+</button>
+<button class="w-8 h-8 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors" id="guiaAmpliarBtn" onclick="ampliarGuia()" type="button" title="Ver imagen a tamaño completo">
+<i class="fa-solid fa-magnifying-glass-plus text-base"></i>
 </button>
 </div>
 <!-- TABS SUPERIORES -->
@@ -512,21 +515,21 @@
 <div class="relative flex-grow overflow-hidden bg-slate-950 flex items-center justify-center p-3 sm:p-5 min-h-[350px] sm:min-h-[480px]">
 <!-- SLIDE 0: CERCO ELÉCTRICO -->
 <div class="slide-item w-full h-full flex flex-col items-center justify-center" id="slide0">
-<img alt="Cómo tomar medidas para Cerco Eléctrico" class="max-h-[60vh] w-auto max-w-full object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaxAR0upg_g8I3HXr5iQYjIH5aBNlNlmzApU-RtEKE-YKMN834Xr-c9iCF9OvgSToGXip56vHRD4Cb-u0RRkdMhHzggEyH4getLKiYvrNf5j0zIFdyKiHarn7tm2p1Z7Bz08k5EI_-K5RmQsAZLWntOBQlI0ypZp5Q3hXejCk_cMHLlxfKxGiX0qroVv5hgyd-SN9MWTEIvPf6YUb6hFlINK0y4Wm_qUcY7GMjbKXTT-1hsaldz1_ylg">
+<img alt="Cómo tomar medidas para Cerco Eléctrico" class="w-full h-auto max-h-[74vh] object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaxAR0upg_g8I3HXr5iQYjIH5aBNlNlmzApU-RtEKE-YKMN834Xr-c9iCF9OvgSToGXip56vHRD4Cb-u0RRkdMhHzggEyH4getLKiYvrNf5j0zIFdyKiHarn7tm2p1Z7Bz08k5EI_-K5RmQsAZLWntOBQlI0ypZp5Q3hXejCk_cMHLlxfKxGiX0qroVv5hgyd-SN9MWTEIvPf6YUb6hFlINK0y4Wm_qUcY7GMjbKXTT-1hsaldz1_ylg">
 <p class="text-xs text-slate-300 mt-2 font-medium text-center">
 <strong class="text-white">Paso 1 a 6:</strong> Identifica tipo de muro, mide longitud total (L), altura de barrera (H), portones (A) y punto de corriente (110V/220V).
           </p>
 </div>
 <!-- SLIDE 1: VIDEOVIGILANCIA -->
 <div class="slide-item hidden w-full h-full flex flex-col items-center justify-center" id="slide1">
-<img alt="Cómo tomar medidas para Videovigilancia" class="max-h-[60vh] w-auto max-w-full object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhhrSFtZa5HUWa3O93xlle0fyLWjePpkAhZBKh05h_O-p_ywt11HxIuH2cjUEFnRq3ULPUydZVJVOGtNnTiurtsm-AueZ5vJ6EeRSh1aBt7fPRpBqgPnAYq0Qr_N4QIcsrt9Dgh4ggXmrvc8E_lo1eFo7GSxs5SS3EVuRenMIneJgp_p5wbzvUNZR4WVoG7_y8OepPpra8ENWHsl4NB4AnQvLH55w5ah9PgKnmdCFt0BKFmdy0Fm_ENw">
+<img alt="Cómo tomar medidas para Videovigilancia" class="w-full h-auto max-h-[74vh] object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhhrSFtZa5HUWa3O93xlle0fyLWjePpkAhZBKh05h_O-p_ywt11HxIuH2cjUEFnRq3ULPUydZVJVOGtNnTiurtsm-AueZ5vJ6EeRSh1aBt7fPRpBqgPnAYq0Qr_N4QIcsrt9Dgh4ggXmrvc8E_lo1eFo7GSxs5SS3EVuRenMIneJgp_p5wbzvUNZR4WVoG7_y8OepPpra8ENWHsl4NB4AnQvLH55w5ah9PgKnmdCFt0BKFmdy0Fm_ENw">
 <p class="text-xs text-slate-300 mt-2 font-medium text-center">
 <strong class="text-white">Paso 1 a 6:</strong> Objetivos de visión, distancias de cable (L), altura y ángulo de montaje (H) y centro de control/NVR.
           </p>
 </div>
 <!-- SLIDE 2: PORTÓN -->
 <div class="slide-item hidden w-full h-full flex flex-col items-center justify-center" id="slide2">
-<img alt="Cómo tomar medidas para Portón" class="max-h-[60vh] w-auto max-w-full object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB12AQr2mHS9zfveFMXq0xsKBN9VKVATstdbug_yUkw5BIDK8qXEL3a7X2fMbJmUKNcXyBEOBOd0HigrtMK6sVypScF3J6v1PBs65_qtNCJNUJUPX9oLeqYuoYV8ehmQWLFguJZi3Dhtp7_OX-ET3GRWtopYWqpAGWx42nJgLxjRH_tuNRbOSxneXdUea-nwjBsZhYYlBptl8lzMcIz3s9Kos9Ij5Di797XhUlYMTKFqa5Eo4CRtOn4ew">
+<img alt="Cómo tomar medidas para Portón" class="w-full h-auto max-h-[74vh] object-contain rounded-lg shadow-2xl border border-slate-800" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB12AQr2mHS9zfveFMXq0xsKBN9VKVATstdbug_yUkw5BIDK8qXEL3a7X2fMbJmUKNcXyBEOBOd0HigrtMK6sVypScF3J6v1PBs65_qtNCJNUJUPX9oLeqYuoYV8ehmQWLFguJZi3Dhtp7_OX-ET3GRWtopYWqpAGWx42nJgLxjRH_tuNRbOSxneXdUea-nwjBsZhYYlBptl8lzMcIz3s9Kos9Ij5Di797XhUlYMTKFqa5Eo4CRtOn4ew">
 <p class="text-xs text-slate-300 mt-2 font-medium text-center">
 <strong class="text-white">Paso 1 a 6:</strong> Tipo de movimiento (corredizo/batiente/ascendente), apertura luz (H), altura (A), profundidad (L) y ancho entrada (M).
           </p>
@@ -825,6 +828,18 @@
         badge.innerText = `Infografía ${indice + 1} de 3`;
       }
     }
+
+    // La infografía es muy ancha y las letras pequeñas: el modal ya la muestra a
+    // todo lo que da, y esto la abre a tamaño real en otra pestaña para poder
+    // leerla o guardarla.
+    function ampliarGuia() {
+      const img = document.querySelector(`#slide${slideActual} img`);
+      if (img && img.src) window.open(img.src, '_blank', 'noopener');
+    }
+    document.querySelectorAll('.slide-item img').forEach((img) => {
+      img.classList.add('cursor-zoom-in');
+      img.addEventListener('click', () => ampliarGuia());
+    });
 
     // Toggle Dropdown de perfil
     function toggleDropdown() {
