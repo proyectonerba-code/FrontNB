@@ -175,7 +175,9 @@
         ? 'Tu sesión ya no está activa. Inicia sesión nuevamente para continuar.'
         : e && e.status === 403
           ? 'NerBot está disponible para cuentas CLIENTE.'
-          : 'No pude conectarme con NerBot en este momento. Inténtalo de nuevo en unos segundos.');
+          : e && e.status === 429
+            ? (e.message || 'Vas muy rápido. Espera unos segundos e inténtalo de nuevo.')
+            : 'No pude conectarme con NerBot en este momento. Inténtalo de nuevo en unos segundos.');
     }
   }
 
