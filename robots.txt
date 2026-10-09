@@ -1,0 +1,17 @@
+# Grupo NERBA HIDALGO — control de rastreo.
+# Las zonas con sesión (paneles, cotizador, perfil y avisos) no se indexan;
+# solo el sitio público. El día del dominio propio, actualizar el Sitemap.
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /electronica/
+Disallow: /especiales/
+Disallow: /cotizador.html
+Disallow: /mis-cotizaciones.html
+Disallow: /perfil.html
+Disallow: /restablecer.html
+Disallow: /avisos.html
+Disallow: /productos-electronicos.html
+
+Sitemap: https://nerbaproyecto.pages.dev/sitemap.xml
