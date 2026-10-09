@@ -872,9 +872,67 @@ function copiarDescripcion(btn) {
       });
       return out;
     }
+    // Invitado que intenta cotizar: en vez de sumar a la lista y dejar el
+    // pill "En tu cotización" flotando sin cuenta, se le pide iniciar sesión
+    // con una ventana profesional. El cliente autenticado sigue igual.
+    function esInvitado() {
+      try { return !localStorage.getItem('unidos_token'); } catch (e) { return true; }
+    }
+    function ensureLoginModal() {
+      if (document.getElementById('un-loginmodal')) return;
+      if (!document.getElementById('un-login-css')) {
+        var st = document.createElement('style');
+        st.id = 'un-login-css';
+        st.textContent =
+          '#un-loginmodal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,.62);padding:16px}' +
+          '#un-loginmodal.on{display:flex}' +
+          '#un-logincard{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 24px 60px -12px rgba(15,23,42,.4);font-family:\'Plus Jakarta Sans\',Inter,system-ui,sans-serif;position:relative}' +
+          '#un-loginx{position:absolute;top:12px;right:12px;width:32px;height:32px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;color:#64748b;cursor:pointer;font-size:15px;line-height:1;padding:0}' +
+          '#un-loginx:hover{border-color:#d91b1b;color:#d91b1b}' +
+          '.un-login-ico{width:56px;height:56px;border-radius:50%;background:#fef2f2;color:#d91b1b;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}' +
+          '.un-login-ico svg{width:26px;height:26px}' +
+          '#un-logincard h3{font-size:20px;font-weight:800;color:#0f172a;margin:0 0 8px}' +
+          '#un-logincard p{font-size:14px;color:#475569;line-height:1.6;margin:0 0 20px}' +
+          '.un-login-btn{display:block;width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-decoration:none;box-sizing:border-box}' +
+          '.un-login-go{background:#d91b1b;color:#fff;border:0;margin-bottom:10px}' +
+          '.un-login-go:hover{background:#b0000b}' +
+          '.un-login-reg{background:#fff;color:#334155;border:1px solid #e2e8f0}' +
+          '.un-login-reg:hover{border-color:#d91b1b;color:#d91b1b}';
+        document.head.appendChild(st);
+      }
+      var w = document.createElement('div');
+      w.innerHTML =
+        '<div id="un-loginmodal" role="dialog" aria-label="Inicia sesión para cotizar">' +
+        '<div id="un-logincard">' +
+        '<button type="button" id="un-loginx" aria-label="Cerrar">✕</button>' +
+        '<div class="un-login-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></div>' +
+        '<h3>¿Buscas algo?</h3>' +
+        '<p>Inicia sesión y empieza a cotizar.</p>' +
+        '<a class="un-login-btn un-login-go" id="un-logingo" href="/login.html">Iniciar sesión</a>' +
+        '<a class="un-login-btn un-login-reg" href="/registro.html">Crear cuenta</a>' +
+        '</div></div>';
+      while (w.firstChild) document.body.appendChild(w.firstChild);
+      var modal = document.getElementById('un-loginmodal');
+      var cerrar = function () { modal.classList.remove('on'); };
+      document.getElementById('un-loginx').addEventListener('click', cerrar);
+      modal.addEventListener('click', function (e) { if (e.target === modal) cerrar(); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('on')) cerrar();
+      });
+    }
+    function openLoginModal() {
+      ensureLoginModal();
+      try {
+        var next = location.pathname + location.search + (location.hash || '');
+        document.getElementById('un-logingo').href = '/login.html?next=' + encodeURIComponent(next);
+      } catch (e) {}
+      document.getElementById('un-loginmodal').classList.add('on');
+    }
     // Cotizar suma a la lista del cotizador sin sacar al cliente del catálogo.
     function cotizarProducto(id, btn) {
       if (!canQuote) return;
+      // Sin sesión no se suma nada ni aparece el pill: se invita a entrar.
+      if (esInvitado()) { openLoginModal(); return; }
       var list = [];
       try { list = window.__unProducts || []; } catch (e) {}
       var p = null;
