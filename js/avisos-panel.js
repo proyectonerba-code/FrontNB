@@ -199,7 +199,7 @@
         method: 'POST',
         body: {
           titulo: tit, mensaje: txt, imagen: imgActual || undefined,
-          link: '#', destino: destinoParaServidor(para),
+          destino: destinoParaServidor(para),
         },
       }).then(function () {
         document.getElementById('unAv-tit').value = '';
