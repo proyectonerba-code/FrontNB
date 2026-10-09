@@ -1194,6 +1194,12 @@
     function agregarFotoAGrilla(dataUrl, fileName) {
       const photoGrid = document.getElementById('photoGrid');
       const maximo = maxFotosPermitidas();
+      // El nombre viene del archivo del usuario (file.name): se escapa siempre
+      // antes de pintarlo, o un nombre como '"><img onerror=...>' ejecutaría JS.
+      const escFN = (window.UN && UN.esc) ? UN.esc : function (s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      };
+      const nombre = escFN(fileName);
       
       // Contar fotos actuales (excluyendo slots de subida)
       const fotosActuales = photoGrid.querySelectorAll('[data-foto="true"]').length;
@@ -1213,15 +1219,15 @@
       div.className = 'relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-100 aspect-square shadow-sm';
       div.setAttribute('data-foto', 'true');
       div.innerHTML = `
-        <img alt="${fileName}" class="w-full h-full object-cover" src="${dataUrl}">
+        <img alt="${nombre}" class="w-full h-full object-cover" src="${dataUrl}">
         <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-          <span class="text-[10px] text-white font-medium bg-black/50 px-1.5 py-0.5 rounded self-start">${fileName}</span>
+          <span class="text-[10px] text-white font-medium bg-black/50 px-1.5 py-0.5 rounded self-start">${nombre}</span>
           <button class="w-7 h-7 bg-red-600 text-white rounded-lg flex items-center justify-center self-end hover:bg-red-700 transition-colors shadow" onclick="eliminarFoto(this)" type="button">
             <i class="fa-solid fa-trash-can text-xs"></i>
           </button>
         </div>
         <div class="absolute bottom-1 left-1 right-1 bg-black/60 backdrop-blur-sm rounded px-1.5 py-0.5">
-          <p class="text-[9px] text-white truncate text-center font-medium">${fileName}</p>
+          <p class="text-[9px] text-white truncate text-center font-medium">${nombre}</p>
         </div>
       `;
       

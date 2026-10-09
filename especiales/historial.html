@@ -696,12 +696,12 @@
     document.getElementById('modal-nombre-obra').innerText = data.obra;
     document.getElementById('modal-cliente-ubicacion').innerHTML = `
       <span class="material-symbols-outlined text-[16px] text-primary">location_on</span>
-      ${data.cliente} • ${data.ubicacion}
+      ${ESP.esc(data.cliente)} • ${ESP.esc(data.ubicacion)}
     `;
     document.getElementById('modal-fecha-termino').innerText = data.fechaTermino;
-    document.getElementById('modal-area-val').innerHTML = `${data.area}`;
-    document.getElementById('modal-canal-val').innerHTML = `${data.canalizacion}`;
-    document.getElementById('modal-puntos-val').innerHTML = `${data.puntos}`;
+    document.getElementById('modal-area-val').innerHTML = `${ESP.esc(data.area)}`;
+    document.getElementById('modal-canal-val').innerHTML = `${ESP.esc(data.canalizacion)}`;
+    document.getElementById('modal-puntos-val').innerHTML = `${ESP.esc(data.puntos)}`;
     document.getElementById('modal-resp-val').innerText = data.responsable;
     document.getElementById('modal-fases-completadas-tag').innerText = data.fasesTag;
 
@@ -723,7 +723,7 @@
       btnToggle.innerText = 'Reabrir a Ejecución';
     } else {
       badgeEstado.className = "px-2.5 py-0.5 rounded-full bg-primary-container text-on-primary font-label-caps font-bold inline-flex items-center gap-1.5";
-      badgeEstado.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>${data.estado}`;
+      badgeEstado.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>${ESP.esc(data.estado)}`;
       btnToggle.innerText = 'Marcar Concluido';
     }
 
@@ -738,14 +738,14 @@
         <div class="flex items-center justify-between p-3 rounded-lg bg-surface-container-low border border-surface-container transition-all hover:border-surface-variant">
           <div class="flex items-center gap-2.5 min-w-0">
             <span class="w-6 h-6 rounded-full ${colorBg} flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[15px]">${fase.icon}</span>
+              <span class="material-symbols-outlined text-[15px]">${ESP.esc(fase.icon)}</span>
             </span>
             <div class="min-w-0">
-              <h4 class="font-body-md font-semibold text-on-surface text-[13px] leading-tight truncate">${fase.titulo}</h4>
-              <p class="font-body-sm text-secondary text-[12px] truncate">${fase.desc}</p>
+              <h4 class="font-body-md font-semibold text-on-surface text-[13px] leading-tight truncate">${ESP.esc(fase.titulo)}</h4>
+              <p class="font-body-sm text-secondary text-[12px] truncate">${ESP.esc(fase.desc)}</p>
             </div>
           </div>
-          <span class="font-label-caps px-2 py-0.5 rounded font-bold border text-[11px] shrink-0 ml-2 ${badgeCls}">${fase.status}</span>
+          <span class="font-label-caps px-2 py-0.5 rounded font-bold border text-[11px] shrink-0 ml-2 ${badgeCls}">${ESP.esc(fase.status)}</span>
         </div>
       `;
       contFases.insertAdjacentHTML('beforeend', itemHtml);

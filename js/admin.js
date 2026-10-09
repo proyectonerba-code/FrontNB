@@ -36,8 +36,11 @@
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px">' +
       lista.map(function (s, i) {
+        // s viene del servidor (fotos del cliente): se escapa el atributo src
+        // para que un valor con comillas no rompa el HTML (stored-XSS).
+        var src = (window.UN && UN.esc) ? UN.esc(s) : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         return '<figure style="margin:0;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px">' +
-          '<img src="' + s + '" alt="Fotografía ' + (i + 1) + '" ' +
+          '<img src="' + src + '" alt="Fotografía ' + (i + 1) + '" ' +
           'style="width:100%;height:190px;object-fit:cover;border-radius:6px;display:block">' +
           '<figcaption style="color:#94a3b8;font-size:10px;text-align:center;padding-top:6px">Foto ' +
           (i + 1) + ' de ' + lista.length + '</figcaption></figure>';

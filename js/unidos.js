@@ -2150,11 +2150,11 @@
         (unread ? '<button type="button" data-leer-todas>Marcar leídas</button>' : '') + '</div>' +
         notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        // El link viene del servidor (/api/avisos) y el id se arma con el folio:
-        // si no se escapan, una comilla rompe el atributo y un "javascript:"
-        // ejecuta al hacer clic.
-        var link = /^(https?:|mailto:|tel:|\/|#|\.\/|\.\.\/)/i.test(String(n.link || '')) ? String(n.link) : '#';
-        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + (n.tipo === 'abandonada' ? ' unZh-bellaviso' : '') + '" href="' + esc(link) + '" data-id="' + esc(n.id) + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
+        // href solo interno (# o /ruta): ningún link de la campana necesita
+        // protocolo externo; así ni un "javascript:" escapado pinta.
+        var href = String(n.link || '#');
+        if (href !== '#' && href.charAt(0) !== '/') href = '#';
+        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + (n.tipo === 'abandonada' ? ' unZh-bellaviso' : '') + '" href="' + esc(href) + '" data-id="' + esc(n.id) + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
           '<span class="unZh-belltime">' + time + '</span>' +
           '<button type="button" class="unZh-bellx" data-x="' + esc(n.id) + '" title="Eliminar" aria-label="Eliminar notificación">×</button></a>';
