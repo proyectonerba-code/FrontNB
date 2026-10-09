@@ -1891,8 +1891,20 @@
       '.unZh-bell:active{transform:scale(.96)}' +
       '.unZh-bellsvg{width:18px;height:18px;flex-shrink:0}' +
       '.unZh-belldot{display:none;position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#d91b1b;border:2px solid #fff;box-shadow:0 0 0 1px rgba(217,27,27,.25)}' +
-      '.unZh-belldrop{position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:calc(100vw - 24px);max-height:420px;overflow-y:auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.14);z-index:9999;text-align:left}' +
+      '.unZh-belldrop{position:absolute;top:calc(100% + 8px);right:0;width:340px;max-width:calc(100vw - 24px);max-height:430px;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.14);z-index:9999;text-align:left}' +
       '.unZh-belldrop.hidden{display:none}' +
+      // Encabezado fijo de la campana: título + "Marcar leídas". No cambia el
+      // diseño de los renglones, solo agrega la barra superior.
+      '.unZh-bellhead{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:#fff;border-bottom:1px solid #e5e7eb;z-index:2}' +
+      '.unZh-bellhead b{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#111827}' +
+      '.unZh-bellhead button{border:0;background:none;color:#d91b1b;font-size:12px;font-weight:700;cursor:pointer;padding:2px 4px;white-space:nowrap}' +
+      '.unZh-bellhead button:hover{text-decoration:underline}' +
+      // ✕ para eliminar de MI campana. Sutil: solo se nota al pasar el mouse
+      // (en táctil siempre se ve un poco).
+      '.unZh-bellx{flex-shrink:0;width:22px;height:22px;margin-top:1px;border:0;border-radius:6px;background:transparent;color:#cbd5e1;font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:opacity .15s ease;padding:0}' +
+      '.unZh-bellitem:hover .unZh-bellx{opacity:1}' +
+      '.unZh-bellx:hover{background:#fee2e2;color:#b91c1c}' +
+      '@media(hover:none){.unZh-bellx{opacity:.6}}' +
       '.unZh-bellempty{padding:24px 16px;text-align:center;font-size:13px;color:#9ca3af}' +
       '.unZh-bellitem{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;text-decoration:none;border-bottom:1px solid #f3f4f6;transition:background .15s ease}' +
       '.unZh-bellitem:last-child{border-bottom:0}' +
@@ -1908,6 +1920,8 @@
       'html.dark-mode .unZh-belldrop,html.dark .unZh-belldrop{background:#0f172a;border-color:#334155}' +
       'html.dark-mode .unZh-belltxt b,html.dark .unZh-belltxt b{color:#f1f5f9}' +
       'html.dark-mode .unZh-belltxt small,html.dark .unZh-belltxt small{color:#94a3b8}' +
+      'html.dark-mode .unZh-bellhead,html.dark .unZh-bellhead{background:#0f172a;border-color:#334155}' +
+      'html.dark-mode .unZh-bellhead b,html.dark .unZh-bellhead b{color:#f1f5f9}' +
       '@media(max-width:640px){.unZh-belldrop{width:calc(100vw - 24px);right:-8px}.unZh-bell{width:36px;height:36px}}';
     document.head.appendChild(st);
   }
@@ -2082,6 +2096,30 @@
     function saveSeen() {
       try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
     }
+    // Avisos descartados con la ✕ de la campana: solo se esconden en ESTA
+    // cuenta (no se borran del servidor). Por usuario y con tope para que la
+    // lista no crezca sin fin.
+    var DISMISS_KEY = 'nerba_notis_descartadas_v1';
+    try {
+      var ku1 = getUser() || {};
+      if (ku1.email) DISMISS_KEY += '::' + String(ku1.email).toLowerCase();
+    } catch (e1) {}
+    var dismissed = {};
+    try {
+      var dSaved = JSON.parse(localStorage.getItem(DISMISS_KEY) || '{}');
+      if (dSaved && typeof dSaved === 'object') dismissed = dSaved;
+    } catch (e2) {}
+    function saveDismissed() {
+      try {
+        var ks = Object.keys(dismissed);
+        if (ks.length > 200) {
+          var rec = {};
+          ks.slice(-200).forEach(function (k) { rec[k] = dismissed[k]; });
+          dismissed = rec;
+        }
+        localStorage.setItem(DISMISS_KEY, JSON.stringify(dismissed));
+      } catch (e3) {}
+    }
     function renderNotis() {
       var unread = notis.filter(function (n) { return !n.leida; }).length;
       if (belldot) belldot.style.display = unread > 0 ? 'block' : 'none';
@@ -2089,15 +2127,22 @@
         belldrop.innerHTML = '<div class="unZh-bellempty">' + (fallo ? 'No se pudieron cargar las notificaciones' : 'Sin notificaciones') + '</div>';
         return;
       }
-      belldrop.innerHTML = notis.map(function (n) {
+      belldrop.innerHTML = '<div class="unZh-bellhead"><b>Notificaciones' + (unread ? ' (' + unread + ')' : '') + '</b>' +
+        (unread ? '<button type="button" data-leer-todas>Marcar leídas</button>' : '') + '</div>' +
+        notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
         return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
-          '<span class="unZh-belltime">' + time + '</span></a>';
+          '<span class="unZh-belltime">' + time + '</span>' +
+          '<button type="button" class="unZh-bellx" data-x="' + n.id + '" title="Eliminar" aria-label="Eliminar notificación">×</button></a>';
       }).join('');
     }
     function addNoti(n) {
       var key = n.tipo + '|' + n.ref;
+      // Descartada con la ✕: no vuelve a entrar aunque el servidor la siga
+      // mandando. Si cambia de estado (pendiente→aprobada) la clave cambia y
+      // esa sí aparece como nueva.
+      if (dismissed[key]) return;
       if (typeof n.leida !== 'boolean') n.leida = !!seen[key];
       n.key = key;
       var existe = null;
@@ -2111,6 +2156,27 @@
       seen[key] = true;
       saveSeen();
       notis.forEach(function (n) { if (n.key === key) n.leida = true; });
+      renderNotis();
+    }
+    // "Marcar leídas" del encabezado: todas las visibles de un jalón.
+    function marcarTodas() {
+      notis.forEach(function (n) {
+        n.leida = true;
+        if (n.key && !seen[n.key]) seen[n.key] = true;
+      });
+      saveSeen();
+      renderNotis();
+    }
+    // ✕ de cada aviso: lo saca de MI campana (el servidor lo conserva para
+    // los demás; el staff lo borra para todos desde /avisos.html).
+    function descartarNoti(id) {
+      for (var i = 0; i < notis.length; i++) {
+        if (notis[i].id === id) {
+          if (notis[i].key) { dismissed[notis[i].key] = true; saveDismissed(); }
+          notis.splice(i, 1);
+          break;
+        }
+      }
       renderNotis();
     }
     function tomarLista(data) {
@@ -2195,7 +2261,7 @@
     bell.addEventListener('click', function (e) {
       e.stopPropagation();
       belldrop.classList.toggle('hidden');
-      if (!belldrop.classList.contains('hidden')) pollQuotes();
+      if (!belldrop.classList.contains('hidden')) { pollQuotes(); pollAvisos(); }
     });
     document.addEventListener('click', function (e) {
       if (!belldrop.classList.contains('hidden') && !bell.contains(e.target)) belldrop.classList.add('hidden');
@@ -2204,6 +2270,22 @@
       if (e.key === 'Escape') belldrop.classList.add('hidden');
     });
     belldrop.addEventListener('click', function (e) {
+      // La ✕ va DENTRO del renglón: se atiende primero para no disparar el
+      // clic del aviso (ni navegar ni abrir la ventanita).
+      var x = e.target.closest('[data-x]');
+      if (x) {
+        e.preventDefault();
+        e.stopPropagation();
+        descartarNoti(x.getAttribute('data-x'));
+        return;
+      }
+      var todas = e.target.closest('[data-leer-todas]');
+      if (todas) {
+        e.preventDefault();
+        e.stopPropagation();
+        marcarTodas();
+        return;
+      }
       var item = e.target.closest('.unZh-bellitem');
       if (!item) return;
       if (item.hasAttribute('data-aviso')) {
