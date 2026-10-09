@@ -2747,3 +2747,32 @@ injectScrollbarCSS();
     });
   })();
 })();
+
+
+// ---------- observabilidad minima ----------
+// Sin esto un fallo del frente (una API caida, un script que no cargo) es
+// invisible en produccion: la pantalla se queda a medias y nadie sabe por que.
+// Se registra en consola y se guardan los ultimos 20 en memoria, para revisarlos
+// escribiendo window.__unErrores() en la consola del navegador. Nada sale a la
+// red: es diagnostico local.
+window.__unErrores = (function () {
+  var lista = [];
+  function guardar(tipo, info) {
+    try {
+      lista.push({ tipo: tipo, msg: String(info.msg || 'error'), donde: String(info.donde || ''), cuando: new Date().toISOString() });
+      if (lista.length > 20) lista.shift();
+    } catch (e) {}
+  }
+  window.addEventListener('error', function (e) {
+    var donde = (e.filename || '') + (e.lineno ? ':' + e.lineno : '');
+    guardar('error', { msg: e.message || 'error', donde: donde });
+    console.error('[NERBA] error:', e.message || 'error', donde);
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e && e.reason;
+    var msg = (r && r.message) ? r.message : String(r || 'promesa rechazada');
+    guardar('promesa', { msg: msg, donde: (r && r.status) ? ('HTTP ' + r.status) : '' });
+    console.error('[NERBA] promesa rechazada:', msg);
+  });
+  return function () { return lista.slice(); };
+})();
