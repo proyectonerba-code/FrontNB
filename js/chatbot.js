@@ -26,6 +26,7 @@
   var ICON_MIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13H5v-2h14v2z"/></svg>';
   var ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>';
   var ICON_SEND = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>';
+  var ICON_NEW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
   var NB_LOGO = '/assets/chatbot.png?v=4';
   var NB_LOGO_OLD = '/assets/logo.png';
 
@@ -101,6 +102,7 @@
       '<div><div id="nb-title">NerBot <span id="nb-badge">Asistente IA</span></div>' +
       '<div id="nb-status"><i></i>En línea 24/7</div></div>' +
     '</div><div id="nb-head-btns">' +
+      '<button id="nb-new" type="button" title="Nueva conversación" aria-label="Nueva conversación">' + ICON_NEW + '</button>' +
       '<button id="nb-min" type="button" title="Minimizar" aria-label="Minimizar">' + ICON_MIN + '</button>' +
       '<button id="nb-close" type="button" title="Cerrar" aria-label="Cerrar">' + ICON_X + '</button>' +
     '</div></div>' +
@@ -192,15 +194,19 @@
     });
   }
 
+  // OJO: aqui se usa **negrita** (markdown), no <strong>. linkify()
+  // escapa el HTML crudo, asi que las etiquetas se verian como texto.
+  function saludo() {
+    return '¡Hola **' + userName + '**! Soy NerBot, el asistente IA de **Grupo NERBA HIDALGO**. Puedo ayudarte a entender soluciones, encontrar productos del catálogo y canalizarte con el área correspondiente.';
+  }
+
   async function loadHistory() {
     try {
       var result = await UN.api('/api/chatbot/history?session_id=' + encodeURIComponent(sessionId));
       var items = Array.isArray(result.items) ? result.items : [];
       body.innerHTML = '';
       if (!items.length) {
-        // OJO: aqui se usa **negrita** (markdown), no <strong>. linkify()
-        // escapa el HTML crudo, asi que las etiquetas se verian como texto.
-        addMsg('bot', '¡Hola **' + userName + '**! Soy NerBot, el asistente IA de **Grupo NERBA HIDALGO**. Puedo ayudarte a entender soluciones, encontrar productos del catálogo y canalizarte con el área correspondiente.');
+        addMsg('bot', saludo());
         return;
       }
       items.forEach(function (m) {
@@ -274,6 +280,32 @@
     }, 170);
     persist(false);
   }
+  // Borra la conversación actual en el servidor y empieza de cero. El
+  // servidor topa los reinicios por día para que no lo usen en bucle.
+  async function nuevaConversacion() {
+    if (!confirm('¿Empezar una conversación nueva? Se borrará el historial de este chat.')) return;
+    typing(true);
+    try {
+      var r = await UN.api('/api/chatbot/reset', {
+        method: 'POST',
+        body: { session_id: sessionId }
+      });
+      if (r.session_id) {
+        sessionId = r.session_id;
+        try { localStorage.setItem(sessionKey, sessionId); } catch (e) {}
+      }
+      body.innerHTML = '';
+      body.dataset.loaded = '1';
+      addMsg('bot', saludo());
+      renderSuggestions([]);
+    } catch (e) {
+      addMsg('bot', (e && (e.status === 429 || e.status === 403))
+        ? (e.message || 'Por ahora sigue en esta conversación.')
+        : 'No se pudo reiniciar el chat. Inténtalo de nuevo.');
+    }
+    typing(false);
+  }
+  panel.querySelector('#nb-new').addEventListener('click', nuevaConversacion);
   panel.querySelector('#nb-min').addEventListener('click', closeAll);
   panel.querySelector('#nb-close').addEventListener('click', closeAll);
   document.addEventListener('keydown', function (e) {
