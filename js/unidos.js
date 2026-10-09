@@ -1911,6 +1911,10 @@
       '.unZh-bellitem:hover{background:#f9fafb}' +
       '.unZh-bellitem.unZh-bellunread{background:#fef2f2}' +
       '.unZh-bellitem.unZh-bellunread:hover{background:#fee2e2}' +
+      // Solicitud sin respuesta: ambar, distinta de la roja de "recibida".
+      '.unZh-bellitem.unZh-bellaviso{background:#fffbeb}' +
+      '.unZh-bellitem.unZh-bellaviso:hover{background:#fef3c7}' +
+      '.unZh-bellitem.unZh-bellaviso b{color:#92400e}' +
       '.unZh-belltxt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}' +
       '.unZh-belltxt b{font-size:13px;font-weight:700;color:#111827;line-height:1.3;font-family:Inter,system-ui,sans-serif}' +
       '.unZh-belltxt small{font-size:12px;color:#6b7280;line-height:1.35;font-family:Inter,system-ui,sans-serif}' +
@@ -2085,6 +2089,9 @@
       var ku0 = getUser() || {};
       if (ku0.email) SEEN_KEY += '::' + String(ku0.email).toLowerCase();
     } catch (e0) {}
+    // Dias sin mover una solicitud antes de avisar al personal. En cuanto se
+    // contesta (deja de estar PENDIENTE) la alerta se va sola.
+    var DIAS_ALERTA = 3;
     var notis = [];
     var seen = {};
     var fallo = false;
@@ -2139,7 +2146,7 @@
         (unread ? '<button type="button" data-leer-todas>Marcar leídas</button>' : '') + '</div>' +
         notis.map(function (n) {
         var time = n.fecha ? new Date(n.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
-        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
+        return '<a class="unZh-bellitem' + (n.leida ? '' : ' unZh-bellunread') + (n.tipo === 'abandonada' ? ' unZh-bellaviso' : '') + '" href="' + (n.link || '#') + '" data-id="' + n.id + '"' + (n.avisoId ? ' data-aviso="' + esc(n.avisoId) + '"' : '') + '>' +
           '<span class="unZh-belltxt"><b>' + esc(n.titulo || 'Notificación') + '</b><small>' + esc(n.mensaje || '') + '</small></span>' +
           '<span class="unZh-belltime">' + time + '</span>' +
           '<button type="button" class="unZh-bellx" data-x="' + n.id + '" title="Eliminar" aria-label="Eliminar notificación">×</button></a>';
@@ -2157,7 +2164,11 @@
       // como leída duraba hasta el siguiente refresh.
       if (seen[key]) n.leida = true;
       else if (typeof n.leida !== 'boolean') n.leida = false;
-      n.key = key;
+      // recordar: la alerta de abandono no se "marca como leída" para siempre,
+      // se recalcula en cada consulta (sigue ahí mientras la solicitud siga
+      // sin respuesta). Al descartarla con la ✕ sí se va.
+      if (n.recordar) n.leida = false;
+      else if (typeof n.leida !== 'boolean') n.leida = !!seen[key];
       var existe = null;
       for (var i = 0; i < notis.length; i++) { if (notis[i].key === key) { existe = i; break; } }
       if (existe !== null) notis[existe] = n; else notis.unshift(n);
@@ -2199,6 +2210,23 @@
       }
       return [];
     }
+    // Dias transcurridos desde una fecha del servidor ('YYYY-MM-DD' o ISO).
+    // Se arma la fecha en local para que no se recorra un dia por la zona
+    // horaria: 'YYYY-MM-DD' sola la lee JS como si fuera UTC.
+    function diasDesde(fecha) {
+      if (!fecha) return 0;
+      var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(fecha));
+      var d;
+      if (m) d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      else {
+        d = new Date(fecha);
+        if (isNaN(d.getTime())) return 0;
+        d = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      }
+      var hoy = new Date();
+      var a = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+      return Math.max(0, Math.round((a - d) / 86400000));
+    }
     async function pollQuotes() {
       try {
         var u = getUser() || {};
@@ -2208,6 +2236,9 @@
         var list = tomarLista(data);
         var zone = header._unZhZone || '';
         fallo = false;
+        // Las alertas de abandono se recalculan desde cero: si la solicitud ya se
+        // contesto (o la eliminaron) tienen que desaparecer de la campana.
+        notis = notis.filter(function (n) { return n.tipo !== 'abandonada'; });
         list.forEach(function (c) {
           if (!c) return;
           var folio = c.folio || c.id;
@@ -2221,7 +2252,18 @@
             : '/mis-cotizaciones.html';
           if (isStaff) {
             if (estado === 'PENDIENTE') {
-              addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: c.fecha || c.createdAt || c.creado || new Date().toISOString(), link: linkStaff, leida: false });
+              var cuando = c.fecha || c.createdAt || c.creado || '';
+              addNoti({ id: 'pend-' + folio, tipo: 'cotizacion', ref: folio, titulo: 'Cotización recibida', mensaje: folio + ' de ' + cliente, fecha: cuando || new Date().toISOString(), link: linkStaff, leida: false });
+              var dias = diasDesde(cuando);
+              if (dias >= DIAS_ALERTA) {
+                addNoti({
+                  id: 'abandonada-' + folio, tipo: 'abandonada', ref: folio,
+                  titulo: 'Sin respuesta hace ' + dias + (dias === 1 ? ' día' : ' días'),
+                  mensaje: folio + ' de ' + cliente + ' sigue pendiente',
+                  fecha: cuando || new Date().toISOString(), link: linkStaff,
+                  leida: false, recordar: true
+                });
+              }
             }
           } else {
             var userId = u.id || u._id || u.email || '';
