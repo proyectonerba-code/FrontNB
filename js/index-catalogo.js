@@ -939,6 +939,15 @@ function copiarDescripcion(btn) {
     // Cotizar suma a la lista del cotizador sin sacar al cliente del catálogo.
     function cotizarProducto(id, btn) {
       if (!canQuote) return;
+      // El rol se revalida en cada clic (canQuote es de la carga inicial y
+      // quedaba rancio si la sesión cambiaba sin recargar la página).
+      var rolAqui = '';
+      var tokenAqui = '';
+      try {
+        rolAqui = String(((window.UN && UN.getUser()) || {}).rol || '').toUpperCase();
+        tokenAqui = localStorage.getItem('unidos_token') || '';
+      } catch (e) {}
+      if (tokenAqui && rolAqui && rolAqui !== 'CLIENTE') return;
       // Sin sesión no se suma nada ni aparece el pill: se invita a entrar.
       if (esInvitado()) { openLoginModal(); return; }
       var list = [];
