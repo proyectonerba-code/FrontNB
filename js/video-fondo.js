@@ -14,6 +14,15 @@
 
   function activar(fondo) {
     if (fondo.dataset.unVideoListo === '1') return;
+    // En móvil (o con ahorro de datos / movimiento reducido) el mp4 de ~13 MB
+    // no se descarga: se queda el poster, que es el mismo cuadro. En desktop
+    // sigue el video como siempre. Esto es lo que más pesaba en Lighthouse móvil.
+    try {
+      var esMovil = window.matchMedia('(max-width: 767px)').matches;
+      var ahorro = (navigator.connection && navigator.connection.saveData) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (esMovil || ahorro) return;
+    } catch (e) {}
     fondo.dataset.unVideoListo = '1';
 
     var video = fondo.querySelector('video');
