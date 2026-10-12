@@ -124,6 +124,24 @@
 </div>
 </div>
 </div>
+<!-- Acceso rápido por correo: gestiona CUALQUIER cuenta registrada (incluidos
+     clientes, que no se listan) por su email: rol, estado o eliminarla. -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-5">
+<div class="flex flex-col lg:flex-row lg:items-center gap-3">
+<div class="flex items-center gap-2.5 min-w-0 lg:max-w-md">
+<span class="material-symbols-outlined text-xl text-primary shrink-0">manage_search</span>
+<div class="min-w-0">
+<div class="font-headline-md text-headline-md text-on-surface font-bold">Acceso rápido por correo</div>
+<div class="font-body-sm text-body-sm text-secondary">Escribe el correo de cualquier cuenta para cambiar su rol, suspenderla o eliminarla.</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-2 flex-1">
+<input class="flex-1 px-4 py-2.5 rounded-lg bg-surface-container-low focus:bg-surface-container-lowest text-on-surface placeholder:text-secondary font-body-sm text-body-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20" id="quickEmail" placeholder="correo@ejemplo.com" type="email" autocomplete="off">
+<button class="px-5 py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-bold shadow-md transition-all active:scale-95 whitespace-nowrap" id="btnQuickEmail" type="button">Buscar</button>
+</div>
+</div>
+<div id="quickResult" class="mt-4"></div>
+</div>
 <!-- High-Fidelity Administrative User Table -->
 <div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
 <div class="overflow-x-auto">
@@ -877,6 +895,7 @@
     var sort = document.getElementById('userSortSelect');
     var count = document.getElementById('showingCountText');
     var ALL = []; // solo roles gestionables (nunca CLIENTE: solo se cuentan)
+    var TODOS = []; // TODAS las cuentas (incluidos clientes) para el acceso rápido por correo
     var NCLI = 0; // contador de clientes (solo se muestra, no se lista)
     var filter = 'all';
     var userPage = 1;
@@ -1065,6 +1084,7 @@
         var raw = await SA.users();
         NCLI = raw.filter(function (u) { return String(u.rol || '').toUpperCase() === 'CLIENTE'; }).length;
         ALL = raw.filter(function (u) { return String(u.rol || '').toUpperCase() !== 'CLIENTE'; });
+        TODOS = raw.slice();
       } catch (e) {
         SA.toast('Sin conexión al backend: se muestra el diseño de referencia.', 'Aviso');
         return;
@@ -1153,6 +1173,121 @@
         });
       });
     }
+    // Acceso rápido por correo: busca en TODAS las cuentas (incluidos los
+    // clientes que no se listan) y permite cambiar rol/estado o eliminarla.
+    var ROLES_Q = ['SUPERADMIN', 'ADMIN', 'PROYECTOS_ESPECIALES', 'PRODUCTOS_ELECTRONICOS', 'CLIENTE'];
+    function avatarQ(u) {
+      var ini = String(u.nombre || '??').trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0); }).join('').toUpperCase();
+      if (u.foto) return '<img src="' + SA.esc(u.foto) + '" alt="" class="w-11 h-11 rounded-xl object-cover flex-shrink-0">';
+      return '<div class="w-11 h-11 rounded-xl bg-surface-container-highest text-on-surface font-bold flex items-center justify-center flex-shrink-0">' + SA.esc(ini) + '</div>';
+    }
+    function pintarQuick(u) {
+      var box = document.getElementById('quickResult');
+      if (!box) return;
+      if (!u) { box.innerHTML = ''; return; }
+      var act = u.activo !== false;
+      var opts = ROLES_Q.map(function (r) {
+        return '<option value="' + r + '"' + (String(u.rol || '').toUpperCase() === r ? ' selected' : '') + '>' + SA.esc(dispRole(r)) + '</option>';
+      }).join('');
+      box.innerHTML =
+        '<div class="flex flex-col xl:flex-row xl:items-center gap-4 rounded-xl border border-outline-variant/10 bg-surface-container-low p-4">' +
+        '<div class="flex items-center gap-3 min-w-0 flex-1">' + avatarQ(u) +
+        '<div class="min-w-0"><div class="font-bold text-on-surface truncate">' + SA.esc(u.nombre) + '</div>' +
+        '<div class="text-sm text-secondary truncate">' + SA.esc(u.email) + (u.empresa ? ' · ' + SA.esc(u.empresa) : '') + '</div></div>' +
+        badge(dispRole(u.rol)) + stBadge(act) + '</div>' +
+        '<div class="flex flex-col sm:flex-row gap-2">' +
+        '<select id="quickRol" class="px-3 py-2 rounded-lg bg-surface-container-lowest text-on-surface font-semibold text-sm focus:outline-none cursor-pointer">' + opts + '</select>' +
+        '<button type="button" id="quickToggle" class="px-4 py-2 rounded-lg text-sm font-bold ' + (act ? 'bg-surface-container text-secondary hover:text-on-error-container hover:bg-error-container' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100') + '">' + (act ? 'Suspender' : 'Reactivar') + '</button>' +
+        '<button type="button" id="quickSave" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-sm font-bold shadow-md">Guardar</button>' +
+        '<button type="button" id="quickFicha" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-bold">Ficha</button>' +
+        '<button type="button" id="quickDel" class="px-4 py-2 rounded-lg bg-surface-container hover:bg-error-container hover:text-on-error-container text-secondary text-sm font-bold">Eliminar</button>' +
+        '</div></div>';
+      var email = u.email;
+      document.getElementById('quickSave').addEventListener('click', async function () {
+        var rol = document.getElementById('quickRol').value;
+        try {
+          await SA.saveUser(email, { rol: rol });
+          SA.toast('Permisos actualizados a ' + dispRole(rol) + '.', 'Usuarios');
+          load();
+          buscarQuick();
+        } catch (err) { SA.toast(err.message || 'No se pudo guardar', 'Error'); }
+      });
+      document.getElementById('quickToggle').addEventListener('click', async function () {
+        var va = !act;
+        if (!await confirmar({
+          titulo: va ? 'Reactivar la cuenta' : 'Restringir la cuenta',
+          lineas: [u.nombre + ' (' + email + ')', va ? 'Vuelve a poder entrar al sistema con su mismo rol.' : 'Deja de poder entrar al sistema. Después puedes reactivarla.'],
+          tipo: va ? 'ok' : undefined,
+          boton: va ? 'Sí, reactivar' : 'Sí, restringir'
+        })) return;
+        try {
+          await SA.saveUser(email, { activo: va });
+          SA.toast(va ? 'Cuenta reactivada.' : 'Cuenta restringida.', 'Usuarios');
+          load();
+          buscarQuick();
+        } catch (err) { SA.toast(err.message || 'No se pudo cambiar el estado', 'Error'); }
+      });
+      document.getElementById('quickFicha').addEventListener('click', function () {
+        var mt = document.getElementById('modalTitle');
+        if (mt) mt.textContent = 'Editar Usuario del Sistema';
+        var set = function (id, v) { var el = document.getElementById(id); if (el) el.value = v == null ? '' : v; };
+        set('formUserId', u.email); set('formFullName', u.nombre); set('formCompany', u.empresa || '');
+        set('formEmail', u.email); set('formPhone', (u.telefono || '').replace('+51', '').trim());
+        var rr = document.querySelector('input[name="modalRole"][value="' + dispRole(u.rol) + '"]');
+        if (rr) rr.checked = true;
+        var tg = document.getElementById('formStatusToggle');
+        if (tg) tg.checked = u.activo !== false;
+        var m = document.getElementById('userFormModal');
+        if (m) m.classList.remove('hidden');
+      });
+      document.getElementById('quickDel').addEventListener('click', async function () {
+        if (!await confirmar({
+          titulo: 'Eliminar cuenta',
+          lineas: [u.nombre + ' (' + email + ')', 'Se revocan sus credenciales de forma irreversible.'],
+          boton: 'Sí, eliminar'
+        })) return;
+        try {
+          await SA.deleteUser(email);
+          SA.toast('Usuario eliminado.', 'Usuarios');
+          load();
+          pintarQuick(null);
+        } catch (err) { SA.toast(err.message || 'No se pudo eliminar', 'Error'); }
+      });
+    }
+    function buscarQuick() {
+      var inp = document.getElementById('quickEmail');
+      var box = document.getElementById('quickResult');
+      if (!box) return;
+      var em = String((inp && inp.value) || '').trim().toLowerCase();
+      if (!em || em.indexOf('@') < 0) {
+        box.innerHTML = '<p class="text-sm text-secondary">Escribe un correo válido para buscar.</p>';
+        return;
+      }
+      var u = null;
+      for (var i = 0; i < TODOS.length; i++) {
+        if (String(TODOS[i].email || '').toLowerCase() === em) { u = TODOS[i]; break; }
+      }
+      if (!u) {
+        box.innerHTML = '<div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-dashed border-outline-variant/20 p-4">'
+          + '<p class="text-sm text-secondary flex-1">Sin cuenta con <b>' + SA.esc(em) + '</b>.</p>'
+          + '<button type="button" id="quickCreate" class="px-4 py-2 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-sm font-bold shadow-md whitespace-nowrap">Crear con este correo</button></div>';
+        document.getElementById('quickCreate').addEventListener('click', function () {
+          if (typeof openUserModalForCreate === 'function') openUserModalForCreate();
+          setTimeout(function () {
+            var fe = document.getElementById('formEmail');
+            if (fe) fe.value = em;
+          }, 0);
+        });
+        return;
+      }
+      pintarQuick(u);
+    }
+    (function () {
+      var b = document.getElementById('btnQuickEmail');
+      if (b) b.addEventListener('click', buscarQuick);
+      var inp = document.getElementById('quickEmail');
+      if (inp) inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); buscarQuick(); } });
+    })();
     // Filtros propios (re-consultan el DOM: compatibles con datos reales)
     document.querySelectorAll('.role-filter-tab').forEach(function (t) {
       t.addEventListener('click', function () { filter = t.getAttribute('data-role') || 'all'; applyAll(); });
