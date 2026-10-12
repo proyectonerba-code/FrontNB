@@ -1208,7 +1208,7 @@
         try {
           await SA.saveUser(email, { rol: rol });
           SA.toast('Permisos actualizados a ' + dispRole(rol) + '.', 'Usuarios');
-          load();
+          await load();
           buscarQuick();
         } catch (err) { SA.toast(err.message || 'No se pudo guardar', 'Error'); }
       });
@@ -1223,7 +1223,7 @@
         try {
           await SA.saveUser(email, { activo: va });
           SA.toast(va ? 'Cuenta reactivada.' : 'Cuenta restringida.', 'Usuarios');
-          load();
+          await load();
           buscarQuick();
         } catch (err) { SA.toast(err.message || 'No se pudo cambiar el estado', 'Error'); }
       });
