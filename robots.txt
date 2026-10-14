@@ -14,4 +14,4 @@ Disallow: /restablecer.html
 Disallow: /avisos.html
 Disallow: /productos-electronicos.html
 
-Sitemap: https://nerbaproyecto.pages.dev/sitemap.xml
+Sitemap: https://gruponerba.com/sitemap.xml
