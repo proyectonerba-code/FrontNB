@@ -390,13 +390,16 @@
         window.google.accounts.id.initialize({ client_id: clientId, callback: onCredential, ux_mode: 'popup', context: 'signup', auto_select: false });
         // Botón oficial con popup clásico (no depende de FedCM): reemplaza al
         // personalizado que usaba prompt() y moría si el navegador lo bloqueaba.
+        // Se configura para que no desentone con la tarjeta.
         var gw = document.createElement('div');
         gw.style.width = '100%';
+        gw.style.maxWidth = '340px';
+        gw.style.margin = '0 auto';
         gw.style.display = 'flex';
         gw.style.justifyContent = 'center';
         btn.parentNode.insertBefore(gw, btn);
         btn.style.display = 'none';
-        window.google.accounts.id.renderButton(gw, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 320 });
+        window.google.accounts.id.renderButton(gw, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
         btn.title = 'Crear cuenta con Google';
         ready = true;
       } catch (err) {

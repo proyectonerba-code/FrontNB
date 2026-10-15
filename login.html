@@ -277,14 +277,18 @@
       // Botón oficial de Google con popup clásico: no depende de FedCM ni del
       // One Tap automático, así funciona aunque el navegador bloquee el inicio
       // silencioso. Reemplaza al botón personalizado (que usaba prompt()).
+      // Se configura (outline + pill + ancho completo) para que no desentone
+      // con el diseño de la tarjeta.
       var gwrap = document.createElement('div');
       gwrap.id = 'googleBtnOficial';
       gwrap.style.width = '100%';
+      gwrap.style.maxWidth = '340px';
+      gwrap.style.margin = '0 auto';
       gwrap.style.display = 'flex';
       gwrap.style.justifyContent = 'center';
       googleButton.parentNode.insertBefore(gwrap, googleButton);
       googleButton.style.display = 'none';
-      window.google.accounts.id.renderButton(gwrap, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 320 });
+      window.google.accounts.id.renderButton(gwrap, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
       googleButton.title = 'Iniciar sesión con Google';
       window.__googleLoginReady = true;
     } catch (err) {
