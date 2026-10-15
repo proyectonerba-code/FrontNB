@@ -17,6 +17,9 @@
       st.id = 'un-staff-css';
       st.textContent =
         '.un-staffbar{display:flex;justify-content:flex-end;margin:0 0 14px 0}' +
+        // En celular los 3 botones no caben en una fila: se envuelven y el
+        // principal ocupa todo el ancho para que no se corte ni se encime.
+        '@media(max-width:640px){.un-staffbar{flex-wrap:wrap;gap:8px}.un-staffbar .un-btn-red{flex:1 1 100%;justify-content:center}}' +
         '.un-btn-red{display:inline-flex;align-items:center;gap:8px;background:#d91b1b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:11px 20px;border-radius:10px;border:0;cursor:pointer;box-shadow:0 4px 10px -2px rgba(217,27,27,.4);font-family:\'Plus Jakarta Sans\',Inter,system-ui,sans-serif}' +
         '.un-btn-red:hover{background:#b0000b}' +
         '.un-btn-ghost{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#334155;font-size:12px;font-weight:700;padding:9px 14px;border-radius:10px;border:1px solid #e2e8f0;cursor:pointer}' +

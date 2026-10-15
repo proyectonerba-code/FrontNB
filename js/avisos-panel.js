@@ -57,9 +57,9 @@
     var st = document.createElement('style');
     st.id = 'unAv-css';
     st.textContent =
-      '.unAv-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.62);padding:16px;overflow:auto}' +
+      '.unAv-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:flex-start;justify-content:center;background:rgba(2,6,23,.62);padding:16px;padding-bottom:max(16px, env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch}' +
       '.unAv-modal.hidden{display:none}' +
-      '.unAv-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,.35);width:100%;max-width:520px;max-height:92vh;overflow-y:auto}' +
+      '.unAv-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,.35);width:100%;max-width:520px;max-height:92vh;max-height:92dvh;margin:auto;overflow-y:auto;-webkit-overflow-scrolling:touch}' +
       // Ventanita de LECTURA (la que ve el cliente): más grande para que el
       // anuncio del convenio luzca, sin tapar toda la pantalla. La de crear
       // se queda en 520px porque es formulario.
@@ -130,6 +130,25 @@
     img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
     img.src = url;
   }
+  // En móvil el fondo no debe moverse mientras la ventanita está abierta
+  // (iOS recalcula el viewport con el scroll y el modal "salta" o se corta).
+  var bloqueos = 0;
+  function fijarFondo() {
+    bloqueos++;
+    try { document.body.style.overflow = 'hidden'; } catch (e) {}
+  }
+  function soltarFondo() {
+    bloqueos = Math.max(0, bloqueos - 1);
+    if (!bloqueos) { try { document.body.style.overflow = ''; } catch (e) {} }
+  }
+  function cerrarCrear() {
+    document.getElementById('unAv-crear').classList.add('hidden');
+    soltarFondo();
+  }
+  function cerrarVer() {
+    document.getElementById('unAv-ver').classList.add('hidden');
+    soltarFondo();
+  }
   function montar() {
     if (document.getElementById('unAv-crear')) return;
     var wrap = document.createElement('div');
@@ -185,10 +204,17 @@
       rm.style.display = 'none';
     });
     Array.prototype.slice.call(document.querySelectorAll('#unAv-crear [data-cerrar]')).forEach(function (b) {
-      b.addEventListener('click', function () { document.getElementById('unAv-crear').classList.add('hidden'); });
+      b.addEventListener('click', cerrarCrear);
     });
     Array.prototype.slice.call(document.querySelectorAll('#unAv-ver [data-cerrar-ver]')).forEach(function (b) {
-      b.addEventListener('click', function () { document.getElementById('unAv-ver').classList.add('hidden'); });
+      b.addEventListener('click', cerrarVer);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (!e || e.key !== 'Escape') return;
+      var ver = document.getElementById('unAv-ver');
+      if (ver && !ver.classList.contains('hidden')) { cerrarVer(); return; }
+      var crear = document.getElementById('unAv-crear');
+      if (crear && !crear.classList.contains('hidden')) cerrarCrear();
     });
     document.getElementById('unAv-enviar').addEventListener('click', function () { publicar(); });
     pintarLista();
@@ -272,6 +298,7 @@
     if (!esCreador()) return;
     montar();
     document.getElementById('unAv-crear').classList.remove('hidden');
+    fijarFondo();
   }
   function abrirVer(id) {
     var a = null;
@@ -306,6 +333,7 @@
     if (a.img) { img.src = a.img; img.style.display = 'block'; } else { img.removeAttribute('src'); img.style.display = 'none'; }
     document.getElementById('unAv-ver-txt').textContent = a.texto || '';
     document.getElementById('unAv-ver').classList.remove('hidden');
+    fijarFondo();
     var em = yoEmail();
     if (em && (a.leidoPor || []).indexOf(em) < 0) {
       a.leidoPor = (a.leidoPor || []).concat([em]);
