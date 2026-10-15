@@ -354,10 +354,8 @@
       });
     }
     async function onCredential(resp) {
-      if (!resp || !resp.credential || !btn) return;
-      var original = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span>Validando con Google...</span>';
+      if (!resp || !resp.credential) return;
+      say('Validando con Google...');
       try {
         var r = await UN.api('/api/auth/google', { method: 'POST', body: { credential: resp.credential } });
         UN.setSession(r.token, r);
@@ -369,15 +367,11 @@
         } catch (e) {}
         if (r.nuevo) {
           say('¡Cuenta creada con Google! Redirigiendo a cotizar...');
-          btn.innerHTML = '<span>¡Cuenta creada!</span>';
         } else {
           say('Ese correo ya tenía cuenta. Iniciando sesión...');
-          btn.innerHTML = '<span>Sesión iniciada</span>';
         }
         setTimeout(function () { location.href = destino(r); }, 900);
       } catch (err) {
-        btn.innerHTML = original;
-        btn.disabled = false;
         say(err.message || 'No se pudo continuar con Google.', false);
       }
     }
@@ -393,16 +387,18 @@
         }
         await loadGis();
         if (!window.google || !window.google.accounts || !window.google.accounts.id) throw new Error('Google Sign-In no disponible');
-        window.google.accounts.id.initialize({ client_id: clientId, callback: onCredential, ux_mode: 'popup', context: 'signup' });
-        btn.disabled = false;
+        window.google.accounts.id.initialize({ client_id: clientId, callback: onCredential, ux_mode: 'popup', context: 'signup', auto_select: false });
+        // Botón oficial con popup clásico (no depende de FedCM): reemplaza al
+        // personalizado que usaba prompt() y moría si el navegador lo bloqueaba.
+        var gw = document.createElement('div');
+        gw.style.width = '100%';
+        gw.style.display = 'flex';
+        gw.style.justifyContent = 'center';
+        btn.parentNode.insertBefore(gw, btn);
+        btn.style.display = 'none';
+        window.google.accounts.id.renderButton(gw, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 320 });
         btn.title = 'Crear cuenta con Google';
         ready = true;
-        btn.addEventListener('click', function () {
-          if (!ready) return;
-          window.google.accounts.id.prompt(function (n) {
-            if (n && !n.isDisplayed()) say('Completa el registro en la ventana de Google.', false);
-          });
-        });
       } catch (err) {
         btn.title = err.message || 'Google Sign-In no disponible';
         say(btn.title, false);

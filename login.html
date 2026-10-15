@@ -233,20 +233,30 @@
       script.addEventListener('error', function () { reject(new Error('No se pudo cargar Google Sign-In')); }, { once: true });
     });
   }
+  function googleStatus(tipo, texto) {
+    var el = document.getElementById('googleLoginMsg');
+    if (!el && googleButton && googleButton.parentNode) {
+      el = document.createElement('div');
+      el.id = 'googleLoginMsg';
+      el.className = 'text-center text-xs font-semibold pt-2';
+      googleButton.parentNode.appendChild(el);
+    }
+    if (!el) return;
+    el.textContent = texto || '';
+    el.style.display = texto ? 'block' : 'none';
+    el.style.color = tipo === 'error' ? '#dc2626' : '#059669';
+  }
   async function handleGoogleCredential(response) {
-    if (!response || !response.credential || !googleButton) return;
-    var original = googleButton.innerHTML;
-    googleButton.disabled = true;
-    googleButton.innerHTML = '<span class="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></span><span>Validando Google...</span>';
+    if (!response || !response.credential) return;
+    googleStatus('', 'Validando con Google…');
     try {
       var r = await UN.api('/api/auth/google', { method: 'POST', body: { credential: response.credential } });
       UN.setSession(r.token, r);
       try { sessionStorage.setItem('un_fresh_login', '1'); } catch (e) {}
-      googleButton.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>' + (r.nuevo ? 'Cuenta Creada' : 'Acceso Autorizado') + '</span>';
+      googleStatus('ok', r.nuevo ? '¡Cuenta creada!' : 'Acceso autorizado');
       setTimeout(function () { location.href = googleRedirect(r); }, 700);
     } catch (err) {
-      googleButton.innerHTML = '<span>' + UN.esc(err.message || 'No se pudo iniciar sesión con Google.') + '</span>';
-      setTimeout(function () { googleButton.innerHTML = original; googleButton.disabled = false; }, 2600);
+      googleStatus('error', err.message || 'No se pudo iniciar sesión con Google.');
     }
   }
   async function initGoogleLogin() {
@@ -263,17 +273,20 @@
       }
       await loadGoogleIdentity();
       if (!window.google || !window.google.accounts || !window.google.accounts.id) throw new Error('Google Sign-In no está disponible');
-      window.google.accounts.id.initialize({ client_id: googleClientId, callback: handleGoogleCredential, ux_mode: 'popup', context: 'signin' });
-      googleButton.disabled = false;
-      googleButton.removeAttribute('aria-disabled');
+      window.google.accounts.id.initialize({ client_id: googleClientId, callback: handleGoogleCredential, ux_mode: 'popup', context: 'signin', auto_select: false });
+      // Botón oficial de Google con popup clásico: no depende de FedCM ni del
+      // One Tap automático, así funciona aunque el navegador bloquee el inicio
+      // silencioso. Reemplaza al botón personalizado (que usaba prompt()).
+      var gwrap = document.createElement('div');
+      gwrap.id = 'googleBtnOficial';
+      gwrap.style.width = '100%';
+      gwrap.style.display = 'flex';
+      gwrap.style.justifyContent = 'center';
+      googleButton.parentNode.insertBefore(gwrap, googleButton);
+      googleButton.style.display = 'none';
+      window.google.accounts.id.renderButton(gwrap, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width: 320 });
       googleButton.title = 'Iniciar sesión con Google';
       window.__googleLoginReady = true;
-      googleButton.addEventListener('click', function () {
-        if (!window.__googleLoginReady) return;
-        window.google.accounts.id.prompt(function (notification) {
-          if (!notification.isDisplayed() && notification.isSkippedMoment()) googleButton.title = 'Completa el inicio de sesión en la ventana de Google';
-        });
-      });
     } catch (err) {
       googleButton.title = err.message || 'Google Sign-In no está disponible';
       googleButton.setAttribute('aria-disabled', 'true');
