@@ -1882,7 +1882,7 @@
       '.unZh-reg{background:#d91b1b;color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:10px 18px;border-radius:8px;font-family:\'Plus Jakarta Sans\',Inter,system-ui,sans-serif}' +
       '.unZh-reg:hover{background:#b0000b}' +
       '@media(max-width:900px){.unZh-who{display:none}.unZh-in{gap:10px}}' +
-      '@media(max-width:720px){.unZh-in{flex-wrap:wrap;height:auto;padding:10px 12px;row-gap:8px}.unZh-nav{order:3;flex-basis:100%;margin:0}.unZh-chip{margin-left:auto}}' +
+      '@media(max-width:720px){.unZh-in{flex-wrap:wrap;height:auto;padding:10px 12px;row-gap:8px}.unZh-nav{order:3;flex-basis:100%;margin:0}.unZh-bellwrap{margin-left:auto}.unZh-chip{margin-left:auto}}' +
       // Campana de notificaciones: va aquí (y no solo en css/menu-unico.css)
       // porque unidos.js se carga en TODAS las páginas; menu-unico.js no.
       '.unZh-bellwrap{position:relative;display:flex;align-items:center;flex-shrink:0}' +
@@ -1926,7 +1926,7 @@
       'html.dark-mode .unZh-belltxt small,html.dark .unZh-belltxt small{color:#94a3b8}' +
       'html.dark-mode .unZh-bellhead,html.dark .unZh-bellhead{background:#0f172a;border-color:#334155}' +
       'html.dark-mode .unZh-bellhead b,html.dark .unZh-bellhead b{color:#f1f5f9}' +
-      '@media(max-width:640px){.unZh-belldrop{width:calc(100vw - 24px);right:-8px}.unZh-bell{width:36px;height:36px}}' +
+      '@media(max-width:640px){.unZh-bellwrap{position:static}.unZh-belldrop{position:fixed !important;left:12px !important;right:12px !important;top:76px !important;width:auto !important;max-width:none !important;max-height:min(68dvh,480px) !important}.unZh-bell{width:36px;height:36px}}' +
       // iOS hace zoom solo al enfocar un input con fuente menor de 16px. Las
       // clases de Tailwind (text-sm/text-xs) ganan en especificidad al selector
       // de elemento, por eso va con !important y solo en movil.

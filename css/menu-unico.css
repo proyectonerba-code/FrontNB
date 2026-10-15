@@ -193,6 +193,15 @@ input, select, textarea { max-width: 100%; font-size: 16px; }
   margin-top: 2px;
 }
 @media (max-width: 640px) {
-  .unZh-belldrop { width: calc(100vw - 24px); right: -8px; }
+  .unZh-bellwrap { position: static; }
+  .unZh-belldrop {
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 76px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: min(68dvh, 480px) !important;
+  }
   .unZh-bell { width: 36px; height: 36px; }
 }

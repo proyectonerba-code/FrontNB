@@ -5,6 +5,6 @@
   var l = document.createElement('link');
   l.rel = 'stylesheet';
   l.setAttribute('data-menu-unico', '1');
-  l.href = '/css/menu-unico.css?v=2.1';
+  l.href = '/css/menu-unico.css?v=2.2';
   document.head.appendChild(l);
 })();
