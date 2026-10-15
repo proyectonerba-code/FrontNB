@@ -60,6 +60,14 @@
       '.unAv-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.62);padding:16px;overflow:auto}' +
       '.unAv-modal.hidden{display:none}' +
       '.unAv-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 24px 60px -12px rgba(15,23,42,.35);width:100%;max-width:520px;max-height:92vh;overflow-y:auto}' +
+      // Ventanita de LECTURA (la que ve el cliente): más grande para que el
+      // anuncio del convenio luzca, sin tapar toda la pantalla. La de crear
+      // se queda en 520px porque es formulario.
+      '#unAv-ver .unAv-card{max-width:720px}' +
+      '#unAv-ver .unAv-head b{font-size:19px}' +
+      '#unAv-ver .unAv-ver-body img{max-height:min(52vh,460px)}' +
+      '#unAv-ver .unAv-ver-body p{font-size:15px}' +
+      '@media(max-width:640px){#unAv-ver .unAv-card{max-width:100%}#unAv-ver .unAv-ver-body img{max-height:38vh}}' +
       '.unAv-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 22px;border-bottom:1px solid #f1f5f9}' +
       '.unAv-head b{font-size:17px;color:#0f172a;font-family:\'Plus Jakarta Sans\',Inter,system-ui,sans-serif}' +
       '.unAv-x{width:32px;height:32px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;color:#64748b;cursor:pointer;font-size:16px;line-height:1;padding:0;flex-shrink:0}' +
