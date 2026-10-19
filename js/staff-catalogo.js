@@ -134,6 +134,41 @@
     if (file.size && file.size > 8 * 1024 * 1024) return false; // 8MB pre-compresión
     return true;
   }
+  // Tope de base64 por foto. El backend acepta data URL de imagen de hasta
+  // 200*1024 caracteres (server.js, imagenCatalogoOk). Se deja margen para el
+  // resto del cuerpo del request y para la codificacion.
+  var TOPE_FOTO_B64 = 180 * 1024;
+  // Reduce calidad y lado hasta que la foto quede bajo el tope. Sin esto, una
+  // foto de celular (1-3MB) se pasa del limite y el guardado se frena con
+  // "Las fotos deben subirse primero", aunque el staff haya hecho todo bien.
+  function comprimirDataURL(canvas, tope) {
+    var q = 0.82;
+    var out = canvas.toDataURL('image/jpeg', q);
+    if (out.length <= tope) return out;
+    for (var j = 0; j < 4; j++) {
+      out = canvas.toDataURL('image/jpeg', q - (j + 1) * 0.08);
+      if (out.length <= tope) return out;
+    }
+    // Si sigue grande (foto muy densa), reduce el lado por pasos y reintenta.
+    var escala = 0.8;
+    for (var i = 0; i < 6; i++) {
+      var w = Math.max(1, Math.round(canvas.width * escala));
+      var h = Math.max(1, Math.round(canvas.height * escala));
+      var c2 = document.createElement('canvas');
+      c2.width = w; c2.height = h;
+      c2.getContext('2d').drawImage(canvas, 0, 0, w, h);
+      for (var k = 0; k < 5; k++) {
+        var t = c2.toDataURL('image/jpeg', 0.72 - k * 0.07);
+        if (t.length <= tope) return t;
+      }
+      escala *= 0.8;
+    }
+    // Ultimo recurso: algo chico y legible.
+    var c3 = document.createElement('canvas');
+    c3.width = 600; c3.height = Math.max(1, Math.round(600 * (canvas.height / Math.max(1, canvas.width))));
+    c3.getContext('2d').drawImage(canvas, 0, 0, c3.width, c3.height);
+    return c3.toDataURL('image/jpeg', 0.6);
+  }
   function fileToDataURL(file, maxDim, cb) {
     if (!validImageFile(file)) { cb(null); return; }
     try {
@@ -147,7 +182,7 @@
           c.height = Math.max(1, Math.round(img.height * s));
           c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
           URL.revokeObjectURL(url);
-          cb(c.toDataURL('image/jpeg', 0.82));
+          cb(comprimirDataURL(c, TOPE_FOTO_B64));
         } catch (err) { URL.revokeObjectURL(url); cb(null); }
       };
       img.onerror = function () { URL.revokeObjectURL(url); cb(null); };
