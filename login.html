@@ -300,6 +300,26 @@
   }
   initGoogleLogin();
   UN.rewriteLinks();
+  // Si YA hay una sesion viva, no se pide volver a entrar: se salta directo al
+  // destino. Asi, cuando una sesion de 8 horas se vence y el sitio manda al
+  // login, el usuario entra y aterriza donde estaba, sin pasos de mas.
+  (function saltaSiYaHaySesion() {
+    if (!localStorage.getItem('unidos_token')) return;
+    var next = new URLSearchParams(location.search).get('next');
+    var destino = (UN.safeNext ? UN.safeNext(next) : '');
+    if (!destino) {
+      var u = UN.getUser() || {};
+      destino = (u.rol === 'SUPERADMIN') ? '/superadmin/catalogo.html'
+        : (u.rol === 'ADMIN') ? '/admin/catalogo.html'
+        : (u.rol === 'PROYECTOS_ESPECIALES') ? '/especiales/gestion.html'
+        : (u.rol === 'PRODUCTOS_ELECTRONICOS') ? '/electronica/catalogo.html'
+        : '/index.html';
+    }
+    UN.api('/api/me').then(function () { location.replace(destino); }).catch(function () {
+      // Token invalido o vencido: se limpia y se queda en el login normal.
+      try { localStorage.removeItem('unidos_token'); localStorage.removeItem('unidos_user'); } catch (e) {}
+    });
+  })();
 </script>
 
 
