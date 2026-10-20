@@ -180,7 +180,7 @@
       typing(false);
       enviando = false;
       addMsg('bot', e && e.status === 401
-        ? 'Tu sesión ya no está activa. Inicia sesión nuevamente para continuar.'
+        ? 'Tu sesión expiró. Te llevamos al inicio de sesión…'
         : e && e.status === 403
           ? 'NerBot está disponible para cuentas CLIENTE.'
           : e && e.status === 429

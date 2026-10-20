@@ -144,6 +144,45 @@
     window.__unBrandObserver = observer;
   }
 
+  // ---------- sesion vencida ----------
+  // Las sesiones duran 8 horas. Al vencerse, el backend responde 401 y antes
+  // el usuario se quedaba viendo un aviso raro en medio de la pagina. Ahora, en
+  // cuanto cualquier peticion da 401 con token, se manda al login y se vuelve
+  // a donde estaba (next). Se ve profesional en vez de "se rompio algo".
+  var redirigiendo = false;
+  function sesionVencida() {
+    if (redirigiendo) return;
+    redirigiendo = true;
+    // Si por lo que sea la navegacion no ocurre, se libera el candado para
+    // que el siguiente 401 vuelva a intentarlo (no quedarse bloqueado).
+    setTimeout(function () { redirigiendo = false; }, 8000);
+    // Aviso breve antes de saltar: el usuario entiende que no fue un fallo.
+    try {
+      if (window.aviso) window.aviso('Tu sesion termino. Inicia sesion de nuevo.', 'info');
+    } catch (e) {}
+    var aqui = location.pathname + location.search;
+    var enLogin = /\/login\.html$|\/registro\.html$|\/restablecer\.html$/.test(location.pathname);
+    setTimeout(function () {
+      try { localStorage.removeItem('unidos_token'); localStorage.removeItem('unidos_user'); } catch (e) {}
+      location.href = enLogin ? '/login.html' : ('/login.html?next=' + encodeURIComponent(aqui));
+    }, 900);
+  }
+
+  // ---------- destino de vuelta tras el login ----------
+  // Solo rutas internas del sitio. Acepta un nombre suelto ("perfil.html") y le
+  // pone la barra inicial, porque hay paginas que llegan sin ella (el ?next= de
+  // Cloudflare Pages la quita). Rechaza lo de fuera: //evil, http://, etc.
+  function safeNext(valor) {
+    var n = String(valor == null ? '' : valor).trim();
+    if (!n) return '';
+    if (n.indexOf('..') !== -1) return '';                     // nada de rutas con ..
+    if (n.charAt(0) === '/') return n.charAt(1) === '/' ? '' : n;
+    if (/^[a-z][a-z0-9+.\-]*:/i.test(n)) return '';          // http:, javascript:, data:
+    if (n.indexOf('//') === 0) return '';
+    if (/^[a-z0-9._~\-]+(\.html)?(\/[a-z0-9._~\-\/]*)?(\?.*)?$/i.test(n)) return '/' + n;
+    return '';
+  }
+
   async function api(path, opts) {
     opts = opts || {};
     var headers = { 'Content-Type': 'application/json' };
@@ -159,6 +198,13 @@
     if (!res.ok) {
       var err = new Error(data.error || ('Error ' + res.status));
       err.status = res.status;
+      // 401 = la sesion ya no sirve. Solo si venia con token: un 401 sin sesion
+      // (login con clave incorrecta) NO es una sesion vencida y no debe
+      // redirigir, o el formulario de login se quedaria en loop.
+      var esLogin = /^\/api\/(login|auth\/google|recuperar|restablecer)/.test(path);
+      if (res.status === 401 && t && !esLogin) {
+        try { sesionVencida(); } catch (e) {}
+      }
       throw err;
     }
     return data;
@@ -2706,7 +2752,7 @@
       if (location.pathname !== '/index.html') location.replace('/index.html');
     }
   });
-  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, prepareProfilePhoto: prepareProfilePhoto, saveProfilePhoto: saveProfilePhoto, deleteProfilePhoto: deleteProfilePhoto, syncProfilePhoto: syncProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, zonaDeRol: zonaDeRol, ensureMenuRol: ensureMenuRol, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
+  window.UN = { API: API, api: api, getUser: getUser, setSession: setSession, logout: logout, requestLogout: requestLogout, safeNext: safeNext, getProfilePhoto: getProfilePhoto, setProfilePhoto: setProfilePhoto, clearProfilePhoto: clearProfilePhoto, prepareProfilePhoto: prepareProfilePhoto, saveProfilePhoto: saveProfilePhoto, deleteProfilePhoto: deleteProfilePhoto, syncProfilePhoto: syncProfilePhoto, paintProfileAvatars: paintProfileAvatars, requireAuth: requireAuth, requireStaff: requireStaff, requireEspeciales: requireEspeciales, requireElec: requireElec, requireSuperAdmin: requireSuperAdmin, money: money, esc: esc, norm: normalizeText, search: searchableText, matches: matchesText, compact: compactText, repair: repairText, downloadQuote: downloadQuote, printQuote: printQuote, quoteDocHTML: quoteDoc, viewQuote: viewQuote, closeQuoteViewer: closeQuoteViewer, downloadMant: downloadMant, confirmarEnvio: confirmarEnvio, pdfParaVer: pdfParaVer, syncCatalog: syncCatalog, watchCatalog: watchCatalog, notifyCatalog: notifyCatalog, checkCatalog: checkCatalog, rewriteLinks: rewriteLinks, profileMenu: profileMenu, openPasswordModal: openPasswordModal, ensureMenu: ensureMenu, zonaDeRol: zonaDeRol, ensureMenuRol: ensureMenuRol, setThemeMode: setThemeMode, applyBrand: applyBrand, brand: { name: BRAND_NAME, subtitle: BRAND_SUBTITLE }, theme: { get: themeGet, set: themeSet } };
   // NOTA: cada diseno conserva su comportamiento original; el conector solo
   // reescribe enlaces, refleja sesion y sincroniza tema/accesibilidad global.
   wrapTextApis();

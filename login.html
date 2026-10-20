@@ -168,7 +168,7 @@
     };
   })();
 </script></main>
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.0"></script><script src="js/avisos-panel.js?v=1.3"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.1"></script><script src="js/avisos-panel.js?v=1.3"></script>
 <script>
   // Login real contra el backend (conserva la animacion original del diseno)
   window.handleLogin = async function() {
@@ -194,10 +194,11 @@
       submitBtn.classList.add('bg-emerald-600');
       var next = new URLSearchParams(location.search).get('next');
       // Validación open-redirect: solo rutas internas relativas
-      if (!(next && next.charAt(0) === '/' && next.charAt(1) !== '/')) {
-        next = (r.rol === 'SUPERADMIN') ? '/superadmin/catalogo.html' : ((r.rol === 'ADMIN') ? '/admin/catalogo.html' : ((r.rol === 'PROYECTOS_ESPECIALES') ? '/especiales/gestion.html' : ((r.rol === 'PRODUCTOS_ELECTRONICOS') ? '/electronica/catalogo.html' : '/index.html')));
+      var destino = (UN.safeNext ? UN.safeNext(next) : '');
+      if (!destino) {
+        destino = (r.rol === 'SUPERADMIN') ? '/superadmin/catalogo.html' : ((r.rol === 'ADMIN') ? '/admin/catalogo.html' : ((r.rol === 'PROYECTOS_ESPECIALES') ? '/especiales/gestion.html' : ((r.rol === 'PRODUCTOS_ELECTRONICOS') ? '/electronica/catalogo.html' : '/index.html')));
       }
-      setTimeout(function () { location.href = next; }, 900);
+      setTimeout(function () { location.href = destino; }, 900);
     } catch (err) {
       submitBtn.classList.remove('bg-primary', 'hover:bg-primary-container');
       submitBtn.classList.add('bg-red-600');
@@ -210,7 +211,8 @@
   var googleClientId = '';
   function googleRedirect(r) {
     var next = new URLSearchParams(location.search).get('next');
-    if (next && next.charAt(0) === '/' && next.charAt(1) !== '/') return next;
+    var destino = (UN.safeNext ? UN.safeNext(next) : '');
+    if (destino) return destino;
     if (r.rol === 'SUPERADMIN') return '/superadmin/catalogo.html';
     if (r.rol === 'ADMIN') return '/admin/catalogo.html';
     if (r.rol === 'PROYECTOS_ESPECIALES') return '/especiales/gestion.html';

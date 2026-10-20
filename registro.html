@@ -285,7 +285,7 @@
 
   </main>
 
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.0"></script><script src="js/avisos-panel.js?v=1.3"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.1"></script><script src="js/avisos-panel.js?v=1.3"></script>
 <script>
   // Registro real contra el backend (mismo diseno)
   document.getElementById('registerForm').addEventListener('submit', async function (e) {
@@ -330,7 +330,8 @@
     }
     function destino(r) {
       var next = new URLSearchParams(location.search).get('next');
-      if (next && next.charAt(0) === '/' && next.charAt(1) !== '/') return next;
+      var destino = (UN.safeNext ? UN.safeNext(next) : '');
+      if (destino) return destino;
       if (r.nuevo) return 'cotizador.html';
       if (r.rol === 'SUPERADMIN') return '/superadmin/catalogo.html';
       if (r.rol === 'ADMIN') return '/admin/catalogo.html';
