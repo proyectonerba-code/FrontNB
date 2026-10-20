@@ -285,7 +285,7 @@
 
   </main>
 
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.1"></script><script src="js/avisos-panel.js?v=1.3"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.2"></script><script src="js/avisos-panel.js?v=1.3"></script>
 <script>
   // Registro real contra el backend (mismo diseno)
   document.getElementById('registerForm').addEventListener('submit', async function (e) {
@@ -350,8 +350,10 @@
           s.setAttribute('data-google-identity', '1');
           document.head.appendChild(s);
         }
-        s.addEventListener('load', resolve, { once: true });
-        s.addEventListener('error', function () { reject(new Error('No se pudo cargar Google Sign-In')); }, { once: true });
+        s.addEventListener('load', function () { clearTimeout(t); resolve(); }, { once: true });
+        s.addEventListener('error', function () { clearTimeout(t); reject(new Error('No se pudo cargar Google Sign-In')); }, { once: true });
+        // Si el script nunca carga, no se queda el boton muerto para siempre.
+        var t = setTimeout(function () { reject(new Error('Google Sign-In tardó demasiado')); }, 12000);
       });
     }
     async function onCredential(resp) {
@@ -399,8 +401,18 @@
         gw.style.display = 'flex';
         gw.style.justifyContent = 'center';
         btn.parentNode.insertBefore(gw, btn);
-        btn.style.display = 'none';
-        window.google.accounts.id.renderButton(gw, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
+        // Si renderButton falla, se vuelve a mostrar el boton propio: nunca debe
+        // quedar la pantalla sin forma de registrarse con Google.
+        try {
+          window.google.accounts.id.renderButton(gw, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
+          btn.style.display = 'none';
+        } catch (eRender) {
+          gw.remove();
+          btn.style.display = '';
+          btn.disabled = false;
+          say('No se pudo cargar el botón de Google. Recarga la página.', false);
+          return;
+        }
         btn.title = 'Crear cuenta con Google';
         ready = true;
       } catch (err) {

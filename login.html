@@ -168,7 +168,7 @@
     };
   })();
 </script></main>
-<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.1"></script><script src="js/avisos-panel.js?v=1.3"></script>
+<script src="js/api-config.js?v=1.0"></script><script src="js/unidos.js?v=7.2"></script><script src="js/avisos-panel.js?v=1.3"></script>
 <script>
   // Login real contra el backend (conserva la animacion original del diseno)
   window.handleLogin = async function() {
@@ -231,8 +231,11 @@
         script.setAttribute('data-google-identity', '1');
         document.head.appendChild(script);
       }
-      script.addEventListener('load', resolve, { once: true });
-      script.addEventListener('error', function () { reject(new Error('No se pudo cargar Google Sign-In')); }, { once: true });
+      // Si el script nunca carga (red, ad-blocker, proxy), no se queda el boton
+      // deshabilitado para siempre: se reactiva y se avisa.
+      var t = setTimeout(function () { reject(new Error('Google Sign-In tardó demasiado')); }, 12000);
+      script.addEventListener('load', function () { clearTimeout(t); resolve(); }, { once: true });
+      script.addEventListener('error', function () { clearTimeout(t); reject(new Error('No se pudo cargar Google Sign-In')); }, { once: true });
     });
   }
   function googleStatus(tipo, texto) {
@@ -289,8 +292,18 @@
       gwrap.style.display = 'flex';
       gwrap.style.justifyContent = 'center';
       googleButton.parentNode.insertBefore(gwrap, googleButton);
-      googleButton.style.display = 'none';
-      window.google.accounts.id.renderButton(gwrap, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
+      // Si renderButton falla, se vuelve a mostrar el boton propio: nunca debe
+      // quedar la pantalla sin ninguna forma de entrar con Google.
+      try {
+        window.google.accounts.id.renderButton(gwrap, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', logo_alignment: 'left', width: 340 });
+        googleButton.style.display = 'none';
+      } catch (eRender) {
+        gwrap.remove();
+        googleButton.style.display = '';
+        googleButton.disabled = false;
+        googleStatus('error', 'No se pudo cargar el botón de Google. Recarga la página.');
+        return;
+      }
       googleButton.title = 'Iniciar sesión con Google';
       window.__googleLoginReady = true;
     } catch (err) {
@@ -307,7 +320,9 @@
     if (!localStorage.getItem('unidos_token')) return;
     var next = new URLSearchParams(location.search).get('next');
     var destino = (UN.safeNext ? UN.safeNext(next) : '');
-    if (!destino) {
+    // Un next que apunta a las paginas de acceso provocaria un bucle de
+    // recargas (el login se recarga a si mismo). Se descarta.
+    if (!destino || /^\/(login|registro|restablecer)\.html?$/.test(destino)) {
       var u = UN.getUser() || {};
       destino = (u.rol === 'SUPERADMIN') ? '/superadmin/catalogo.html'
         : (u.rol === 'ADMIN') ? '/admin/catalogo.html'

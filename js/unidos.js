@@ -162,25 +162,48 @@
     } catch (e) {}
     var aqui = location.pathname + location.search;
     var enLogin = /\/login\.html$|\/registro\.html$|\/restablecer\.html$/.test(location.pathname);
+    // Si ya estamos en el login, se conserva el ?next= que ya venia para que el
+    // destino no se pierda al reentrar.
+    var destino = '/login.html';
+    if (enLogin) {
+      var nextActual = new URLSearchParams(location.search).get('next');
+      if (nextActual) destino += '?next=' + encodeURIComponent(nextActual);
+    } else {
+      destino += '?next=' + encodeURIComponent(aqui);
+    }
     setTimeout(function () {
       try { localStorage.removeItem('unidos_token'); localStorage.removeItem('unidos_user'); } catch (e) {}
-      location.href = enLogin ? '/login.html' : ('/login.html?next=' + encodeURIComponent(aqui));
+      // replace y no href: el boton "atras" no vuelve a la pagina que vuelve
+      // a dar 401 (mini-bucle).
+      try { location.replace(destino); } catch (e) { location.href = destino; }
     }, 900);
   }
 
   // ---------- destino de vuelta tras el login ----------
   // Solo rutas internas del sitio. Acepta un nombre suelto ("perfil.html") y le
   // pone la barra inicial, porque hay paginas que llegan sin ella (el ?next= de
-  // Cloudflare Pages la quita). Rechaza lo de fuera: //evil, http://, etc.
+  // Cloudflare Pages la quita).
   function safeNext(valor) {
     var n = String(valor == null ? '' : valor).trim();
     if (!n) return '';
-    if (n.indexOf('..') !== -1) return '';                     // nada de rutas con ..
-    if (n.charAt(0) === '/') return n.charAt(1) === '/' ? '' : n;
-    if (/^[a-z][a-z0-9+.\-]*:/i.test(n)) return '';          // http:, javascript:, data:
-    if (n.indexOf('//') === 0) return '';
-    if (/^[a-z0-9._~\-]+(\.html)?(\/[a-z0-9._~\-\/]*)?(\?.*)?$/i.test(n)) return '/' + n;
-    return '';
+    if (n.indexOf('..') !== -1) return '';                    // nada de rutas con ..
+    // El navegador convierte la barra invertida y los saltos de linea en "/",
+    // asi que "/\evil.com" se volaba a https://evil.com. Se rechazan aqui.
+    if (/[\\\t\n\r]/.test(n)) return '';
+    if (n.indexOf('//') === 0) return '';                      // //evil.com
+    if (/^[a-z][a-z0-9+.\-]*:/i.test(n)) return '';           // http:, javascript:, data:
+    if (n.charAt(0) !== '/') {
+      if (!/^[a-z0-9._~\-]+(\.html)?(\/[a-z0-9._~\-\/]*)?(\?.*)?$/i.test(n)) return '';
+      n = '/' + n;
+    }
+    // Comprobacion final: la ruta RESUELTA tiene que seguir en nuestro
+    // dominio. Es la red de seguridad contra cualquier escape que se le
+    // ocurra a las reglas de arriba.
+    try {
+      var u = new URL(n, location.origin);
+      if (u.origin !== location.origin) return '';
+      return u.pathname + u.search + u.hash;
+    } catch (e) { return ''; }
   }
 
   async function api(path, opts) {
@@ -202,7 +225,9 @@
       // (login con clave incorrecta) NO es una sesion vencida y no debe
       // redirigir, o el formulario de login se quedaria en loop.
       var esLogin = /^\/api\/(login|auth\/google|recuperar|restablecer)/.test(path);
-      if (res.status === 401 && t && !esLogin) {
+      // opts.sesionVencida === false: esta peticion no debe expulsar al
+      // usuario (validar la sesion en una pagina publica, por ejemplo).
+      if (res.status === 401 && t && !esLogin && opts.sesionVencida !== false) {
         try { sesionVencida(); } catch (e) {}
       }
       throw err;
@@ -1929,6 +1954,10 @@
       '.unZh-reg:hover{background:#b0000b}' +
       '@media(max-width:900px){.unZh-who{display:none}.unZh-in{gap:10px}}' +
       '@media(max-width:720px){.unZh-in{flex-wrap:wrap;height:auto;padding:10px 12px;row-gap:8px}.unZh-nav{order:3;flex-basis:100%;margin:0}.unZh-bellwrap{margin-left:auto}.unZh-chip{margin-left:auto}}' +
+      // La hoja fija de la campana se ancla con la altura REAL del header (que
+      // en celular envuelve a dos filas). Se mide en JS y se publica en
+      // --unZh-h; si no se ha medido, se usa una aproximacion.
+      '.unZh-belldrop{--unZh-h:76px}' +
       // Campana de notificaciones: va aquí (y no solo en css/menu-unico.css)
       // porque unidos.js se carga en TODAS las páginas; menu-unico.js no.
       '.unZh-bellwrap{position:relative;display:flex;align-items:center;flex-shrink:0}' +
@@ -1972,7 +2001,7 @@
       'html.dark-mode .unZh-belltxt small,html.dark .unZh-belltxt small{color:#94a3b8}' +
       'html.dark-mode .unZh-bellhead,html.dark .unZh-bellhead{background:#0f172a;border-color:#334155}' +
       'html.dark-mode .unZh-bellhead b,html.dark .unZh-bellhead b{color:#f1f5f9}' +
-      '@media(max-width:640px){.unZh-bellwrap{position:static}.unZh-belldrop{position:fixed !important;left:12px !important;right:12px !important;top:76px !important;width:auto !important;max-width:none !important;max-height:min(68dvh,480px) !important}.unZh-bell{width:36px;height:36px}}' +
+      '@media(max-width:640px){.unZh-bellwrap{position:static}.unZh-belldrop{position:fixed !important;left:12px !important;right:12px !important;top:calc(var(--unZh-h, 76px) + 8px) !important;width:auto !important;max-width:none !important;max-height:min(68dvh,480px) !important}.unZh-bell{width:36px;height:36px}}' +
       // iOS hace zoom solo al enfocar un input con fuente menor de 16px. Las
       // clases de Tailwind (text-sm/text-xs) ganan en especificidad al selector
       // de elemento, por eso va con !important y solo en movil.
@@ -2458,6 +2487,8 @@
     zhDrop(header, zone);
     zhBell(header);
     zhActive(header);
+    // Al pintar el header se mide su alto (puede cambiar con el texto del rol).
+    try { setTimeout(function () { medirHeader(header); }, 0); } catch (e) {}
     if (wasFixed) {
       var m = document.querySelector('main');
       if (m) {
@@ -2468,7 +2499,17 @@
       }
     }
     try { rewriteLinks(); } catch (e) {}
+    medirHeader(header);
     return true;
+  }
+  // Publica la altura REAL del header en --unZh-h. En celular el header
+  // envuelve a dos filas y la hoja fija de la campana se ancla a esa medida
+  // (con 76px fijos se comia el nav).
+  function medirHeader(header) {
+    try {
+      var h = Math.round(header.getBoundingClientRect().height);
+      if (h > 40) document.documentElement.style.setProperty('--unZh-h', h + 'px');
+    } catch (e) {}
   }
   // Sidebar movil compartido: en telefonos el nav de los disenos se oculta,
   // asi que se inyecta hamburguesa + drawer con los enlaces de cada rol/zona.
@@ -2776,10 +2817,14 @@ injectScrollbarCSS();
   })();
   // Valida la sesion guardada: si el token ya no sirve (ej. datos reiniciados),
   // se limpia en silencio para no confundir. Solo ante 401/403, nunca por red caida.
+  // NO expulsa al usuario: esta comprobacion corre en TODAS las paginas, y en
+  // las publicas un token caducado no debe lanzarlo al login. Quien este
+  // trabajando en algo protegido (cotizador, panel, perfil) si lo detecta solo
+  // en la siguiente accion.
   (function validateSession() {
     var token = localStorage.getItem('unidos_token');
     if (!token) return;
-    api('/api/me').then(function (me) {
+    api('/api/me', { sesionVencida: false }).then(function (me) {
       if (localStorage.getItem('unidos_token') === token) {
         setSession(token, me);
         // La foto pudo cambiar en otra computadora: se baja y se pinta.
